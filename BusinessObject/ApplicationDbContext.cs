@@ -3,19 +3,15 @@ using System.Collections.Generic;
 using System.Reflection.Emit;
 using DUVAS;
 using Microsoft.Extensions.Configuration;
+using System.Collections.Generic;
+using System.IO;
 
 namespace DUVAS
 {
     public class ApplicationDbContext : DbContext
     {
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", true, true);
-            IConfigurationRoot configuration = builder.Build();
-            optionsBuilder.UseSqlServer(configuration.GetConnectionString("DBString"));
-        }
+        
+
         // DbSets
         public virtual DbSet<User> Users { get; set; }
         public virtual DbSet<Building> Buildings { get; set; }
@@ -33,6 +29,27 @@ namespace DUVAS
         public virtual DbSet<CategoryService> CategoryServices { get; set; }
         public virtual DbSet<OwnerLicense> OwnerLicenses { get; set; }
 
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+       : base(options)
+        {
+        }
+        public ApplicationDbContext()
+        {
+        }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            if (!optionsBuilder.IsConfigured)
+            {
+                IConfigurationRoot configuration = new ConfigurationBuilder()
+                    .SetBasePath(Directory.GetCurrentDirectory())
+                    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                    .Build();
+
+                optionsBuilder.UseSqlServer(configuration.GetConnectionString("DBString"));
+                optionsBuilder.EnableSensitiveDataLogging();
+            }
+        }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // Fluent API configurations
