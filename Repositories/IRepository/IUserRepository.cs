@@ -12,6 +12,9 @@ namespace Repositories.IRepository
     {
         Task SaveUserAsync(User b);
         Task<User> GetUserByIdAsync(int id);
+        Task<User?> GetUserByGmailOrPhoneAsync(string gmailOrPhone);
+        Task<User?> GetUserByUsernameAsync(string username);
+        Task<bool> UpdatePasswordAsync(string username, string password);
         Task DeleteUserAsync(User b);
         Task UpdateUserAsync(User b);
         Task<List<UserDTO>> GetUsersAsync();

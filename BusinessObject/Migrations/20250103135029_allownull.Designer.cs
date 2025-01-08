@@ -4,6 +4,7 @@ using DUVAS;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,15 +12,15 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BusinessObject.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250103135029_allownull")]
+    partial class allownull
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-
                 .HasAnnotation("ProductVersion", "8.0.10")
-
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -218,9 +219,7 @@ namespace BusinessObject.Migrations
                     b.Property<int>("BuildingId")
                         .HasColumnType("int");
 
-
                     b.Property<int?>("CategoryRoomId")
-
                         .HasColumnType("int");
 
                     b.Property<string>("Description")
@@ -256,7 +255,6 @@ namespace BusinessObject.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("Price")
-
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("RoomCategory")
@@ -539,7 +537,6 @@ namespace BusinessObject.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-
                     b.HasOne("DUVAS.User", "User")
                         .WithMany("RentalLists")
                         .HasForeignKey("RenterID")
@@ -599,13 +596,11 @@ namespace BusinessObject.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-
                     b.HasOne("DUVAS.CategoryRoom", null)
                         .WithMany("Rooms")
                         .HasForeignKey("CategoryRoomId");
 
                     b.Navigation("Building");
-
                 });
 
             modelBuilder.Entity("DUVAS.RoomLicense", b =>

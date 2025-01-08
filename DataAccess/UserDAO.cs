@@ -86,6 +86,7 @@ namespace DataAccess
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex.ToString());
                 throw new Exception(ex.Message);
             }
         }
@@ -167,6 +168,72 @@ namespace DataAccess
             catch (Exception ex)
             {
                 throw new Exception(ex.Message);
+            }
+        }
+        
+        public static async Task<bool> UpdatePasswordAsync(string emailOrPhone, string password)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var user = await context.Users
+                        .FirstOrDefaultAsync(u => u.Gmail == emailOrPhone || u.Phone == emailOrPhone);
+
+                    if (user == null)
+                    {
+                        return false;
+                    }
+                    user.Password = password;
+                    await context.SaveChangesAsync();
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error updating password: {ex.Message}");
+                return false;
+            }
+        }
+        
+        public static async Task<User?> FindUserByEmailOrPhoneAsync(string emailOrPhone)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var user = await context.Users
+                        .AsNoTracking()
+                        .SingleOrDefaultAsync(u => 
+                            (u.Gmail != null && u.Gmail.ToLower() == emailOrPhone.ToLower()) || 
+                            (u.Phone != null && u.Phone == emailOrPhone));
+
+                    return user;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return null;
+            }
+        }
+        public static async Task<User?> FindUserByUsername(string username)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var user = await context.Users
+                        .AsNoTracking()
+                        .SingleOrDefaultAsync(u => u.UserName.ToLower() == username.ToLower());
+
+                    return user;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error finding user by username: {ex.Message}");
+                return null;
             }
         }
     }
