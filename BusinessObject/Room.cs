@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DUVAS
 {
@@ -9,7 +10,8 @@ namespace DUVAS
 
         public int BuildingId { get; set; }
         public Building? Building { get; set; }
-
+        public int CategoryRoomId { get; set; }
+        public CategoryRoom? CategoryRoom { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
 
@@ -20,9 +22,11 @@ namespace DUVAS
         public int NumberOfBathroom { get; set; }
         public int NumberOfBedroom { get; set; }
         public bool Garret { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
         public decimal Price { get; set; }
 
-        public string RoomCategory { get; set; }
+        
         public string Image { get; set; }
 
         public string Note { get; set; }

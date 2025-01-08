@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace BusinessObject.Migrations
 {
     /// <inheritdoc />
-    public partial class _1 : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -81,9 +81,11 @@ namespace BusinessObject.Migrations
                     Address = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Sex = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ProfilePicture = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    RoleUser = table.Column<int>(type: "int", nullable: false),
-                    RoleLandlord = table.Column<int>(type: "int", nullable: false),
-                    RoleService = table.Column<int>(type: "int", nullable: false)
+                    Money = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    RoleAdmin = table.Column<int>(type: "int", nullable: true),
+                    RoleUser = table.Column<int>(type: "int", nullable: true),
+                    RoleLandlord = table.Column<int>(type: "int", nullable: true),
+                    RoleService = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -108,7 +110,9 @@ namespace BusinessObject.Migrations
                     Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     RoomCategory = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Image = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    GhiChu = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Note = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsPermission = table.Column<bool>(type: "bit", nullable: false),
+                    CategoryRoomId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -119,6 +123,11 @@ namespace BusinessObject.Migrations
                         principalTable: "Buildings",
                         principalColumn: "BuildingId",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Rooms_CategoryRooms_CategoryRoomId",
+                        column: x => x.CategoryRoomId,
+                        principalTable: "CategoryRooms",
+                        principalColumn: "CategoryRoomId");
                 });
 
             migrationBuilder.CreateTable(
@@ -218,7 +227,7 @@ namespace BusinessObject.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     RoomId = table.Column<int>(type: "int", nullable: false),
                     ContractId = table.Column<int>(type: "int", nullable: false),
-                    IDThue = table.Column<int>(type: "int", nullable: false)
+                    RenterID = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -236,8 +245,8 @@ namespace BusinessObject.Migrations
                         principalColumn: "RoomId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_RentalLists_Users_IDThue",
-                        column: x => x.IDThue,
+                        name: "FK_RentalLists_Users_RenterID",
+                        column: x => x.RenterID,
                         principalTable: "Users",
                         principalColumn: "UserId",
                         onDelete: ReferentialAction.Restrict);
@@ -376,9 +385,9 @@ namespace BusinessObject.Migrations
                 column: "ContractId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_RentalLists_IDThue",
+                name: "IX_RentalLists_RenterID",
                 table: "RentalLists",
-                column: "IDThue");
+                column: "RenterID");
 
             migrationBuilder.CreateIndex(
                 name: "IX_RentalLists_RoomId",
@@ -414,6 +423,11 @@ namespace BusinessObject.Migrations
                 name: "IX_Rooms_BuildingId",
                 table: "Rooms",
                 column: "BuildingId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Rooms_CategoryRoomId",
+                table: "Rooms",
+                column: "CategoryRoomId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ServiceFeedbacks_ServicePostId",
@@ -455,9 +469,6 @@ namespace BusinessObject.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "CategoryRooms");
-
-            migrationBuilder.DropTable(
                 name: "OwnerLicenses");
 
             migrationBuilder.DropTable(
@@ -495,6 +506,9 @@ namespace BusinessObject.Migrations
 
             migrationBuilder.DropTable(
                 name: "Buildings");
+
+            migrationBuilder.DropTable(
+                name: "CategoryRooms");
 
             migrationBuilder.DropTable(
                 name: "CategoryServices");
