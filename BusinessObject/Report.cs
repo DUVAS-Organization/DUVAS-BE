@@ -21,5 +21,7 @@ namespace DUVAS
 
         public string ReportContent { get; set; }
         public string Image { get; set; }
+        public int? Status { get; set; }
+        public string? Feedback {  get; set; }
     }
 }

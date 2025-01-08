@@ -7,7 +7,7 @@
   },
   "AllowedHosts": "*",
   "ConnectionStrings": {
-    "DBString": "Server=CAYCHANH\\SQLEXPRESS; database=DUVAS; uid=sa; pwd=3011;TrustServerCertificate=true;Trusted_Connection=SSPI;Encrypt=false;"
+    "DBString": "Server=VIETLONG; database=DUVAS; uid=sa; pwd=12;TrustServerCertificate=true;Trusted_Connection=SSPI;Encrypt=false;"
   },
   "SmtpSettings": {
     "Host": "smtp.gmail.com",
