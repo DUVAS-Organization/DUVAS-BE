@@ -30,6 +30,8 @@ namespace DataAccess
                         {
                             RoomId = p.RoomId,
                             BuildingId = p.BuildingId,
+                            UserId = p.UserId,
+                            UserName = p.User.UserName,
                             Title = p.Title,
                             Description = p.Description,
                             LocationDetail = p.LocationDetail,
@@ -153,6 +155,8 @@ namespace DataAccess
                             RoomId = p.RoomId,
                             BuildingId = p.BuildingId,
                             BuildingName = p.Building.BuildingName,
+                            UserId = p.UserId,
+                            UserName = p.User.UserName,
                             Title = p.Title,
                             Description = p.Description,
                             LocationDetail = p.LocationDetail,
