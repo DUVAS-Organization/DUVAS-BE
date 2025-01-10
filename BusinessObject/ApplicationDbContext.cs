@@ -179,6 +179,8 @@ namespace DUVAS
                 .WithMany(u => u.OwnerLicenses)
                 .HasForeignKey(ol => ol.UserId);
 
+
+
             // ServidePosr - User
             modelBuilder.Entity<ServicePost>()
                 .HasOne(r => r.User)

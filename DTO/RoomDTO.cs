@@ -11,7 +11,8 @@ namespace DTO
     {
         [Key]
         public int RoomId { get; set; }
-
+        public int? UserId { get; set; }
+        public string? UserName { get; set; }
         public int BuildingId { get; set; }
         public string BuildingName { get; set; }
         public string Title { get; set; }
