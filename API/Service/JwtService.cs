@@ -23,11 +23,12 @@ public class JwtService
     {
         var claims = new[]
         {
-            new Claim(ClaimTypes.Name, user.UserName),
+            new Claim(ClaimTypes.Name, user.Name),
             new Claim(ClaimTypes.Role, user.getRoleString()),
             new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim("UserId", user.UserId.ToString())
+            new Claim("UserId", user.UserId.ToString()),
+            new Claim("ProfilePicture", user.ProfilePicture)
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));

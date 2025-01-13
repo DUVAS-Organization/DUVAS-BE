@@ -9,6 +9,7 @@ using DUVAS;
 using Microsoft.AspNetCore.OData.Query;
 using Microsoft.AspNetCore.OData.Routing.Controllers;
 using Repositories.IRepository;
+using Microsoft.AspNetCore.Authorization;
 
 namespace API.Controllers.Admin
 {
@@ -52,6 +53,7 @@ namespace API.Controllers.Admin
         }
 
         // POST: odata/Buildings
+
         [HttpPost]
         public async Task<ActionResult<Building>> PostBuilding([FromBody] Building building)
         {
