@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BusinessObject.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250108055818_UpdateReports")]
-    partial class UpdateReports
+    [Migration("20250115025639_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -41,10 +41,15 @@ namespace BusinessObject.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
                     b.Property<bool>("Verify")
                         .HasColumnType("bit");
 
                     b.HasKey("BuildingId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Buildings");
                 });
@@ -267,11 +272,16 @@ namespace BusinessObject.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
                     b.HasKey("RoomId");
 
                     b.HasIndex("BuildingId");
 
                     b.HasIndex("CategoryRoomId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Rooms");
                 });
@@ -391,9 +401,14 @@ namespace BusinessObject.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
                     b.HasKey("ServicePostId");
 
                     b.HasIndex("CategoryServiceId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("ServicePosts");
                 });
@@ -520,6 +535,17 @@ namespace BusinessObject.Migrations
                     b.ToTable("UserFeedbacks");
                 });
 
+            modelBuilder.Entity("DUVAS.Building", b =>
+                {
+                    b.HasOne("DUVAS.User", "User")
+                        .WithMany("Buildings")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("DUVAS.OwnerLicense", b =>
                 {
                     b.HasOne("DUVAS.User", "User")
@@ -604,9 +630,17 @@ namespace BusinessObject.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("DUVAS.User", "User")
+                        .WithMany("Rooms")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("Building");
 
                     b.Navigation("CategoryRoom");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("DUVAS.RoomLicense", b =>
@@ -650,7 +684,15 @@ namespace BusinessObject.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("DUVAS.User", "User")
+                        .WithMany("ServicePosts")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("CategoryService");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("DUVAS.Transaction", b =>
@@ -725,13 +767,19 @@ namespace BusinessObject.Migrations
 
             modelBuilder.Entity("DUVAS.User", b =>
                 {
+                    b.Navigation("Buildings");
+
                     b.Navigation("OwnerLicenses");
 
                     b.Navigation("RentalLists");
 
                     b.Navigation("Reports");
 
+                    b.Navigation("Rooms");
+
                     b.Navigation("ServiceLicenses");
+
+                    b.Navigation("ServicePosts");
 
                     b.Navigation("Transactions");
 

@@ -6,6 +6,8 @@ namespace DUVAS
     {
         [Key]
         public int BuildingId { get; set; }
+        public int UserId { get; set; }
+        public User? User { get; set; }
 
         public string BuildingName { get; set; }
         public string Location { get; set; }
