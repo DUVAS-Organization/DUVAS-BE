@@ -35,6 +35,9 @@ namespace DataAccess
                             TransactionId = p.TransactionId,
                             ReportContent = p.ReportContent,
                             Image = p.Image,
+                            Status = p.Status,
+                            Feedback = p.Feedback,
+
 
                             //CategoryName = p.Category.CategoryName,
                             //CategoryId = p.CategoryId,                            

@@ -34,6 +34,7 @@ namespace DataAccess
                             Price = p.Price,
                             Location = p.Location,
                             Description = p.Description,
+                            CategoryServiceId = p.CategoryServiceId,
                             //CategoryName = p.Category.CategoryName,
                             //CategoryId = p.CategoryId,                            
 
@@ -113,6 +114,45 @@ namespace DataAccess
                         context.ServicePosts.Remove(existingServicePost);
                         await context.SaveChangesAsync();
                     }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+        public static async Task<List<ServicePostDTO>> SearchServicePostsAsync(string searchTerm)
+        {
+            if (string.IsNullOrWhiteSpace(searchTerm))
+            {
+                return await GetServicePostsAsync();
+            }
+
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    bool isNumeric = decimal.TryParse(searchTerm, out decimal numericValue);
+
+                    var servicePosts = await context.ServicePosts
+                        .AsNoTracking()
+                        .Where(p => p.Title.ToLower().Contains(searchTerm.ToLower().Trim())
+                                    || (isNumeric && p.Price > numericValue)
+                                    || p.Location.ToLower().Contains(searchTerm.ToLower().Trim())
+                                    || p.PhoneNumber.Contains(searchTerm.Trim()))
+                        .Select(p => new ServicePostDTO
+                        {
+                            ServicePostId = p.ServicePostId,
+                            Title = p.Title,
+                            PhoneNumber = p.PhoneNumber,
+                            Price = p.Price,
+                            Location = p.Location,
+                            Description = p.Description,
+                            CategoryServiceId = p.CategoryServiceId,
+                        })
+                        .ToListAsync();
+
+                    return servicePosts;
                 }
             }
             catch (Exception ex)

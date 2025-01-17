@@ -364,7 +364,9 @@ namespace BusinessObject.Migrations
                     ServicePostId = table.Column<int>(type: "int", nullable: true),
                     TransactionId = table.Column<int>(type: "int", nullable: true),
                     ReportContent = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Image = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Image = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: true),
+                    Feedback = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {

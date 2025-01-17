@@ -8,12 +8,13 @@ using Microsoft.EntityFrameworkCore;
 using DUVAS;
 using Microsoft.AspNetCore.OData.Query;
 using Repositories.IRepository;
+using Microsoft.AspNetCore.OData.Routing.Controllers;
 
 namespace API.Controllers.Admin
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UsersController : ControllerBase
+    public class UsersController : ODataController
     {
         private readonly IUserRepository _userRepository;
 

@@ -15,5 +15,6 @@ namespace Repositories.IRepository
         Task DeleteServicePostAsync(ServicePost b);
         Task UpdateServicePostAsync(ServicePost b);
         Task<List<ServicePostDTO>> GetServicePostsAsync();
+        Task<List<ServicePostDTO>> SearchServicePostsAsync(string searchTerm);
     }
 }

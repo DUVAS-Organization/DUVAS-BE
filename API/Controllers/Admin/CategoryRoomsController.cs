@@ -9,12 +9,13 @@ using DUVAS;
 using Microsoft.AspNetCore.OData.Query;
 using Repositories.IRepository;
 using DTO;
+using Microsoft.AspNetCore.OData.Routing.Controllers;
 
 namespace API.Controllers.Admin
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CategoryRoomsController : ControllerBase
+    public class CategoryRoomsController : ODataController
     {
         private readonly ICategoryRoomRepository _categoryRoomRepository;
 
