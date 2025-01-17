@@ -62,6 +62,13 @@ namespace DUVAS
                 .HasForeignKey(r => r.BuildingId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // Room - CategoryRoom
+            modelBuilder.Entity<Room>()
+               .HasOne(r => r.CategoryRoom)
+               .WithMany(c => c.Rooms)
+               .HasForeignKey(r => r.CategoryRoomId)
+               .OnDelete(DeleteBehavior.Cascade);
+
             // RoomLicense - Room
             modelBuilder.Entity<RoomLicense>()
                 .HasOne(rl => rl.Room)
@@ -171,6 +178,29 @@ namespace DUVAS
                 .HasOne(ol => ol.User)
                 .WithMany(u => u.OwnerLicenses)
                 .HasForeignKey(ol => ol.UserId);
+
+
+
+            // ServidePosr - User
+            modelBuilder.Entity<ServicePost>()
+                .HasOne(r => r.User)
+                .WithMany(u => u.ServicePosts)
+                .HasForeignKey(r => r.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Room - User
+            modelBuilder.Entity<Room>()
+                .HasOne(r => r.User)
+                .WithMany(u => u.Rooms)
+                .HasForeignKey(r => r.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Building - User
+            modelBuilder.Entity<Building>()
+                .HasOne(r => r.User)
+                .WithMany(u => u.Buildings)
+                .HasForeignKey(r => r.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
 
     }

@@ -12,6 +12,9 @@ namespace Repositories
 {
     public class UserRepository : IUserRepository
     {
+        public async Task<bool> UpdatePasswordAsync(string username, string password) => await UserDAO.UpdatePasswordAsync(username, password);
+        public async Task<User?> GetUserByGmailOrPhoneAsync(string emailOrPhone) => await UserDAO.FindUserByEmailOrPhoneAsync(emailOrPhone);
+        public async Task<User?> GetUserByUsernameAsync(string username) => await UserDAO.FindUserByUsername(username);
         public async Task DeleteUserAsync(User b) => await UserDAO.DeleteUserAsync(b);
         public async Task<User> GetUserByIdAsync(int id) => await UserDAO.FindUserByIdAsync(id);
         public async Task<List<UserDTO>> GetUsersAsync() => await UserDAO.GetUsersAsync();
