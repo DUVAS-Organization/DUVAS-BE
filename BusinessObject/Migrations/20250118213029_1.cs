@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace BusinessObject.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class _1 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -241,6 +241,35 @@ namespace BusinessObject.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "RentalServiceLists",
+                columns: table => new
+                {
+                    RentalServiceId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CreationDateTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    RentalDateTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ServicePostID = table.Column<int>(type: "int", nullable: false),
+                    RenterID = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<int>(type: "int", nullable: true),
+                    RentalServiceStatus = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RentalServiceLists", x => x.RentalServiceId);
+                    table.ForeignKey(
+                        name: "FK_RentalServiceLists_ServicePosts_ServicePostID",
+                        column: x => x.ServicePostID,
+                        principalTable: "ServicePosts",
+                        principalColumn: "ServicePostId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_RentalServiceLists_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "UserId");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ServiceFeedbacks",
                 columns: table => new
                 {
@@ -270,7 +299,8 @@ namespace BusinessObject.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     RoomId = table.Column<int>(type: "int", nullable: false),
                     ContractId = table.Column<int>(type: "int", nullable: false),
-                    RenterID = table.Column<int>(type: "int", nullable: false)
+                    RenterID = table.Column<int>(type: "int", nullable: false),
+                    RentalStatus = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -423,6 +453,16 @@ namespace BusinessObject.Migrations
                 column: "RoomId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_RentalServiceLists_ServicePostID",
+                table: "RentalServiceLists",
+                column: "ServicePostID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RentalServiceLists_UserId",
+                table: "RentalServiceLists",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Reports_RoomId",
                 table: "Reports",
                 column: "RoomId");
@@ -511,6 +551,9 @@ namespace BusinessObject.Migrations
 
             migrationBuilder.DropTable(
                 name: "RentalLists");
+
+            migrationBuilder.DropTable(
+                name: "RentalServiceLists");
 
             migrationBuilder.DropTable(
                 name: "Reports");

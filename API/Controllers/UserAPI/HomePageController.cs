@@ -1,5 +1,4 @@
 ﻿using DUVAS;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Query;
 using Microsoft.AspNetCore.OData.Routing.Controllers;
@@ -16,16 +15,15 @@ namespace API.Controllers.UserAPI
 
         public HomePageController(IRoomRepository roomRepository, IServicePostRepository servicePostRepository)
         {
-            _roomRepository = roomRepository;
-            _servicePostRepository = servicePostRepository;
+            _roomRepository = roomRepository ?? throw new ArgumentNullException(nameof(roomRepository));
+            _servicePostRepository = servicePostRepository ?? throw new ArgumentNullException(nameof(servicePostRepository));
         }
 
-        // GET: odata/Rooms
+        // GET: api/HomePage/rooms
         [EnableQuery]
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Room>>> GetRooms(string searchTerm = null)
+        [HttpGet("rooms")]
+        public async Task<ActionResult<IEnumerable<Room>>> GetUserRooms(string searchTerm = null)
         {
-
             if (string.IsNullOrEmpty(searchTerm))
             {
                 return Ok(await _roomRepository.GetRoomsAsync());
@@ -35,25 +33,24 @@ namespace API.Controllers.UserAPI
             return Ok(rooms);
         }
 
-        // GET: odata/Rooms/{id}
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Room>> GetRoom(int id)
+        // GET: api/HomePage/rooms/{id}
+        [HttpGet("rooms/{id}")]
+        public async Task<ActionResult<Room>> GetUserRoom(int id)
         {
             var room = await _roomRepository.GetRoomByIdAsync(id);
             if (room == null)
             {
-                return BadRequest();
+                return NotFound(); // Sử dụng NotFound thay vì BadRequest
             }
 
             return Ok(room);
         }
 
-        // GET: odata/ServicePosts
+        // GET: api/HomePage/service-posts
         [EnableQuery]
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<ServicePost>>> GetServicePosts(string searchTerm = null)
+        [HttpGet("service-posts")]
+        public async Task<ActionResult<IEnumerable<ServicePost>>> GetUserServicePosts(string searchTerm = null)
         {
-
             if (string.IsNullOrEmpty(searchTerm))
             {
                 return Ok(await _servicePostRepository.GetServicePostsAsync());
@@ -63,19 +60,17 @@ namespace API.Controllers.UserAPI
             return Ok(servicePosts);
         }
 
-        // GET: odata/ServicePosts/{id}
-        [HttpGet("{id}")]
-        public async Task<ActionResult<ServicePost>> GetServicePost(int id)
+        // GET: api/HomePage/service-posts/{id}
+        [HttpGet("service-posts/{id}")]
+        public async Task<ActionResult<ServicePost>> GetUserServicePost(int id)
         {
             var servicePost = await _servicePostRepository.GetServicePostByIdAsync(id);
             if (servicePost == null)
             {
-                return BadRequest();
+                return NotFound(); // Sử dụng NotFound thay vì BadRequest
             }
 
             return Ok(servicePost);
         }
-
-
     }
 }

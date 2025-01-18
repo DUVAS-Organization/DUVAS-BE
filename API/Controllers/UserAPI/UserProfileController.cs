@@ -19,12 +19,20 @@ namespace API.Controllers.UserAPI
         private readonly IUserRepository _userRepository;
         private readonly IRoomRepository _roomRepository;
         private readonly IServicePostRepository _servicePostRepository;
+        private readonly IRentalListRepository _rentalListRepository;
+        private readonly IRentalServiceListRepository _rentalServiceListRepository;
+        private readonly IContractRepository _contractRepository;
 
-        public UserProfileController(IUserRepository userRepository, IRoomRepository roomRepository, IServicePostRepository servicePostRepository)
+        public UserProfileController(IUserRepository userRepository, IRoomRepository roomRepository, 
+            IServicePostRepository servicePostRepository, IRentalListRepository rentalListRepository, IContractRepository contractRepository,
+            IRentalServiceListRepository rentalServiceListRepository)
         {
             _userRepository = userRepository;
             _roomRepository = roomRepository;
             _servicePostRepository = servicePostRepository;
+            _rentalListRepository = rentalListRepository;
+            _contractRepository = contractRepository;
+            _rentalServiceListRepository = rentalServiceListRepository;
         }
 
         // API: Edit profile
@@ -65,18 +73,21 @@ namespace API.Controllers.UserAPI
         }
 
         // API: View room rental history
-        [HttpGet("{id}/RoomRentalHistory")]
-        public async Task<IActionResult> GetRoomRentalHistory(int id)
+        [HttpGet("{userId}/RoomRentalHistory")]
+        public async Task<IActionResult> GetRoomRentalHistory(int userId)
         {
             try
             {
-                var history = await _roomRepository.GetRentalHistoryByUserIdAsync(id);
-                if (history == null)
+                // Lấy danh sách RentalList theo UserId
+                var rentalLists = await _rentalListRepository.GetRentalListsAsync();
+                var userHistory = rentalLists.Where(r => r.RenterID == userId).ToList();
+
+                if (!userHistory.Any())
                 {
                     return NotFound("Không có lịch sử thuê phòng.");
                 }
 
-                return Ok(history);
+                return Ok(userHistory);
             }
             catch
             {
@@ -84,19 +95,25 @@ namespace API.Controllers.UserAPI
             }
         }
 
-        // API: View service history
-        [HttpGet("{id}/ServiceHistory")]
-        public async Task<IActionResult> GetServiceHistory(int id)
+
+        // API: View service rental history
+        [HttpGet("{userId}/ServiceRentalHistory")]
+        public async Task<IActionResult> ServiceRentalHistory(int userId)
         {
             try
             {
-                var history = await _servicePostRepository.GetServiceHistoryByUserIdAsync(id);
-                if (history == null)
+                // Lấy danh sách RentalServiceLists theo UserId
+                var rentalServiceLists = await _rentalServiceListRepository.GetRentalServiceListsAsync();
+                var userServiceHistory = rentalServiceLists
+                    .Where(r => r.RenterServiceID == userId)
+                    .ToList();
+
+                if (!userServiceHistory.Any())
                 {
                     return NotFound("Không có lịch sử sử dụng dịch vụ.");
                 }
 
-                return Ok(history);
+                return Ok(userServiceHistory);
             }
             catch
             {
@@ -104,16 +121,43 @@ namespace API.Controllers.UserAPI
             }
         }
 
+
         // API: Track room usage expiration dates
-        [HttpGet("{id}/RoomUsageExpiration")]
-        public async Task<IActionResult> GetRoomUsageExpirationDates(int id)
+        [HttpGet("{userId}/RoomUsageExpiration")]
+        public async Task<IActionResult> GetRoomUsageExpirationDates(int userId)
         {
             try
             {
-                var expirationDates = await _roomRepository.GetRoomUsageExpirationByUserIdAsync(id);
-                if (expirationDates == null)
+                // Lấy danh sách RentalLists từ repository
+                var rentalLists = await _rentalListRepository.GetRentalListsAsync();
+
+                // Lọc danh sách theo UserId
+                var rentalIds = rentalLists
+                    .Where(r => r.RenterID == userId)
+                    .Select(r => new { r.RoomId, r.ContractId })
+                    .ToList();
+
+                if (!rentalIds.Any())
                 {
                     return NotFound("Không có dữ liệu về ngày hết hạn sử dụng phòng.");
+                }
+
+                // Lấy danh sách Contracts từ repository
+                var contracts = await _contractRepository.GetContractsAsync();
+
+                // Lọc hợp đồng liên quan đến RentalLists
+                var expirationDates = contracts
+                    .Where(c => rentalIds.Any(r => r.ContractId == c.ContractId))
+                    .Select(c => new
+                    {
+                        RoomId = rentalIds.First(r => r.ContractId == c.ContractId).RoomId,
+                        ExpirationDate = c.RentalDateTimeEnd
+                    })
+                    .ToList();
+
+                if (!expirationDates.Any())
+                {
+                    return NotFound("Không có hợp đồng nào được liên kết với phòng.");
                 }
 
                 return Ok(expirationDates);
@@ -124,24 +168,5 @@ namespace API.Controllers.UserAPI
             }
         }
 
-        // API: Track service usage expiration dates
-        [HttpGet("{id}/ServiceUsageExpiration")]
-        public async Task<IActionResult> GetServiceUsageExpirationDates(int id)
-        {
-            try
-            {
-                var expirationDates = await _servicePostRepository.GetServiceUsageExpirationByUserIdAsync(id);
-                if (expirationDates == null)
-                {
-                    return NotFound("Không có dữ liệu về ngày hết hạn sử dụng dịch vụ.");
-                }
-
-                return Ok(expirationDates);
-            }
-            catch
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Lỗi khi lấy thông tin ngày hết hạn sử dụng dịch vụ.");
-            }
-        }
     }
 }
