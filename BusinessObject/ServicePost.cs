@@ -22,5 +22,6 @@ namespace DUVAS
 
         // Mối quan hệ với ServiceFeedback
         public virtual ICollection<ServiceFeedback>? ServiceFeedbacks { get; set; }
+        public virtual ICollection<RentalServiceList>? RentalServiceLists { get; set; }
     }
 }

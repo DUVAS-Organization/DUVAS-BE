@@ -18,6 +18,7 @@ namespace DUVAS
         public virtual DbSet<Room> Rooms { get; set; }
         public virtual DbSet<RoomLicense> RoomLicenses { get; set; }
         public virtual DbSet<RentalList> RentalLists { get; set; }
+        public virtual DbSet<RentalServiceList> RentalServiceLists { get; set; }
         public virtual DbSet<Contract> Contracts { get; set; }
         public virtual DbSet<Transaction> Transactions { get; set; }
         public virtual DbSet<ServicePost> ServicePosts { get; set; }

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BusinessObject.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250115025639_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250118213029_1")]
+    partial class _1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -152,6 +152,9 @@ namespace BusinessObject.Migrations
                     b.Property<int>("ContractId")
                         .HasColumnType("int");
 
+                    b.Property<int>("RentalStatus")
+                        .HasColumnType("int");
+
                     b.Property<int>("RenterID")
                         .HasColumnType("int");
 
@@ -167,6 +170,41 @@ namespace BusinessObject.Migrations
                     b.HasIndex("RoomId");
 
                     b.ToTable("RentalLists");
+                });
+
+            modelBuilder.Entity("DUVAS.RentalServiceList", b =>
+                {
+                    b.Property<int>("RentalServiceId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RentalServiceId"));
+
+                    b.Property<DateTime>("CreationDateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("RentalDateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("RentalServiceStatus")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RenterID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ServicePostID")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("RentalServiceId");
+
+                    b.HasIndex("ServicePostID");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RentalServiceLists");
                 });
 
             modelBuilder.Entity("DUVAS.Report", b =>
@@ -584,6 +622,23 @@ namespace BusinessObject.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("DUVAS.RentalServiceList", b =>
+                {
+                    b.HasOne("DUVAS.ServicePost", "ServicePost")
+                        .WithMany("RentalServiceLists")
+                        .HasForeignKey("ServicePostID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DUVAS.User", "User")
+                        .WithMany("RentalServiceLists")
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("ServicePost");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("DUVAS.Report", b =>
                 {
                     b.HasOne("DUVAS.Room", "Room")
@@ -762,6 +817,8 @@ namespace BusinessObject.Migrations
 
             modelBuilder.Entity("DUVAS.ServicePost", b =>
                 {
+                    b.Navigation("RentalServiceLists");
+
                     b.Navigation("ServiceFeedbacks");
                 });
 
@@ -772,6 +829,8 @@ namespace BusinessObject.Migrations
                     b.Navigation("OwnerLicenses");
 
                     b.Navigation("RentalLists");
+
+                    b.Navigation("RentalServiceLists");
 
                     b.Navigation("Reports");
 
