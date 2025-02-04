@@ -67,6 +67,7 @@ namespace API
             builder.Services.AddScoped<IServiceLicenseRepository, ServiceLicenseRepository>();
             builder.Services.AddScoped<IServicePostRepository, ServicePostRepository>();
             builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
+            builder.Services.AddScoped<IWithdrawRequestRepository, WithdrawRequestRepository>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IUserFeedbackRepository, UserFeedbackRepository>();
 

@@ -10,10 +10,12 @@ namespace Repositories.IRepository
 {
     public interface ITransactionRepository
     {
-        Task SaveTransactionAsync(Transaction b);
-        Task<Transaction> GetTransactionByIdAsync(int id);
-        Task DeleteTransactionAsync(Transaction b);
-        Task UpdateTransactionAsync(Transaction b);
-        Task<List<TransactionDTO>> GetTransactionsAsync();
+
+        Task<Transaction> AddTransaction(decimal amount, string description, int userId);
+        Task<Transaction> UpdateTransaction(Transaction transaction);
+        Task<List<Transaction>> GetAllTransactions();
+        Task<Transaction?> GetTransactionById(int id);
+        Task<List<Transaction>> GetTransactionsByUserId(int userId);
+        Task<bool> DoesTransactionProcessedAsync(int cassoId);
     }
 }

@@ -33,10 +33,7 @@ namespace DataAccess
                             PhoneNumber = p.PhoneNumber,
                             Price = p.Price,
                             Location = p.Location,
-                            Description = p.Description,
-                            CategoryServiceId = p.CategoryServiceId,
-                            //CategoryName = p.Category.CategoryName,
-                            //CategoryId = p.CategoryId,                            
+                            Description = p.Description,                       
 
                         })
                         .ToListAsync();
