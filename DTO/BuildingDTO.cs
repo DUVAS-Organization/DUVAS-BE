@@ -15,6 +15,7 @@ namespace DTO
         public string BuildingName { get; set; }
         public string Location { get; set; }
         public bool Verify { get; set; }
+        public string? Name { get; set; }
         public string CategoryName { get; set; }
     }
 }

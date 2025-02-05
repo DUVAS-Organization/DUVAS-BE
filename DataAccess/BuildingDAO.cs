@@ -30,8 +30,8 @@ namespace DataAccess
                         {
                             BuildingId = p.BuildingId,
                             BuildingName = p.BuildingName,
-                            Location = p.Location
-
+                            Location = p.Location,
+                            Name = p.User.Name,
                             //CategoryName = p.Category.CategoryName,
                             //CategoryId = p.CategoryId,                            
 
@@ -143,6 +143,7 @@ namespace DataAccess
                             BuildingId = p.BuildingId,
                             BuildingName = p.BuildingName,
                             Location = p.Location,
+                            Name = p.User.Name,
                             //CategoryName = p.Category.CategoryName,
                             //CategoryId = p.CategoryId,
                             //Price = p.Price,

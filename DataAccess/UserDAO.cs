@@ -150,7 +150,7 @@ namespace DataAccess
                     var user = await context.Users
                         .AsNoTracking()
                         .Where(p => p.UserName.ToLower().Contains(searchTerm.ToLower().Trim())
-                                //|| (isNumeric && p.Price > numericValue)
+                                || p.Gmail.ToLower().Contains(searchTerm.ToLower().Trim())
                                 )
                         .Select(p => new UserDTO
                         {
