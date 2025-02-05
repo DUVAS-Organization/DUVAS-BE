@@ -16,8 +16,7 @@ namespace DTO
         public decimal Price { get; set; }
         public string Location { get; set; }
         public string Description { get; set; }
-
-        // Mối quan hệ với CategoryService
+        public string? Name { get; set; }
         public int CategoryServiceId { get; set; }
         //public CategoryService? CategoryService { get; set; }
 
