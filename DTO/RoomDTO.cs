@@ -23,7 +23,7 @@ namespace DTO
         public string Furniture { get; set; }
         public int NumberOfBathroom { get; set; }
         public int NumberOfBedroom { get; set; }
-        public bool Garret { get; set; }
+        public bool? Garret { get; set; }
         public decimal Price { get; set; }
         public int CategoryRoomId { get; set; }
         public string CategoryName { get; set; }

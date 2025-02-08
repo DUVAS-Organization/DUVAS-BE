@@ -22,18 +22,18 @@ namespace DUVAS
 
         public string LocationDetail { get; set; }
         public double Acreage { get; set; }
-        public string Furniture { get; set; }
+        public string? Furniture { get; set; }
 
         public int NumberOfBathroom { get; set; }
         public int NumberOfBedroom { get; set; }
-        public bool Garret { get; set; }
+        public bool? Garret { get; set; }
 
         public decimal Price { get; set; }
 
         public string Image { get; set; }
 
-        public string Note { get; set; }
-        public bool IsPermission { get; set; }
+        public string? Note { get; set; }
+        public bool? IsPermission { get; set; }
 
 
         public virtual ICollection<RoomLicense>? RoomLicenses { get; set; }

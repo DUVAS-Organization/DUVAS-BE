@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BusinessObject.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250204092722_InitialCreate")]
+    [Migration("20250207202658_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -305,10 +305,6 @@ namespace BusinessObject.Migrations
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("RoomCategory")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -778,9 +774,9 @@ namespace BusinessObject.Migrations
                         .IsRequired();
 
                     b.HasOne("DUVAS.User", "User")
-                        .WithMany()
+                        .WithMany("Rooms")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Building");
@@ -924,6 +920,8 @@ namespace BusinessObject.Migrations
                     b.Navigation("RentalLists");
 
                     b.Navigation("Reports");
+
+                    b.Navigation("Rooms");
 
                     b.Navigation("ServiceLicenses");
 

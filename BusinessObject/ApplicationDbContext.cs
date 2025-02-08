@@ -56,6 +56,12 @@ namespace DUVAS
         {
             // Fluent API configurations
 
+            // Room - User
+            modelBuilder.Entity<Room>()
+                .HasOne(r => r.User)
+                .WithMany(u => u.Rooms)
+                .HasForeignKey(r => r.UserId)
+                .OnDelete(DeleteBehavior.NoAction); // Ngăn vòng lặp khi xóa User
 
             // Room - Building
             modelBuilder.Entity<Room>()

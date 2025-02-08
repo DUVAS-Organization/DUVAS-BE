@@ -248,7 +248,6 @@ namespace BusinessObject.Migrations
                     NumberOfBedroom = table.Column<int>(type: "int", nullable: false),
                     Garret = table.Column<bool>(type: "bit", nullable: false),
                     Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    RoomCategory = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Image = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Note = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     IsPermission = table.Column<bool>(type: "bit", nullable: false)
@@ -272,8 +271,7 @@ namespace BusinessObject.Migrations
                         name: "FK_Rooms_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "UserId");
                 });
 
             migrationBuilder.CreateTable(

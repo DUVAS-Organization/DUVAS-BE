@@ -12,7 +12,7 @@ namespace DUVAS
 
         public string BuildingName { get; set; }
         public string Location { get; set; }
-        public bool Verify { get; set; }
+        public bool? Verify { get; set; }
 
         public virtual ICollection<Room>? Rooms { get; set; }
     }
