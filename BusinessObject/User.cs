@@ -29,6 +29,7 @@ namespace DUVAS
         public virtual ICollection<Report>? Reports { get; set; }
         public virtual ICollection<RentalList>? RentalLists { get; set; }
         public virtual ICollection<WithdrawRequest> WithdrawRequests { get; set; }
+        public virtual ICollection<Room>? Rooms { get; set; }
         public User(string gmail, string userName, string name, string password, string address, string sex, string profilePicture, decimal money, int? roleUser)
         {
             Gmail = gmail;

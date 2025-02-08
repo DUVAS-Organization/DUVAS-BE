@@ -80,7 +80,7 @@ namespace API.Controllers
             {
                 return BadRequest(new { Message = "Password must have at least 8 character and 1 upper case letter." });
             }
-            var user = new User(emailOrPhone, registerDto.UserName, registerDto.Name, BCrypt.Net.BCrypt.HashPassword(registerDto.Password), registerDto.Address, registerDto.Sex, "/default.png", 0, 1);
+            var user = new User(emailOrPhone, registerDto.UserName, registerDto.Name, BCrypt.Net.BCrypt.HashPassword(registerDto.Password), registerDto.Address, registerDto.Sex, "", 0, 1);
 
             try
             {

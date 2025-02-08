@@ -303,10 +303,6 @@ namespace BusinessObject.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<string>("RoomCategory")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -775,9 +771,9 @@ namespace BusinessObject.Migrations
                         .IsRequired();
 
                     b.HasOne("DUVAS.User", "User")
-                        .WithMany()
+                        .WithMany("Rooms")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Building");
@@ -921,6 +917,8 @@ namespace BusinessObject.Migrations
                     b.Navigation("RentalLists");
 
                     b.Navigation("Reports");
+
+                    b.Navigation("Rooms");
 
                     b.Navigation("ServiceLicenses");
 

@@ -17,5 +17,6 @@ namespace DTO
         public bool Verify { get; set; }
         public string? Name { get; set; }
         public string CategoryName { get; set; }
+        public int? UserId { get; set; }
     }
 }
