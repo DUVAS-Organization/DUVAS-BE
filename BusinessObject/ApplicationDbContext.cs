@@ -169,8 +169,15 @@ namespace DUVAS
             modelBuilder.Entity<WithdrawRequest>()
                 .HasOne(w => w.Transaction)
                 .WithOne()  // One withdraw request has one transaction
-                .HasForeignKey<WithdrawRequest>(w => w.TransactionId)  // TransactionId in WithdrawRequest is the foreign key
+                .HasForeignKey<WithdrawRequest>(w => w.TransactionId)// TransactionId in WithdrawRequest is the foreign key
+                .IsRequired(false)
                 .OnDelete(DeleteBehavior.Restrict);
+            
+            modelBuilder.Entity<BankAccounts>()
+                .HasOne(r => r.User)
+                .WithMany(u => u.BankAccounts)
+                .HasForeignKey(r => r.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
             
             //Conversion string for enum type
             modelBuilder.Entity<Transaction>()

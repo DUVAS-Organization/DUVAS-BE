@@ -32,11 +32,9 @@ public class WebHookController:ControllerBase
         string requestBody = await ReadRequestBodyAsync();
         JObject webHookRequest = JsonConvert.DeserializeObject<JObject>(requestBody)  ?? throw new InvalidOperationException("Error deserializing JSON response: Deserialized object is null.");
         
-        if (webHookRequest["data"] is JArray dataArray)
+        if (webHookRequest != null)
         {
-            foreach (var item in dataArray)
-            {
-            }
+            Console.WriteLine(webHookRequest);
         }
         else
         {
@@ -58,7 +56,7 @@ public class WebHookController:ControllerBase
                 WebHookRequest webHookRequest = JsonConvert.DeserializeObject<WebHookRequest>(requestBody) ?? throw new InvalidOperationException("Error deserializing JSON response: Deserialized object is null.");
                 if (_transactionRepository.DoesTransactionProcessedAsync(Convert.ToInt32(webHookRequest.data.FirstOrDefault().Id)).Result)
                 {
-                    return BadRequest();
+                    return Ok(new {success = true});
                 }
                 Transaction transaction = new Transaction
                 {
@@ -99,13 +97,5 @@ public class WebHookController:ControllerBase
         {
             return await reader.ReadToEndAsync();
         }
-    }
-
-    [HttpGet("test")]
-    [AllowAnonymous]
-    public async Task<IActionResult> Test()
-    {
-        await _withdrawRequestRepository.WebHookConfirm(2);
-        return Ok();
     }
 }

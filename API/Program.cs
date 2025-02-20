@@ -71,6 +71,7 @@ namespace API
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IUserFeedbackRepository, UserFeedbackRepository>();
 
+
             // Add CORS policy for React app
             builder.Services.AddCors(options =>
             {

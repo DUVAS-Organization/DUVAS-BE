@@ -7,27 +7,26 @@ namespace DataAccess;
 
 public class WithdrawRequestDAO
 {
-    
     private readonly ApplicationDbContext _context;
 
     public WithdrawRequestDAO(ApplicationDbContext context)
     {
         _context = context;
     }
-    
+
     // Add a new WithdrawRequest
     public async Task AddAsync(int userId, decimal amount, int transactionId, string BankCode, string AccountNumber)
     {
         var withdrawRequest = new WithdrawRequest
         {
             UserId = userId,
-            Amount = amount,  // Assuming you want to include Amount in the WithdrawRequest
+            Amount = amount, // Assuming you want to include Amount in the WithdrawRequest
             BankCode = BankCode,
             AccountNumber = AccountNumber,
-            Status = WithdrawRequestStatus.Pending,  // Set default status to Pending
-            Reason = null,  // Default to null for Reason
-            CreatedAt = DateTime.UtcNow,  // Current UTC time for CreatedAt
-            UpdatedAt = DateTime.UtcNow ,  // Current UTC time for UpdatedAt
+            Status = WithdrawRequestStatus.Pending, // Set default status to Pending
+            Reason = null, // Default to null for Reason
+            CreatedAt = DateTime.UtcNow, // Current UTC time for CreatedAt
+            UpdatedAt = DateTime.UtcNow, // Current UTC time for UpdatedAt
             TransactionId = transactionId
         };
         await _context.WithdrawRequests.AddAsync(withdrawRequest);
@@ -53,19 +52,19 @@ public class WithdrawRequestDAO
     }
 
     // Get all WithdrawRequests
-    public async Task<List<WithdrawRequest>> GetAllAsync()
+    public async Task<List<WithdrawRequest>> GetAllAsync(int page = 1, int pageSize = 10)
     {
         return await _context.WithdrawRequests
-            .Include(w => w.User) // Include User relationship if needed
+            .OrderByDescending(x => x.CreatedAt)
             .ToListAsync();
     }
 
     // Get all WithdrawRequests by UserId
-    public async Task<List<WithdrawRequest>> GetAllByUserIdAsync(int userId)
+    public async Task<List<WithdrawRequest>> GetAllByUserIdAsync(int userId, int page = 1, int pageSize = 10)
     {
         return await _context.WithdrawRequests
             .Where(w => w.UserId == userId)
-            .Include(w => w.User) // Include User relationship if needed
+            .OrderByDescending(x => x.CreatedAt)
             .ToListAsync();
     }
 
@@ -81,15 +80,36 @@ public class WithdrawRequestDAO
 
     public async Task WebHookConfirm(int transactionId)
     {
-        Console.WriteLine("change status for withdraw request transaction id " + transactionId);
-        var existingRequest = await _context.WithdrawRequests.Where(w => w.TransactionId == transactionId).FirstOrDefaultAsync();
+        var existingRequest = await _context.WithdrawRequests.Where(w => w.TransactionId == transactionId)
+            .FirstOrDefaultAsync();
         if (existingRequest == null)
         {
             throw new KeyNotFoundException($"WithdrawRequest with ID {transactionId} not found.");
         }
-        Console.WriteLine("current status " + existingRequest.Status);
+
         existingRequest.Status = WithdrawRequestStatus.Approved;
         _context.WithdrawRequests.Update(existingRequest);
-        await _context.SaveChangesAsync();
+    }
+
+    public async Task<List<WithdrawRequest>> SearchWithdrawRequestsAsync(string searchTerm)
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm))
+        {
+            return await GetAllAsync();
+        }
+
+        try
+        {
+            var withdrawRequest = await _context.WithdrawRequests
+                .AsNoTracking()
+                .Where(p => p.AccountNumber.Contains(searchTerm.Trim()))
+                .ToListAsync();
+
+            return withdrawRequest;
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message);
+        }
     }
 }

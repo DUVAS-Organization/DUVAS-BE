@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 using BusinessObject.Enums;
 
 namespace DUVAS
@@ -35,6 +36,8 @@ namespace DUVAS
         public string? CorresponsiveBankName { get; set; }
         [Required]
         public int UserId;
+        
+        [JsonIgnore]
         public User? User { get; set; }
         [Required]
         public TransactionStatus Status { get; set; }

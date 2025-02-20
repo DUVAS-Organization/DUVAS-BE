@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using BusinessObject.Enums;
 
 namespace DUVAS;
@@ -9,6 +10,7 @@ public class WithdrawRequest
 
     [Required]
     public int UserId { get; set; }
+    [JsonIgnore]
     public User? User { get; set; }
     public decimal Amount { get; set; }
     [MaxLength(50)]
@@ -21,5 +23,6 @@ public class WithdrawRequest
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
     public int TransactionId { get; set; }
+    [JsonIgnore]
     public Transaction? Transaction { get; set; }
 }

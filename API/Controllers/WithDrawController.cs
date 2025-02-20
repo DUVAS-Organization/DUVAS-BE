@@ -1,4 +1,5 @@
 ﻿using DTO;
+using DUVAS;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Repositories.IRepository;
@@ -67,5 +68,14 @@ public class WithDrawController : ControllerBase
         var qrCodeImage = "https://img.vietqr.io/image/" + withDrawReq.BankCode + "-" + withDrawReq.AccountNumber + "-print.jpg?amount=" +
                           (-withDrawReq.Transaction.Amount) + "&addInfo=" + withDrawReq.Transaction.Description + "&accountName=" + _configuration["CassoSettings:AccountName"];
         return Ok(new { QRCode = qrCodeImage });
+    }
+    
+    [HttpGet("user/{userId}")]
+    [AllowAnonymous]
+    public async Task<ActionResult<IEnumerable<WithdrawRequest>>> GetUserWithdrawRequests([FromRoute] int userId)
+    {
+        var withDrawReq = await _withdrawRequestRepository.GetAllByUserIdAsync(userId);
+        
+        return Ok(withDrawReq);
     }
 }
