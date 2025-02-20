@@ -30,11 +30,12 @@ namespace DUVAS
         public virtual ICollection<RentalList>? RentalLists { get; set; }
         public virtual ICollection<WithdrawRequest> WithdrawRequests { get; set; }
         public virtual ICollection<BankAccounts> BankAccounts { get; set; }
+        public virtual ICollection<Room>? Rooms { get; set; }
 
         public User(string gmail, string userName, string name, string password, string address, string sex, string profilePicture, decimal money, int? roleUser)
         {
             Gmail = gmail;
-            UserName = userName;
+            UserName = userName;    
             Name = name;
             Password = password;
             Address = address;

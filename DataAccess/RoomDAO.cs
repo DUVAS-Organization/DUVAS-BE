@@ -30,6 +30,8 @@ namespace DataAccess
                         {
                             RoomId = p.RoomId,
                             BuildingId = p.BuildingId,
+                            UserId = p.UserId,
+                            UserName = p.User.UserName,
                             Title = p.Title,
                             Description = p.Description,
                             LocationDetail = p.LocationDetail,
@@ -39,12 +41,15 @@ namespace DataAccess
                             NumberOfBedroom = p.NumberOfBedroom,
                             Garret = p.Garret,
                             Price = p.Price,
-                            RoomCategory = p.RoomCategory,
+                            CategoryRoomId = p.CategoryRoomId,
                             Image = p.Image,
                             Note = p.Note,
+                            BuildingName = p.Building.BuildingName,
+                            CategoryName = p.CategoryRoom.CategoryName,    
 
                             //CategoryName = p.Category.CategoryName,
                             //CategoryId = p.CategoryId,                            
+
 
                         })
                         .ToListAsync();
@@ -147,11 +152,15 @@ namespace DataAccess
                         .AsNoTracking()
                         .Where(p => p.Title.ToLower().Contains(searchTerm.ToLower().Trim())
                                 || (isNumeric && p.Price > numericValue)
+                                || p.LocationDetail.ToLower().Contains(searchTerm.ToLower().Trim())
                                 )
                         .Select(p => new RoomDTO
                         {
                             RoomId = p.RoomId,
                             BuildingId = p.BuildingId,
+                            BuildingName = p.Building.BuildingName,
+                            UserId = p.UserId,
+                            UserName = p.User.UserName,
                             Title = p.Title,
                             Description = p.Description,
                             LocationDetail = p.LocationDetail,
@@ -161,7 +170,9 @@ namespace DataAccess
                             NumberOfBedroom = p.NumberOfBedroom,
                             Garret = p.Garret,
                             Price = p.Price,
-                            RoomCategory = p.RoomCategory,
+                            CategoryRoomId = p.CategoryRoomId,
+                            CategoryName = p.CategoryRoom.CategoryName,
+
                             Image = p.Image,
                             Note = p.Note,
                         })

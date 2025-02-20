@@ -31,9 +31,11 @@ namespace DataAccess
                             BuildingId = p.BuildingId,
                             BuildingName = p.BuildingName,
                             Location = p.Location,
-
+                            Name = p.User.Name,
+                            UserId = p.UserId,
                             //CategoryName = p.Category.CategoryName,
                             //CategoryId = p.CategoryId,                            
+
 
                         })
                         .ToListAsync();
@@ -142,6 +144,8 @@ namespace DataAccess
                             BuildingId = p.BuildingId,
                             BuildingName = p.BuildingName,
                             Location = p.Location,
+                            Name = p.User.Name,
+                            UserId = p.UserId,
                             //CategoryName = p.Category.CategoryName,
                             //CategoryId = p.CategoryId,
                             //Price = p.Price,

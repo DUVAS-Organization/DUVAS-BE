@@ -8,6 +8,10 @@ namespace DUVAS
         [Key]
         public int ServicePostId { get; set; }
 
+        public int UserId { get; set; }
+        public User? User { get; set; }
+
+
         public string Title { get; set; }
         public string PhoneNumber { get; set; }
         public decimal Price { get; set; }
@@ -20,5 +24,7 @@ namespace DUVAS
 
         // Mối quan hệ với ServiceFeedback
         public virtual ICollection<ServiceFeedback>? ServiceFeedbacks { get; set; }
+        public virtual ICollection<RentalServiceList>? RentalServiceLists { get; set; }
+
     }
 }

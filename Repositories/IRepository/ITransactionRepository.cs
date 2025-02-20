@@ -10,6 +10,7 @@ namespace Repositories.IRepository
 {
     public interface ITransactionRepository
     {
+
         Task<Transaction> AddTransaction(decimal amount, string description, int userId);
         Task<Transaction> UpdateTransaction(Transaction transaction);
         Task<List<Transaction>> GetAllTransactions();

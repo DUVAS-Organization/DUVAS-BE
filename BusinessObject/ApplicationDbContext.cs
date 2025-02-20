@@ -10,7 +10,7 @@ namespace DUVAS
 {
     public class ApplicationDbContext : DbContext
     {
-        
+
 
         // DbSets
         public virtual DbSet<User> Users { get; set; }
@@ -18,6 +18,7 @@ namespace DUVAS
         public virtual DbSet<Room> Rooms { get; set; }
         public virtual DbSet<RoomLicense> RoomLicenses { get; set; }
         public virtual DbSet<RentalList> RentalLists { get; set; }
+        public virtual DbSet<RentalServiceList> RentalServiceLists { get; set; }
         public virtual DbSet<Contract> Contracts { get; set; }
         public virtual DbSet<Transaction> Transactions { get; set; }
         public virtual DbSet<WithdrawRequest> WithdrawRequests { get; set; }
@@ -55,6 +56,12 @@ namespace DUVAS
         {
             // Fluent API configurations
 
+            // Room - User
+            modelBuilder.Entity<Room>()
+                .HasOne(r => r.User)
+                .WithMany(u => u.Rooms)
+                .HasForeignKey(r => r.UserId)
+                .OnDelete(DeleteBehavior.NoAction); // Ngăn vòng lặp khi xóa User
 
             // Room - Building
             modelBuilder.Entity<Room>()
@@ -151,14 +158,14 @@ namespace DUVAS
                 .HasOne(ol => ol.User)
                 .WithMany(u => u.OwnerLicenses)
                 .HasForeignKey(ol => ol.UserId);
-            
+
             // Transaction-User
             modelBuilder.Entity<Transaction>()
                 .HasOne(t => t.User) // One Transaction has one User
                 .WithMany(u => u.Transactions) // One User has many Transactions
                 .HasForeignKey(t => t.UserId) // Foreign key in Transaction
                 .OnDelete(DeleteBehavior.Cascade); // Optional: Configure delete behavior
-            
+
             // WithDrawRequest - User
             modelBuilder.Entity<WithdrawRequest>()
                 .HasOne(w => w.User) // WithdrawRequest has one User

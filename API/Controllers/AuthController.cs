@@ -80,7 +80,8 @@ namespace API.Controllers
             {
                 return BadRequest(new { Message = "Password must have at least 8 character and 1 upper case letter." });
             }
-            var user = new User(emailOrPhone, registerDto.UserName, registerDto.Name, BCrypt.Net.BCrypt.HashPassword(registerDto.Password), registerDto.Address, registerDto.Sex, "/default.png", 0, 1);
+            var user = new User(emailOrPhone, registerDto.UserName, registerDto.Name, BCrypt.Net.BCrypt.HashPassword(registerDto.Password), registerDto.Address, registerDto.Sex, "", 0, 1);
+
             try
             {
                 await _iuserRepository.SaveUserAsync(user);
@@ -121,8 +122,6 @@ namespace API.Controllers
             }
             return BadRequest(new { Message = "Email hoặc số điện thoại đã được sử dụng." });
         }
-
-
         [HttpGet("google")]
         public IActionResult Google()
         {
@@ -165,6 +164,7 @@ namespace API.Controllers
             }
             String codeExchange = _tokenDictionaryService.GenerateCode(user.Gmail);
             return Redirect("http://localhost:3000/Logins?token=" + codeExchange);
+
         }
 
         [HttpGet("token-exchange")]
@@ -187,6 +187,7 @@ namespace API.Controllers
         {
             var otp = _otpService.GenerateOtp(emailOrPhone);
 
+
             // Nội dung email được định dạng bằng HTML
             var emailContent = $@"
             <p>Chào {emailOrPhone},</p>
@@ -201,6 +202,7 @@ namespace API.Controllers
             _emailService.SendEmail(emailOrPhone, "Đặt lại mật khẩu", emailContent);
 
             return Ok(new { Message = "Vui lòng kiểm tra email để nhận mã OTP." });
+
         }
 
         [HttpPost("reset-password")]

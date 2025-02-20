@@ -37,7 +37,8 @@ public class JwtService
         var claims = new[]
         {
             
-            new Claim(ClaimTypes.Name, notNullVar),
+            //new Claim(ClaimTypes.Name, notNullVar),
+            new Claim(ClaimTypes.Name, user.Name),
             new Claim(ClaimTypes.Role, user.getRoleString()),
             new Claim(JwtRegisteredClaimNames.Sub, notNullVar),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),

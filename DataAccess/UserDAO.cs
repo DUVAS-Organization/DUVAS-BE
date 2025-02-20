@@ -39,6 +39,10 @@ namespace DataAccess
                             Sex = p.Sex,
                             ProfilePicture = p.ProfilePicture,
                             Money = p.Money,
+                            RoleAdmin = p.RoleAdmin,
+                            RoleLandlord = p.RoleLandlord,
+                            RoleService = p.RoleService,
+                            RoleUser = p.RoleUser,
                             //CategoryName = p.Category.CategoryName,
                             //CategoryId = p.CategoryId,                            
 
@@ -146,7 +150,7 @@ namespace DataAccess
                     var user = await context.Users
                         .AsNoTracking()
                         .Where(p => p.UserName.ToLower().Contains(searchTerm.ToLower().Trim())
-                                //|| (isNumeric && p.Price > numericValue)
+                                || p.Gmail.ToLower().Contains(searchTerm.ToLower().Trim())
                                 )
                         .Select(p => new UserDTO
                         {
@@ -159,6 +163,10 @@ namespace DataAccess
                             Sex = p.Sex,
                             ProfilePicture = p.ProfilePicture,
                             Money = p.Money,
+                            RoleAdmin = p.RoleAdmin,
+                            RoleLandlord = p.RoleLandlord,
+                            RoleService = p.RoleService,
+                            RoleUser = p.RoleUser,
                             //CategoryName = p.Category.CategoryName,
                             //CategoryId = p.CategoryId,
                             //Price = p.Price,
@@ -173,7 +181,7 @@ namespace DataAccess
                 throw new Exception(ex.Message);
             }
         }
-        
+
         public static async Task<bool> UpdatePasswordAsync(string emailOrPhone, string password)
         {
             try
@@ -198,7 +206,7 @@ namespace DataAccess
                 return false;
             }
         }
-        
+
         public static async Task<User?> FindUserByEmailOrPhoneAsync(string emailOrPhone)
         {
             try
@@ -207,8 +215,8 @@ namespace DataAccess
                 {
                     var user = await context.Users
                         .AsNoTracking()
-                        .SingleOrDefaultAsync(u => 
-                            (u.Gmail != null && u.Gmail.ToLower() == emailOrPhone.ToLower()) || 
+                        .SingleOrDefaultAsync(u =>
+                            (u.Gmail != null && u.Gmail.ToLower() == emailOrPhone.ToLower()) ||
                             (u.Phone != null && u.Phone == emailOrPhone));
 
                     return user;

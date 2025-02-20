@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Net;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 using BusinessObject.Enums;
@@ -8,6 +9,7 @@ namespace DUVAS
     public class Transaction
     {
         [Key]
+
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
         public int? CassoId { get; set; }

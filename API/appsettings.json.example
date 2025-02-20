@@ -1,0 +1,35 @@
+﻿{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*",
+  "ConnectionStrings": {
+    "DBString": "Server=VIETLONG; database=DUVAS; uid=sa; pwd=12;TrustServerCertificate=true;Trusted_Connection=SSPI;Encrypt=false;"
+  },
+  "SmtpSettings": {
+    "Host": "smtp.gmail.com",
+    "Port": 587,
+    "EnableSsl": true,
+    "Username": "trilmde170486@fpt.edu.vn",
+    "Password": "",
+    "FromEmail": "trilmde170486@fpt.edu.vn",
+    "FromName": "DUVAS"
+  },
+  "Jwt": {
+    "SecretKey": "",
+    "Issuer": "DUVAS",
+    "Audience": "DUVAS"
+  },
+  "Google": {
+    "ClientId": "",
+    "ClientSecret": "",
+    "RedirectUri": "http://localhost:5221/api/auth/login-google"
+  },
+  "CassoSettings": {
+    "SecretKey": "CCCC",
+    "ApiKey": ""
+  }
+}
