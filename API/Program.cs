@@ -7,6 +7,8 @@ using Repositories;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using CloudinaryDotNet;
+using Microsoft.Extensions.Options;
 
 namespace API
 {
@@ -53,6 +55,20 @@ namespace API
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DBString")));
 
+            // Thêm cấu hình Cloudinary 
+
+            builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
+            builder.Services.AddSingleton(serviceProvider =>
+            {
+                var config = serviceProvider.GetRequiredService<IOptions<CloudinarySettings>>().Value;
+
+                if (string.IsNullOrEmpty(config.CloudName) || string.IsNullOrEmpty(config.ApiKey) || string.IsNullOrEmpty(config.ApiSecret))
+                    throw new InvalidOperationException("Cloudinary configuration is missing or invalid.");
+
+                var account = new Account(config.CloudName, config.ApiKey, config.ApiSecret);
+                return new Cloudinary(account);
+            });
+
             //// Add repositories
             builder.Services.AddScoped<IBuildingRepository, BuildingRepository>();
             builder.Services.AddScoped<ICategoryRoomRepository, CategoryRoomRepository>();
@@ -69,6 +85,7 @@ namespace API
             builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IUserFeedbackRepository, UserFeedbackRepository>();
+            builder.Services.AddScoped<CloudinaryService>();
 
             // Add CORS policy for React app
             builder.Services.AddCors(options =>
