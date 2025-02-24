@@ -35,6 +35,8 @@ namespace DataAccess
                             Location = p.Location,
                             Description = p.Description,  
                             Name = p.User.Name,
+                            UserId = p.UserId,
+                            CategoryServiceName = p.CategoryService.CategoryServiceName
 
                         })
                         .ToListAsync();
@@ -147,7 +149,8 @@ namespace DataAccess
                             Location = p.Location,
                             Description = p.Description,
                             Name = p.User.Name,
-                            CategoryServiceId = p.CategoryServiceId,
+                            UserId = p.UserId,
+                            CategoryServiceName = p.CategoryService.CategoryServiceName
                         })
                         .ToListAsync();
 
