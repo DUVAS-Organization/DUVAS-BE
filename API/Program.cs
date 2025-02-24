@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using CloudinaryDotNet;
 using Microsoft.Extensions.Options;
+using API.Controllers;
 
 namespace API
 {
@@ -49,8 +50,11 @@ namespace API
             // Add services to the container.
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
-
+            //builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.OperationFilter<FileUploadOperationFilter>();
+            });
             // Add database context
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DBString")));
@@ -83,6 +87,7 @@ namespace API
             builder.Services.AddScoped<IServiceLicenseRepository, ServiceLicenseRepository>();
             builder.Services.AddScoped<IServicePostRepository, ServicePostRepository>();
             builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
+            builder.Services.AddScoped<IWithdrawRequestRepository, WithdrawRequestRepository>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IUserFeedbackRepository, UserFeedbackRepository>();
             builder.Services.AddScoped<CloudinaryService>();

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BusinessObject.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250118213029_1")]
-    partial class _1
+    [Migration("20250207202658_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -304,7 +304,7 @@ namespace BusinessObject.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18, 2)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -453,38 +453,76 @@ namespace BusinessObject.Migrations
 
             modelBuilder.Entity("DUVAS.Transaction", b =>
                 {
-                    b.Property<int>("TransactionId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TransactionId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("IDThue")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("Money")
+                    b.Property<decimal>("Amount")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("RoomId")
+                    b.Property<string>("BankName")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("BankSubAccID")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int?>("CassoId")
                         .HasColumnType("int");
 
-                    b.Property<int>("ServicePostId")
-                        .HasColumnType("int");
+                    b.Property<string>("CorresponsiveAccount")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
-                    b.Property<DateTime>("TransactionDateTime")
+                    b.Property<string>("CorresponsiveBankId")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("CorresponsiveBankName")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("CorresponsiveName")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("TransactionType")
+                    b.Property<decimal?>("CusumBalance")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("TransactionId");
+                    b.Property<string>("SubAccID")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
-                    b.HasIndex("IDThue");
+                    b.Property<string>("TId")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.HasIndex("RoomId");
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
 
-                    b.HasIndex("ServicePostId");
+                    b.Property<DateTime?>("When")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("bankAbbreviation")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Transactions");
                 });
@@ -536,7 +574,6 @@ namespace BusinessObject.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UserName")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("UserId");
@@ -573,12 +610,63 @@ namespace BusinessObject.Migrations
                     b.ToTable("UserFeedbacks");
                 });
 
+            modelBuilder.Entity("DUVAS.WithdrawRequest", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AccountNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("BankCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("TransactionId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TransactionId")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("WithdrawRequests");
+                });
+
             modelBuilder.Entity("DUVAS.Building", b =>
                 {
                     b.HasOne("DUVAS.User", "User")
-                        .WithMany("Buildings")
+                        .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("User");
@@ -631,7 +719,7 @@ namespace BusinessObject.Migrations
                         .IsRequired();
 
                     b.HasOne("DUVAS.User", "User")
-                        .WithMany("RentalServiceLists")
+                        .WithMany()
                         .HasForeignKey("UserId");
 
                     b.Navigation("ServicePost");
@@ -688,7 +776,7 @@ namespace BusinessObject.Migrations
                     b.HasOne("DUVAS.User", "User")
                         .WithMany("Rooms")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Building");
@@ -740,9 +828,9 @@ namespace BusinessObject.Migrations
                         .IsRequired();
 
                     b.HasOne("DUVAS.User", "User")
-                        .WithMany("ServicePosts")
+                        .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("CategoryService");
@@ -754,25 +842,9 @@ namespace BusinessObject.Migrations
                 {
                     b.HasOne("DUVAS.User", "User")
                         .WithMany("Transactions")
-                        .HasForeignKey("IDThue")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("DUVAS.Room", "Room")
-                        .WithMany()
-                        .HasForeignKey("RoomId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("DUVAS.ServicePost", "ServicePost")
-                        .WithMany()
-                        .HasForeignKey("ServicePostId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Room");
-
-                    b.Navigation("ServicePost");
 
                     b.Navigation("User");
                 });
@@ -784,6 +856,25 @@ namespace BusinessObject.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("DUVAS.WithdrawRequest", b =>
+                {
+                    b.HasOne("DUVAS.Transaction", "Transaction")
+                        .WithOne()
+                        .HasForeignKey("DUVAS.WithdrawRequest", "TransactionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("DUVAS.User", "User")
+                        .WithMany("WithdrawRequests")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Transaction");
 
                     b.Navigation("User");
                 });
@@ -824,13 +915,9 @@ namespace BusinessObject.Migrations
 
             modelBuilder.Entity("DUVAS.User", b =>
                 {
-                    b.Navigation("Buildings");
-
                     b.Navigation("OwnerLicenses");
 
                     b.Navigation("RentalLists");
-
-                    b.Navigation("RentalServiceLists");
 
                     b.Navigation("Reports");
 
@@ -838,11 +925,11 @@ namespace BusinessObject.Migrations
 
                     b.Navigation("ServiceLicenses");
 
-                    b.Navigation("ServicePosts");
-
                     b.Navigation("Transactions");
 
                     b.Navigation("UserFeedbacks");
+
+                    b.Navigation("WithdrawRequests");
                 });
 #pragma warning restore 612, 618
         }

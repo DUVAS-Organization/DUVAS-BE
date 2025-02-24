@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using BusinessObject.Enums;
 
 namespace DataAccess
 {
@@ -17,110 +18,70 @@ namespace DataAccess
         {
             _context = context;
         }
-        public static async Task<List<TransactionDTO>> GetTransactionsAsync()
+
+        public async Task<Transaction> AddTransaction(decimal amount, string description, int userId)
         {
-
-            try
+            
+            var transaction = new Transaction
             {
-                using (var context = new ApplicationDbContext())
-                {
-                    var transactions = await context.Transactions
-                        .AsNoTracking()
-                        .Select(p => new TransactionDTO
-                        {
-                            TransactionId = p.TransactionId,
-                            TransactionDateTime = p.TransactionDateTime,
-                            Money = p.Money,
-                            TransactionType = p.TransactionType,
-                            RoomId = p.RoomId,
-                            ServicePostId = p.ServicePostId,
-
-
-                            //CategoryName = p.Category.CategoryName,
-                            //CategoryId = p.CategoryId,                            
-
-                        })
-                        .ToListAsync();
-
-
-                    return transactions;
-                }
-
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-
-        }
-
-        public static async Task<Transaction> FindTransactionByIdAsync(int transactionId)
-        {
-            Transaction transaction = null;
-            try
-            {
-                using (var context = new ApplicationDbContext())
-                {
-                    transaction = await context.Transactions.SingleOrDefaultAsync(x => x.TransactionId == transactionId);
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
+                Amount = amount,
+                Description = description,
+                UserId = userId,
+                Status = TransactionStatus.Pending, // Set default status
+                CreatedAt = DateTime.UtcNow // Use current UTC time
+            };
+            await _context.Transactions.AddAsync(transaction);
+            await _context.SaveChangesAsync();
             return transaction;
         }
-
-        public static async Task SaveTransactionAsync(Transaction transaction)
+        
+        public async Task<Transaction> UpdateTransaction(Transaction transaction)
         {
-            try
+            var existingTransaction = await _context.Transactions
+                .FirstOrDefaultAsync(t => t.Description != null && transaction.Description.ToLower().Contains(t.Description.ToLower())  && t.Amount == transaction.Amount);
+            if (existingTransaction == null)
             {
-                using (var context = new ApplicationDbContext())
-                {
-                    await context.Transactions.AddAsync(transaction);
-                    await context.SaveChangesAsync();
-                }
+                throw new KeyNotFoundException($"Transaction with Description '{transaction.Description}' and Amount {transaction.Amount} not found.");
             }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
+            existingTransaction.CusumBalance = transaction.CusumBalance;
+            existingTransaction.When = transaction.When;
+            existingTransaction.BankSubAccID = transaction.BankSubAccID;
+            existingTransaction.SubAccID = transaction.SubAccID;
+            existingTransaction.BankName = transaction.BankName;
+            existingTransaction.bankAbbreviation = transaction.bankAbbreviation;
+            existingTransaction.CorresponsiveName = transaction.CorresponsiveName;
+            existingTransaction.CorresponsiveAccount = transaction.CorresponsiveAccount;
+            existingTransaction.CorresponsiveBankId = transaction.CorresponsiveBankId;
+            existingTransaction.CorresponsiveBankName = transaction.CorresponsiveBankName;
+            existingTransaction.Status = transaction.Status;
+            existingTransaction.CassoId = transaction.CassoId;
+            existingTransaction.TId = transaction.TId;
+            _context.Transactions.Update(existingTransaction);
+            await _context.SaveChangesAsync();
+            return existingTransaction;
+        }
+        public async Task<List<Transaction>> GetAllTransactions()
+        {
+            return await _context.Transactions.Include(t => t.User).ToListAsync();
+        }
+        public async Task<Transaction?> GetTransactionById(int id)
+        {
+            return await _context.Transactions.Include(t => t.User).FirstOrDefaultAsync(t => t.Id == id);
+        }
+        public async Task<List<Transaction>> GetTransactionsByUserId(int userId)
+        {
+            return await _context.Transactions
+                .Where(t => t.UserId == userId)
+                .Include(t => t.User) // Include the associated User for each transaction
+                .ToListAsync();
         }
 
-        public static async Task UpdateTransactionAsync(Transaction transaction)
+        public async Task<bool> DoesTransactionProcessedAsync(int cassoId)
         {
-            try
-            {
-                using (var context = new ApplicationDbContext())
-                {
-                    context.Entry(transaction).State = EntityState.Modified;
-                    await context.SaveChangesAsync();
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
-        public static async Task DeleteTransactionAsync(Transaction transaction)
-        {
-            try
-            {
-                using (var context = new ApplicationDbContext())
-                {
-                    var existingTransaction = await context.Transactions.SingleOrDefaultAsync(c => c.TransactionId == transaction.TransactionId);
-                    if (existingTransaction != null)
-                    {
-                        context.Transactions.Remove(existingTransaction);
-                        await context.SaveChangesAsync();
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
+            // Check if a transaction with the given CassoID exists
+            var exists = await _context.Transactions
+                .AnyAsync(t => t.CassoId == cassoId);
+            return exists;
         }
 
     }

@@ -362,5 +362,9 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 
+<<<<<<< HEAD
 .idea
 API/appsettings.json
+=======
+.idea
+>>>>>>> 7dfd9e808e9097d94147931f91a819f1032a5aeb

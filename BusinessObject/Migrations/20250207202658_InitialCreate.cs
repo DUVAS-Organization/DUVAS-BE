@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace BusinessObject.Migrations
 {
     /// <inheritdoc />
-    public partial class _1 : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -58,7 +58,7 @@ namespace BusinessObject.Migrations
                 {
                     UserId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    UserName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UserName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Gmail = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Password = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -96,7 +96,7 @@ namespace BusinessObject.Migrations
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "UserId",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -170,7 +170,42 @@ namespace BusinessObject.Migrations
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "UserId",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Transactions",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CassoId = table.Column<int>(type: "int", nullable: true),
+                    TId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    CusumBalance = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    When = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    BankSubAccID = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    SubAccID = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    BankName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    bankAbbreviation = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    CorresponsiveName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    CorresponsiveAccount = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    CorresponsiveBankId = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    CorresponsiveBankName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Transactions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Transactions_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -236,8 +271,7 @@ namespace BusinessObject.Migrations
                         name: "FK_Rooms_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Restrict);
+                        principalColumn: "UserId");
                 });
 
             migrationBuilder.CreateTable(
@@ -292,6 +326,39 @@ namespace BusinessObject.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "WithdrawRequests",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    BankCode = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    AccountNumber = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Reason = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    TransactionId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WithdrawRequests", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_WithdrawRequests_Transactions_TransactionId",
+                        column: x => x.TransactionId,
+                        principalTable: "Transactions",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_WithdrawRequests_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "RentalLists",
                 columns: table => new
                 {
@@ -320,64 +387,6 @@ namespace BusinessObject.Migrations
                     table.ForeignKey(
                         name: "FK_RentalLists_Users_RenterID",
                         column: x => x.RenterID,
-                        principalTable: "Users",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "RoomLicenses",
-                columns: table => new
-                {
-                    RoomLicenseId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    RoomId = table.Column<int>(type: "int", nullable: false),
-                    RoomLicense1 = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    RoomLicense2 = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    RoomLicense3 = table.Column<string>(type: "nvarchar(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_RoomLicenses", x => x.RoomLicenseId);
-                    table.ForeignKey(
-                        name: "FK_RoomLicenses_Rooms_RoomId",
-                        column: x => x.RoomId,
-                        principalTable: "Rooms",
-                        principalColumn: "RoomId",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Transactions",
-                columns: table => new
-                {
-                    TransactionId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    TransactionDateTime = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Money = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    TransactionType = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    RoomId = table.Column<int>(type: "int", nullable: false),
-                    ServicePostId = table.Column<int>(type: "int", nullable: false),
-                    IDThue = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Transactions", x => x.TransactionId);
-                    table.ForeignKey(
-                        name: "FK_Transactions_Rooms_RoomId",
-                        column: x => x.RoomId,
-                        principalTable: "Rooms",
-                        principalColumn: "RoomId",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Transactions_ServicePosts_ServicePostId",
-                        column: x => x.ServicePostId,
-                        principalTable: "ServicePosts",
-                        principalColumn: "ServicePostId",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Transactions_Users_IDThue",
-                        column: x => x.IDThue,
                         principalTable: "Users",
                         principalColumn: "UserId",
                         onDelete: ReferentialAction.Restrict);
@@ -417,13 +426,35 @@ namespace BusinessObject.Migrations
                         name: "FK_Reports_Transactions_TransactionId",
                         column: x => x.TransactionId,
                         principalTable: "Transactions",
-                        principalColumn: "TransactionId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Reports_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "UserId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "RoomLicenses",
+                columns: table => new
+                {
+                    RoomLicenseId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    RoomId = table.Column<int>(type: "int", nullable: false),
+                    RoomLicense1 = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    RoomLicense2 = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    RoomLicense3 = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RoomLicenses", x => x.RoomLicenseId);
+                    table.ForeignKey(
+                        name: "FK_RoomLicenses_Rooms_RoomId",
+                        column: x => x.RoomId,
+                        principalTable: "Rooms",
+                        principalColumn: "RoomId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -523,23 +554,24 @@ namespace BusinessObject.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Transactions_IDThue",
+                name: "IX_Transactions_UserId",
                 table: "Transactions",
-                column: "IDThue");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Transactions_RoomId",
-                table: "Transactions",
-                column: "RoomId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Transactions_ServicePostId",
-                table: "Transactions",
-                column: "ServicePostId");
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserFeedbacks_UserId",
                 table: "UserFeedbacks",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WithdrawRequests_TransactionId",
+                table: "WithdrawRequests",
+                column: "TransactionId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WithdrawRequests_UserId",
+                table: "WithdrawRequests",
                 column: "UserId");
         }
 
@@ -571,16 +603,19 @@ namespace BusinessObject.Migrations
                 name: "UserFeedbacks");
 
             migrationBuilder.DropTable(
-                name: "Contracts");
+                name: "WithdrawRequests");
 
             migrationBuilder.DropTable(
-                name: "Transactions");
+                name: "Contracts");
 
             migrationBuilder.DropTable(
                 name: "Rooms");
 
             migrationBuilder.DropTable(
                 name: "ServicePosts");
+
+            migrationBuilder.DropTable(
+                name: "Transactions");
 
             migrationBuilder.DropTable(
                 name: "Buildings");

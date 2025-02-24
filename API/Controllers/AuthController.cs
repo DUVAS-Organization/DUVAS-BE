@@ -81,6 +81,7 @@ namespace API.Controllers
                 return BadRequest(new { Message = "Password must have at least 8 character and 1 upper case letter." });
             }
             var user = new User(emailOrPhone, registerDto.UserName, registerDto.Name, BCrypt.Net.BCrypt.HashPassword(registerDto.Password), registerDto.Address, registerDto.Sex, "", 0, 1);
+
             try
             {
                 await _iuserRepository.SaveUserAsync(user);
@@ -103,12 +104,24 @@ namespace API.Controllers
             if (existingUser == null)
             {
                 var otp = _otpService.GenerateOtp(verifyDto.EmailOrPhone);
-                _emailService.SendEmail(verifyDto.EmailOrPhone, "Verify your email address", "Use this otp to register your new account: " + otp);
-                return Ok(new {Message = "please check your email to get an otp."});
-            }
-            return BadRequest(new {Message = "Email or phone already in use."});
-        }
 
+                // Nội dung email được định dạng bằng HTML
+                var emailContent = $@"
+                <p>Chào {verifyDto.EmailOrPhone},</p>
+                <p>Chúng tôi thấy bạn đang gửi yêu cầu xác thực địa chỉ email này để tạo tài khoản DUVAS.</p>
+                <p><b>Không nên chia sẻ thông tin này với bất kỳ ai.</b></p>
+                <p><b>Mã OTP để xác thực là: <span style='font-size: 18px; color: #ee1414;'>{otp}</span></b></p>
+                <p>Nếu đây không phải yêu cầu xác thực của bạn, bạn có thể bỏ qua email này. Có thể một ai đó đã gõ nhầm địa chỉ email của bạn.</p>
+                <p>Chúng tôi xin chân thành cảm ơn.</p>
+                <p><b>DUVAS Team</b></p>";
+
+                // Gửi email với nội dung HTML
+                _emailService.SendEmail(verifyDto.EmailOrPhone, "Xác thực email", emailContent);
+
+                return Ok(new { Message = "Vui lòng kiểm tra email để nhận mã OTP." });
+            }
+            return BadRequest(new { Message = "Email hoặc số điện thoại đã được sử dụng." });
+        }
         [HttpGet("google")]
         public IActionResult Google()
         {
@@ -141,7 +154,7 @@ namespace API.Controllers
             Console.WriteLine(user == null ? "new user" : "existing user");
             if (user == null)
             {
-                user = new User(email, name, email, avatar, 0);
+                user = new User(name, email, avatar, 0);
                 await _iuserRepository.SaveUserAsync(user);
             }
 
@@ -150,7 +163,8 @@ namespace API.Controllers
                 return StatusCode(500, new {Message= "Server Error."});
             }
             String codeExchange = _tokenDictionaryService.GenerateCode(user.Gmail);
-            return Redirect("http://localhost:3000?token=" + codeExchange);
+            return Redirect("http://localhost:3000/Logins?token=" + codeExchange);
+
         }
 
         [HttpGet("token-exchange")]
@@ -172,8 +186,23 @@ namespace API.Controllers
         public async Task<IActionResult> ForgotPassword([FromQuery] String emailOrPhone)
         {
             var otp = _otpService.GenerateOtp(emailOrPhone);
-            _emailService.SendEmail(emailOrPhone, "Reset your password", "Use this otp to reset your password: " + otp);
-            return Ok(new {Message = "Please check your email to get an otp."});
+
+
+            // Nội dung email được định dạng bằng HTML
+            var emailContent = $@"
+            <p>Chào {emailOrPhone},</p>
+            <p>Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn.</p>
+            <p><b>Không nên chia sẻ thông tin này với bất kỳ ai.</b></p>
+            <p><b>Mã OTP để đặt lại mật khẩu là: <span style='font-size: 18px; color: #ee1414;'>{otp}</span></b></p>
+            <p>Nếu bạn không yêu cầu đặt lại mật khẩu, bạn có thể bỏ qua email này. Mật khẩu của bạn sẽ không bị thay đổi.</p>
+            <p>Chúng tôi xin chân thành cảm ơn.</p>
+            <p><b>DUVAs Team</b></p>";
+
+            // Gửi email với nội dung HTML
+            _emailService.SendEmail(emailOrPhone, "Đặt lại mật khẩu", emailContent);
+
+            return Ok(new { Message = "Vui lòng kiểm tra email để nhận mã OTP." });
+
         }
 
         [HttpPost("reset-password")]

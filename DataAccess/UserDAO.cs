@@ -39,6 +39,10 @@ namespace DataAccess
                             Sex = p.Sex,
                             ProfilePicture = p.ProfilePicture,
                             Money = p.Money,
+                            RoleAdmin = p.RoleAdmin,
+                            RoleLandlord = p.RoleLandlord,
+                            RoleService = p.RoleService,
+                            RoleUser = p.RoleUser,
                             //CategoryName = p.Category.CategoryName,
                             //CategoryId = p.CategoryId,                            
 
@@ -59,19 +63,22 @@ namespace DataAccess
 
         public static async Task<User> FindUserByIdAsync(int userId)
         {
-            User user = null;
-            try
+            using (var context = new ApplicationDbContext())
             {
-                using (var context = new ApplicationDbContext())
+                var user = await context.Users
+                    .FirstOrDefaultAsync(x => x.UserId == userId);
+
+                if (user == null)
                 {
-                    user = await context.Users.SingleOrDefaultAsync(x => x.UserId == userId);
+                    Console.WriteLine("User not found with ID: " + userId);
                 }
+                else
+                {
+                    Console.WriteLine($"User found. Money: {user.Money}");
+                }
+
+                return user;
             }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-            return user;
         }
 
         public static async Task SaveUserAsync(User user)
@@ -143,7 +150,7 @@ namespace DataAccess
                     var user = await context.Users
                         .AsNoTracking()
                         .Where(p => p.UserName.ToLower().Contains(searchTerm.ToLower().Trim())
-                                //|| (isNumeric && p.Price > numericValue)
+                                || p.Gmail.ToLower().Contains(searchTerm.ToLower().Trim())
                                 )
                         .Select(p => new UserDTO
                         {
@@ -156,6 +163,10 @@ namespace DataAccess
                             Sex = p.Sex,
                             ProfilePicture = p.ProfilePicture,
                             Money = p.Money,
+                            RoleAdmin = p.RoleAdmin,
+                            RoleLandlord = p.RoleLandlord,
+                            RoleService = p.RoleService,
+                            RoleUser = p.RoleUser,
                             //CategoryName = p.Category.CategoryName,
                             //CategoryId = p.CategoryId,
                             //Price = p.Price,
@@ -170,7 +181,7 @@ namespace DataAccess
                 throw new Exception(ex.Message);
             }
         }
-        
+
         public static async Task<bool> UpdatePasswordAsync(string emailOrPhone, string password)
         {
             try
@@ -195,7 +206,7 @@ namespace DataAccess
                 return false;
             }
         }
-        
+
         public static async Task<User?> FindUserByEmailOrPhoneAsync(string emailOrPhone)
         {
             try
@@ -204,8 +215,8 @@ namespace DataAccess
                 {
                     var user = await context.Users
                         .AsNoTracking()
-                        .SingleOrDefaultAsync(u => 
-                            (u.Gmail != null && u.Gmail.ToLower() == emailOrPhone.ToLower()) || 
+                        .SingleOrDefaultAsync(u =>
+                            (u.Gmail != null && u.Gmail.ToLower() == emailOrPhone.ToLower()) ||
                             (u.Phone != null && u.Phone == emailOrPhone));
 
                     return user;
@@ -235,6 +246,17 @@ namespace DataAccess
                 Console.WriteLine($"Error finding user by username: {ex.Message}");
                 return null;
             }
+        }
+        public async Task UpdateUserMoneyAsync(int userId, decimal amount)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+            if (user == null)
+            {
+                throw new KeyNotFoundException($"User with ID {userId} not found.");
+            }
+            user.Money += amount;
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
         }
     }
 }

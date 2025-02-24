@@ -1,0 +1,95 @@
+﻿using BusinessObject.Enums;
+using DTO;
+using DUVAS;
+using Microsoft.EntityFrameworkCore;
+
+namespace DataAccess;
+
+public class WithdrawRequestDAO
+{
+    
+    private readonly ApplicationDbContext _context;
+
+    public WithdrawRequestDAO(ApplicationDbContext context)
+    {
+        _context = context;
+    }
+    
+    // Add a new WithdrawRequest
+    public async Task AddAsync(int userId, decimal amount, int transactionId, string BankCode, string AccountNumber)
+    {
+        var withdrawRequest = new WithdrawRequest
+        {
+            UserId = userId,
+            Amount = amount,  // Assuming you want to include Amount in the WithdrawRequest
+            BankCode = BankCode,
+            AccountNumber = AccountNumber,
+            Status = WithdrawRequestStatus.Pending,  // Set default status to Pending
+            Reason = null,  // Default to null for Reason
+            CreatedAt = DateTime.UtcNow,  // Current UTC time for CreatedAt
+            UpdatedAt = DateTime.UtcNow ,  // Current UTC time for UpdatedAt
+            TransactionId = transactionId
+        };
+        await _context.WithdrawRequests.AddAsync(withdrawRequest);
+        await _context.SaveChangesAsync();
+    }
+
+    // Update an existing WithdrawRequest
+    public async Task UpdateAsync(WithdrawRequest withdrawRequest)
+    {
+        var existingRequest = await _context.WithdrawRequests.FindAsync(withdrawRequest.Id);
+        if (existingRequest == null)
+        {
+            throw new KeyNotFoundException($"WithdrawRequest with ID {withdrawRequest.Id} not found.");
+        }
+
+        // Update fields
+        existingRequest.Status = withdrawRequest.Status;
+        existingRequest.Reason = withdrawRequest.Reason;
+        existingRequest.UpdatedAt = DateTime.UtcNow;
+
+        _context.WithdrawRequests.Update(existingRequest);
+        await _context.SaveChangesAsync();
+    }
+
+    // Get all WithdrawRequests
+    public async Task<List<WithdrawRequest>> GetAllAsync()
+    {
+        return await _context.WithdrawRequests
+            .Include(w => w.User) // Include User relationship if needed
+            .ToListAsync();
+    }
+
+    // Get all WithdrawRequests by UserId
+    public async Task<List<WithdrawRequest>> GetAllByUserIdAsync(int userId)
+    {
+        return await _context.WithdrawRequests
+            .Where(w => w.UserId == userId)
+            .Include(w => w.User) // Include User relationship if needed
+            .ToListAsync();
+    }
+
+    public async Task<WithdrawRequest?> GetByIdAsync(int withdrawRequestId)
+    {
+        var withdrawRequest = await _context.WithdrawRequests
+            .Where(w => w.Id == withdrawRequestId)
+            .Include(w => w.User)
+            .Include(w => w.Transaction)
+            .FirstOrDefaultAsync();
+        return withdrawRequest;
+    }
+
+    public async Task WebHookConfirm(int transactionId)
+    {
+        Console.WriteLine("change status for withdraw request transaction id " + transactionId);
+        var existingRequest = await _context.WithdrawRequests.Where(w => w.TransactionId == transactionId).FirstOrDefaultAsync();
+        if (existingRequest == null)
+        {
+            throw new KeyNotFoundException($"WithdrawRequest with ID {transactionId} not found.");
+        }
+        Console.WriteLine("current status " + existingRequest.Status);
+        existingRequest.Status = WithdrawRequestStatus.Approved;
+        _context.WithdrawRequests.Update(existingRequest);
+        await _context.SaveChangesAsync();
+    }
+}

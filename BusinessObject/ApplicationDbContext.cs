@@ -10,7 +10,7 @@ namespace DUVAS
 {
     public class ApplicationDbContext : DbContext
     {
-        
+
 
         // DbSets
         public virtual DbSet<User> Users { get; set; }
@@ -21,6 +21,7 @@ namespace DUVAS
         public virtual DbSet<RentalServiceList> RentalServiceLists { get; set; }
         public virtual DbSet<Contract> Contracts { get; set; }
         public virtual DbSet<Transaction> Transactions { get; set; }
+        public virtual DbSet<WithdrawRequest> WithdrawRequests { get; set; }
         public virtual DbSet<ServicePost> ServicePosts { get; set; }
         public virtual DbSet<UserFeedback> UserFeedbacks { get; set; }
         public virtual DbSet<Report> Reports { get; set; }
@@ -55,6 +56,12 @@ namespace DUVAS
         {
             // Fluent API configurations
 
+            // Room - User
+            modelBuilder.Entity<Room>()
+                .HasOne(r => r.User)
+                .WithMany(u => u.Rooms)
+                .HasForeignKey(r => r.UserId)
+                .OnDelete(DeleteBehavior.NoAction); // Ngăn vòng lặp khi xóa User
 
             // Room - Building
             modelBuilder.Entity<Room>()
@@ -62,13 +69,6 @@ namespace DUVAS
                 .WithMany(b => b.Rooms)
                 .HasForeignKey(r => r.BuildingId)
                 .OnDelete(DeleteBehavior.Cascade);
-
-            // Room - CategoryRoom
-            modelBuilder.Entity<Room>()
-               .HasOne(r => r.CategoryRoom)
-               .WithMany(c => c.Rooms)
-               .HasForeignKey(r => r.CategoryRoomId)
-               .OnDelete(DeleteBehavior.Cascade);
 
             // RoomLicense - Room
             modelBuilder.Entity<RoomLicense>()
@@ -97,27 +97,6 @@ namespace DUVAS
                 .WithMany(c => c.RentalLists)
                 .HasForeignKey(rl => rl.ContractId)
                 .OnDelete(DeleteBehavior.Cascade);
-
-            // Transaction - Room
-            modelBuilder.Entity<Transaction>()
-                .HasOne(t => t.Room)
-                .WithMany()
-                .HasForeignKey(t => t.RoomId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            // Transaction - ServicePost
-            modelBuilder.Entity<Transaction>()
-                .HasOne(t => t.ServicePost)
-                .WithMany()
-                .HasForeignKey(t => t.ServicePostId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            // Transaction - User (as IDThue)
-            modelBuilder.Entity<Transaction>()
-                .HasOne(t => t.User)
-                .WithMany(u => u.Transactions)
-                .HasForeignKey(t => t.IDThue)
-                .OnDelete(DeleteBehavior.Restrict);
 
             // UserFeedback - User
             modelBuilder.Entity<UserFeedback>()
@@ -180,28 +159,34 @@ namespace DUVAS
                 .WithMany(u => u.OwnerLicenses)
                 .HasForeignKey(ol => ol.UserId);
 
+            // Transaction-User
+            modelBuilder.Entity<Transaction>()
+                .HasOne(t => t.User) // One Transaction has one User
+                .WithMany(u => u.Transactions) // One User has many Transactions
+                .HasForeignKey(t => t.UserId) // Foreign key in Transaction
+                .OnDelete(DeleteBehavior.Cascade); // Optional: Configure delete behavior
 
-
-            // ServidePosr - User
-            modelBuilder.Entity<ServicePost>()
-                .HasOne(r => r.User)
-                .WithMany(u => u.ServicePosts)
-                .HasForeignKey(r => r.UserId)
+            // WithDrawRequest - User
+            modelBuilder.Entity<WithdrawRequest>()
+                .HasOne(w => w.User) // WithdrawRequest has one User
+                .WithMany(u => u.WithdrawRequests) // User has many WithdrawRequests
+                .HasForeignKey(w => w.UserId) // Foreign key in WithdrawRequest
+                .OnDelete(DeleteBehavior.Cascade); // Configure delete behavior
+            // WithDrawRequest - Transaction
+            modelBuilder.Entity<WithdrawRequest>()
+                .HasOne(w => w.Transaction)
+                .WithOne()  // One withdraw request has one transaction
+                .HasForeignKey<WithdrawRequest>(w => w.TransactionId)  // TransactionId in WithdrawRequest is the foreign key
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Room - User
-            modelBuilder.Entity<Room>()
-                .HasOne(r => r.User)
-                .WithMany(u => u.Rooms)
-                .HasForeignKey(r => r.UserId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            // Building - User
-            modelBuilder.Entity<Building>()
-                .HasOne(r => r.User)
-                .WithMany(u => u.Buildings)
-                .HasForeignKey(r => r.UserId)
-                .OnDelete(DeleteBehavior.Restrict);
+            //Conversion string for enum type
+            modelBuilder.Entity<Transaction>()
+                .Property(t => t.Status)
+                .HasConversion<string>();
+            modelBuilder.Entity<WithdrawRequest>()
+                .Property(t => t.Status)
+                .HasConversion<string>();
+            base.OnModelCreating(modelBuilder);
         }
 
     }

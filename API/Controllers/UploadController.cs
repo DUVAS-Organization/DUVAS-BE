@@ -25,8 +25,10 @@ namespace API.Controllers
 
         [HttpPost("upload-image")]
         [AllowAnonymous]
-        public async Task<ActionResult<string>> UploadImage([FromForm] IFormFile file)
+        public async Task<ActionResult<string>> UploadImage([FromForm] FileUploadDTO uploadDto)
         {
+            var file = uploadDto.File;
+
             // Kiểm tra nếu không có file
             if (file == null || file.Length == 0)
             {
@@ -63,6 +65,7 @@ namespace API.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while uploading the image.");
             }
         }
+
 
 
     }

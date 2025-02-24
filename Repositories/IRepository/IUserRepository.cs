@@ -19,5 +19,6 @@ namespace Repositories.IRepository
         Task UpdateUserAsync(User b);
         Task<List<UserDTO>> GetUsersAsync();
         Task<List<UserDTO>> SearchUsersAsync(string searchTerm);
+        Task UpdateUserMoneyAsync(int userId, decimal amount);
     }
 }

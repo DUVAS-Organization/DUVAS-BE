@@ -6,8 +6,7 @@ namespace DUVAS
         [Key]
         public int UserId { get; set; }
 
-        [Required]
-        public string UserName { get; set; }
+        public string? UserName { get; set; }
 
         public string Name { get; set; }
         public string? Gmail { get; set; }
@@ -28,15 +27,13 @@ namespace DUVAS
         public virtual ICollection<ServiceLicense>? ServiceLicenses { get; set; }
         public virtual ICollection<OwnerLicense>? OwnerLicenses { get; set; }
         public virtual ICollection<Report>? Reports { get; set; }
-        public virtual ICollection<ServicePost>? ServicePosts { get; set; }
-        public virtual ICollection<Room>? Rooms { get; set; }
-        public virtual ICollection<Building>? Buildings { get; set; }
         public virtual ICollection<RentalList>? RentalLists { get; set; }
-        public virtual ICollection<RentalServiceList>? RentalServiceLists { get; set; }
+        public virtual ICollection<WithdrawRequest> WithdrawRequests { get; set; }
+        public virtual ICollection<Room>? Rooms { get; set; }
         public User(string gmail, string userName, string name, string password, string address, string sex, string profilePicture, decimal money, int? roleUser)
         {
             Gmail = gmail;
-            UserName = userName;
+            UserName = userName;    
             Name = name;
             Password = password;
             Address = address;
@@ -49,9 +46,8 @@ namespace DUVAS
             RoleService = 0;
         }
 
-        public User(string userName, string name, string? gmail, string profilePicture, decimal money)
+        public User(string name, string? gmail, string profilePicture, decimal money)
         {
-            UserName = userName;
             Name = name;
             Gmail = gmail;
             ProfilePicture = profilePicture;
@@ -59,6 +55,7 @@ namespace DUVAS
             RoleAdmin = 0;
             RoleLandlord = 0;
             RoleService = 0;
+            Money = money;
         }
 
         public string getRoleString()
