@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace BusinessObject.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class _1 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -86,7 +86,8 @@ namespace BusinessObject.Migrations
                     UserId = table.Column<int>(type: "int", nullable: false),
                     BuildingName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Location = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Verify = table.Column<bool>(type: "bit", nullable: false)
+                    Verify = table.Column<bool>(type: "bit", nullable: true),
+                    Image = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -243,14 +244,14 @@ namespace BusinessObject.Migrations
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     LocationDetail = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Acreage = table.Column<double>(type: "float", nullable: false),
-                    Furniture = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Furniture = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     NumberOfBathroom = table.Column<int>(type: "int", nullable: false),
                     NumberOfBedroom = table.Column<int>(type: "int", nullable: false),
-                    Garret = table.Column<bool>(type: "bit", nullable: false),
+                    Garret = table.Column<bool>(type: "bit", nullable: true),
                     Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Image = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Note = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    IsPermission = table.Column<bool>(type: "bit", nullable: false)
+                    Note = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IsPermission = table.Column<bool>(type: "bit", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -365,8 +366,9 @@ namespace BusinessObject.Migrations
                     RentalId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     RoomId = table.Column<int>(type: "int", nullable: false),
-                    ContractId = table.Column<int>(type: "int", nullable: false),
+                    ContractId = table.Column<int>(type: "int", nullable: true),
                     RenterID = table.Column<int>(type: "int", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     RentalStatus = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>

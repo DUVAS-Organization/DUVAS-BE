@@ -150,8 +150,11 @@ namespace BusinessObject.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RentalId"));
 
-                    b.Property<int>("ContractId")
+                    b.Property<int?>("ContractId")
                         .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("RentalStatus")
                         .HasColumnType("int");
@@ -687,8 +690,7 @@ namespace BusinessObject.Migrations
                     b.HasOne("DUVAS.Contract", "Contract")
                         .WithMany("RentalLists")
                         .HasForeignKey("ContractId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("DUVAS.User", "User")
                         .WithMany("RentalLists")
