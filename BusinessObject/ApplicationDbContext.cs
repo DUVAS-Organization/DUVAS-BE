@@ -30,6 +30,7 @@ namespace DUVAS
         public virtual DbSet<ServiceFeedback> ServiceFeedbacks { get; set; }
         public virtual DbSet<CategoryService> CategoryServices { get; set; }
         public virtual DbSet<OwnerLicense> OwnerLicenses { get; set; }
+        public virtual DbSet<Message> Messages { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
        : base(options)
@@ -55,7 +56,7 @@ namespace DUVAS
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // Fluent API configurations
-
+            base.OnModelCreating(modelBuilder);
             // Room - User
             modelBuilder.Entity<Room>()
                 .HasOne(r => r.User)
@@ -187,6 +188,20 @@ namespace DUVAS
                 .Property(t => t.Status)
                 .HasConversion<string>();
             base.OnModelCreating(modelBuilder);
+
+            // Cấu hình quan hệ giữa Message và User (UserSend)
+            modelBuilder.Entity<Message>()
+                .HasOne(m => m.UserSend)
+                .WithMany() // Nếu không có navigation property ở User
+                .HasForeignKey(m => m.UserSendID)
+                .OnDelete(DeleteBehavior.NoAction); // Sử dụng NoAction để tắt cascade delete
+
+            // Cấu hình quan hệ giữa Message và User (UserGet)
+            modelBuilder.Entity<Message>()
+                .HasOne(m => m.UserGet)
+                .WithMany() // Nếu không có navigation property ở User
+                .HasForeignKey(m => m.UserGetID)
+                .OnDelete(DeleteBehavior.NoAction); // Sử dụng NoAction
         }
 
     }

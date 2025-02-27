@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 namespace DUVAS
 {
     public class User
@@ -30,6 +31,10 @@ namespace DUVAS
         public virtual ICollection<RentalList>? RentalLists { get; set; }
         public virtual ICollection<WithdrawRequest> WithdrawRequests { get; set; }
         public virtual ICollection<Room>? Rooms { get; set; }
+        public virtual ICollection<Message> MessagesSent { get; set; }
+        public virtual ICollection<Message> MessagesReceived { get; set; }
+        //[JsonIgnore]
+        //public virtual ICollection<Message>? Messages { get; set; }
         public User(string gmail, string userName, string name, string password, string address, string sex, string profilePicture, decimal money, int? roleUser)
         {
             Gmail = gmail;

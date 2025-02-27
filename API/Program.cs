@@ -10,6 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using CloudinaryDotNet;
 using Microsoft.Extensions.Options;
 using API.Controllers;
+using System.Text.Json.Serialization;
 
 namespace API
 {
@@ -71,6 +72,10 @@ namespace API
 
                 var account = new Account(config.CloudName, config.ApiKey, config.ApiSecret);
                 return new Cloudinary(account);
+            });
+            builder.Services.AddControllers().AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
             });
 
             //// Add repositories
