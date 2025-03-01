@@ -33,10 +33,10 @@ namespace DataAccess
                             PhoneNumber = p.PhoneNumber,
                             Price = p.Price,
                             Location = p.Location,
-                            Description = p.Description,
-                            CategoryServiceId = p.CategoryServiceId,
-                            //CategoryName = p.Category.CategoryName,
-                            //CategoryId = p.CategoryId,                            
+                            Description = p.Description,  
+                            Name = p.User.Name,
+                            UserId = p.UserId,
+                            CategoryServiceName = p.CategoryService.CategoryServiceName
 
                         })
                         .ToListAsync();
@@ -148,7 +148,9 @@ namespace DataAccess
                             Price = p.Price,
                             Location = p.Location,
                             Description = p.Description,
-                            CategoryServiceId = p.CategoryServiceId,
+                            Name = p.User.Name,
+                            UserId = p.UserId,
+                            CategoryServiceName = p.CategoryService.CategoryServiceName
                         })
                         .ToListAsync();
 

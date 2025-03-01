@@ -5,12 +5,13 @@ using DUVAS;
 using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using System.IO;
+using BusinessObject;
 
 namespace DUVAS
 {
     public class ApplicationDbContext : DbContext
     {
-        
+
 
         // DbSets
         public virtual DbSet<User> Users { get; set; }
@@ -18,8 +19,10 @@ namespace DUVAS
         public virtual DbSet<Room> Rooms { get; set; }
         public virtual DbSet<RoomLicense> RoomLicenses { get; set; }
         public virtual DbSet<RentalList> RentalLists { get; set; }
+        public virtual DbSet<RentalServiceList> RentalServiceLists { get; set; }
         public virtual DbSet<Contract> Contracts { get; set; }
         public virtual DbSet<Transaction> Transactions { get; set; }
+        public virtual DbSet<WithdrawRequest> WithdrawRequests { get; set; }
         public virtual DbSet<ServicePost> ServicePosts { get; set; }
         public virtual DbSet<UserFeedback> UserFeedbacks { get; set; }
         public virtual DbSet<Report> Reports { get; set; }
@@ -28,6 +31,11 @@ namespace DUVAS
         public virtual DbSet<ServiceFeedback> ServiceFeedbacks { get; set; }
         public virtual DbSet<CategoryService> CategoryServices { get; set; }
         public virtual DbSet<OwnerLicense> OwnerLicenses { get; set; }
+        public virtual DbSet<Message> Messages { get; set; }
+        public virtual DbSet<CategoryPriorityPackageRoom> CategoryPriorityPackageRooms { get; set; }
+        public virtual DbSet<CategoryPriorityPackageServicePost> CategoryPriorityPackageServicePosts { get; set; }
+        public virtual DbSet<PriorityPackageRoom> PriorityPackageRooms { get; set; }
+        public virtual DbSet<PriorityPackageServicePost> PriorityPackageServicePosts { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
        : base(options)
@@ -53,7 +61,13 @@ namespace DUVAS
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // Fluent API configurations
-
+            base.OnModelCreating(modelBuilder);
+            // Room - User
+            modelBuilder.Entity<Room>()
+                .HasOne(r => r.User)
+                .WithMany(u => u.Rooms)
+                .HasForeignKey(r => r.UserId)
+                .OnDelete(DeleteBehavior.NoAction); // Ngăn vòng lặp khi xóa User
 
             // Room - Building
             modelBuilder.Entity<Room>()
@@ -61,13 +75,6 @@ namespace DUVAS
                 .WithMany(b => b.Rooms)
                 .HasForeignKey(r => r.BuildingId)
                 .OnDelete(DeleteBehavior.Cascade);
-
-            // Room - CategoryRoom
-            modelBuilder.Entity<Room>()
-               .HasOne(r => r.CategoryRoom)
-               .WithMany(c => c.Rooms)
-               .HasForeignKey(r => r.CategoryRoomId)
-               .OnDelete(DeleteBehavior.Cascade);
 
             // RoomLicense - Room
             modelBuilder.Entity<RoomLicense>()
@@ -96,27 +103,6 @@ namespace DUVAS
                 .WithMany(c => c.RentalLists)
                 .HasForeignKey(rl => rl.ContractId)
                 .OnDelete(DeleteBehavior.Cascade);
-
-            // Transaction - Room
-            modelBuilder.Entity<Transaction>()
-                .HasOne(t => t.Room)
-                .WithMany()
-                .HasForeignKey(t => t.RoomId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            // Transaction - ServicePost
-            modelBuilder.Entity<Transaction>()
-                .HasOne(t => t.ServicePost)
-                .WithMany()
-                .HasForeignKey(t => t.ServicePostId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            // Transaction - User (as IDThue)
-            modelBuilder.Entity<Transaction>()
-                .HasOne(t => t.User)
-                .WithMany(u => u.Transactions)
-                .HasForeignKey(t => t.IDThue)
-                .OnDelete(DeleteBehavior.Restrict);
 
             // UserFeedback - User
             modelBuilder.Entity<UserFeedback>()
@@ -179,28 +165,85 @@ namespace DUVAS
                 .WithMany(u => u.OwnerLicenses)
                 .HasForeignKey(ol => ol.UserId);
 
+            // Transaction-User
+            modelBuilder.Entity<Transaction>()
+                .HasOne(t => t.User) // One Transaction has one User
+                .WithMany(u => u.Transactions) // One User has many Transactions
+                .HasForeignKey(t => t.UserId) // Foreign key in Transaction
+                .OnDelete(DeleteBehavior.Cascade); // Optional: Configure delete behavior
 
-
-            // ServidePosr - User
-            modelBuilder.Entity<ServicePost>()
-                .HasOne(r => r.User)
-                .WithMany(u => u.ServicePosts)
-                .HasForeignKey(r => r.UserId)
+            // WithDrawRequest - User
+            modelBuilder.Entity<WithdrawRequest>()
+                .HasOne(w => w.User) // WithdrawRequest has one User
+                .WithMany(u => u.WithdrawRequests) // User has many WithdrawRequests
+                .HasForeignKey(w => w.UserId) // Foreign key in WithdrawRequest
+                .OnDelete(DeleteBehavior.Cascade); // Configure delete behavior
+            // WithDrawRequest - Transaction
+            modelBuilder.Entity<WithdrawRequest>()
+                .HasOne(w => w.Transaction)
+                .WithOne()  // One withdraw request has one transaction
+                .HasForeignKey<WithdrawRequest>(w => w.TransactionId)  // TransactionId in WithdrawRequest is the foreign key
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Room - User
-            modelBuilder.Entity<Room>()
-                .HasOne(r => r.User)
-                .WithMany(u => u.Rooms)
-                .HasForeignKey(r => r.UserId)
+
+            //Conversion string for enum type
+            modelBuilder.Entity<Transaction>()
+                .Property(t => t.Status)
+                .HasConversion<string>();
+            modelBuilder.Entity<WithdrawRequest>()
+                .Property(t => t.Status)
+                .HasConversion<string>();
+            base.OnModelCreating(modelBuilder);
+
+            // Cấu hình quan hệ giữa Message và User (UserSend)
+            modelBuilder.Entity<Message>()
+                .HasOne(m => m.UserSend)
+                .WithMany() // Nếu không có navigation property ở User
+                .HasForeignKey(m => m.UserSendID)
+                .OnDelete(DeleteBehavior.NoAction); // Sử dụng NoAction để tắt cascade delete
+
+            // Cấu hình quan hệ giữa Message và User (UserGet)
+            modelBuilder.Entity<Message>()
+                .HasOne(m => m.UserGet)
+                .WithMany() // Nếu không có navigation property ở User
+                .HasForeignKey(m => m.UserGetID)
+                .OnDelete(DeleteBehavior.NoAction); // Sử dụng NoAction
+            modelBuilder.Entity<PriorityPackageRoom>()
+                .HasOne(p => p.User)
+                .WithMany(u => u.PriorityPackageRooms) // Đảm bảo User có danh sách PriorityPackageRooms
+                .HasForeignKey(p => p.UserId)
+                .OnDelete(DeleteBehavior.Restrict); // Tránh vòng lặp
+
+            modelBuilder.Entity<PriorityPackageRoom>()
+                .HasOne(p => p.Room)
+                .WithMany(r => r.PriorityPackageRooms) // Đảm bảo Room có danh sách PriorityPackageRooms
+                .HasForeignKey(p => p.RoomId) // Chỉ sử dụng RoomId
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<PriorityPackageRoom>()
+                .HasOne(p => p.CategoryPriorityPackageRoom)
+                .WithMany(c => c.PriorityPackageRooms)
+                .HasForeignKey(p => p.CategoryPriorityPackageRoomId)
+                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<PriorityPackageServicePost>()
+                .HasOne(p => p.User)
+                .WithMany(u => u.PriorityPackageServicePosts) // Đảm bảo User có danh sách PriorityPackageServicePosts
+                .HasForeignKey(p => p.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Building - User
-            modelBuilder.Entity<Building>()
-                .HasOne(r => r.User)
-                .WithMany(u => u.Buildings)
-                .HasForeignKey(r => r.UserId)
-                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<PriorityPackageServicePost>()
+                .HasOne(p => p.ServicePost)
+                .WithMany(s => s.PriorityPackageServicePosts) // Đảm bảo ServicePost có danh sách PriorityPackageServicePosts
+                .HasForeignKey(p => p.ServicePostId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<PriorityPackageServicePost>()
+                .HasOne(p => p.CategoryPriorityPackageServicePost)
+                .WithMany(c => c.PriorityPackageServicePosts)
+                .HasForeignKey(p => p.CategoryPriorityPackageServicePostId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+
         }
 
     }

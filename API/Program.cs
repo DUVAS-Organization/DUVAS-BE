@@ -7,6 +7,11 @@ using Repositories;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using CloudinaryDotNet;
+using Microsoft.Extensions.Options;
+using API.Controllers;
+using System.Text.Json.Serialization;
+using Repository;
 
 namespace API
 {
@@ -47,11 +52,32 @@ namespace API
             // Add services to the container.
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
-
+            //builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.OperationFilter<FileUploadOperationFilter>();
+            });
             // Add database context
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DBString")));
+
+            // Thêm cấu hình Cloudinary 
+
+            builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
+            builder.Services.AddSingleton(serviceProvider =>
+            {
+                var config = serviceProvider.GetRequiredService<IOptions<CloudinarySettings>>().Value;
+
+                if (string.IsNullOrEmpty(config.CloudName) || string.IsNullOrEmpty(config.ApiKey) || string.IsNullOrEmpty(config.ApiSecret))
+                    throw new InvalidOperationException("Cloudinary configuration is missing or invalid.");
+
+                var account = new Account(config.CloudName, config.ApiKey, config.ApiSecret);
+                return new Cloudinary(account);
+            });
+            builder.Services.AddControllers().AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+            });
 
             //// Add repositories
             builder.Services.AddScoped<IBuildingRepository, BuildingRepository>();
@@ -67,8 +93,14 @@ namespace API
             builder.Services.AddScoped<IServiceLicenseRepository, ServiceLicenseRepository>();
             builder.Services.AddScoped<IServicePostRepository, ServicePostRepository>();
             builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
+            builder.Services.AddScoped<IWithdrawRequestRepository, WithdrawRequestRepository>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IUserFeedbackRepository, UserFeedbackRepository>();
+            builder.Services.AddScoped<ICategoryPriorityPackageRoomRepository, CategoryPriorityPackageRoomRepository>();
+            builder.Services.AddScoped<ICategoryPriorityPackageServicePostRepository, CategoryPriorityPackageServicePostRepository>();
+            builder.Services.AddScoped<IPriorityPackageRoomRepository, PriorityPackageRoomRepository>();
+            builder.Services.AddScoped<IPriorityPackageServicePostRepository, PriorityPackageServicePostRepository>();
+            builder.Services.AddScoped<CloudinaryService>();
 
             // Add CORS policy for React app
             builder.Services.AddCors(options =>

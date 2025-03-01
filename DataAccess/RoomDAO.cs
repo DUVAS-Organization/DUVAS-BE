@@ -45,7 +45,11 @@ namespace DataAccess
                             Image = p.Image,
                             Note = p.Note,
                             BuildingName = p.Building.BuildingName,
-                            CategoryName = p.CategoryRoom.CategoryName,            
+                            CategoryName = p.CategoryRoom.CategoryName,    
+
+                            //CategoryName = p.Category.CategoryName,
+                            //CategoryId = p.CategoryId,                            
+
 
                         })
                         .ToListAsync();
@@ -168,6 +172,7 @@ namespace DataAccess
                             Price = p.Price,
                             CategoryRoomId = p.CategoryRoomId,
                             CategoryName = p.CategoryRoom.CategoryName,
+
                             Image = p.Image,
                             Note = p.Note,
                         })

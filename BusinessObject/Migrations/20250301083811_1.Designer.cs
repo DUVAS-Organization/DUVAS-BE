@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BusinessObject.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250227081504_1")]
+    [Migration("20250301083811_1")]
     partial class _1
     {
         /// <inheritdoc />
@@ -225,6 +225,51 @@ namespace BusinessObject.Migrations
                     b.HasKey("ContractId");
 
                     b.ToTable("Contracts");
+                });
+
+            modelBuilder.Entity("DUVAS.Message", b =>
+                {
+                    b.Property<int>("MessageId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MessageId"));
+
+                    b.Property<string>("Content")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("DateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Image")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserGetID")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("UserId1")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserSendID")
+                        .HasColumnType("int");
+
+                    b.HasKey("MessageId");
+
+                    b.HasIndex("UserGetID");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("UserId1");
+
+                    b.HasIndex("UserSendID");
+
+                    b.ToTable("Messages");
                 });
 
             modelBuilder.Entity("DUVAS.OwnerLicense", b =>
@@ -843,6 +888,33 @@ namespace BusinessObject.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("DUVAS.Message", b =>
+                {
+                    b.HasOne("DUVAS.User", "UserGet")
+                        .WithMany()
+                        .HasForeignKey("UserGetID")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("DUVAS.User", null)
+                        .WithMany("MessagesReceived")
+                        .HasForeignKey("UserId");
+
+                    b.HasOne("DUVAS.User", null)
+                        .WithMany("MessagesSent")
+                        .HasForeignKey("UserId1");
+
+                    b.HasOne("DUVAS.User", "UserSend")
+                        .WithMany()
+                        .HasForeignKey("UserSendID")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("UserGet");
+
+                    b.Navigation("UserSend");
+                });
+
             modelBuilder.Entity("DUVAS.OwnerLicense", b =>
                 {
                     b.HasOne("DUVAS.User", "User")
@@ -1099,6 +1171,10 @@ namespace BusinessObject.Migrations
 
             modelBuilder.Entity("DUVAS.User", b =>
                 {
+                    b.Navigation("MessagesReceived");
+
+                    b.Navigation("MessagesSent");
+
                     b.Navigation("OwnerLicenses");
 
                     b.Navigation("PriorityPackageRooms");

@@ -23,9 +23,9 @@ namespace DTO
         public string ProfilePicture { get; set; }
         public decimal Money { get; set; }
 
-        //public int? RoleAdmin { get; set; }
-        //public int? RoleUser { get; set; }
-        //public int? RoleLandlord { get; set; }
-        //public int? RoleService { get; set; }
+        public int? RoleAdmin { get; set; }
+        public int? RoleUser { get; set; }
+        public int? RoleLandlord { get; set; }
+        public int? RoleService { get; set; }
     }
 }
