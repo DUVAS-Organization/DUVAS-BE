@@ -30,6 +30,8 @@ namespace DTO
         public string Image { get; set; }
         public string Note { get; set; }
 
+        public bool IsPermission { get; set; }
+
         //public Building? Building { get; set; }
         //public bool IsPermission { get; set; }
     }

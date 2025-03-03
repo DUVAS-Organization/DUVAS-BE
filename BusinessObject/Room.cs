@@ -33,8 +33,8 @@ namespace DUVAS
 
         public string Image { get; set; }
 
-        public string? Note { get; set; }
-        public bool? IsPermission { get; set; }
+        public string Note { get; set; }
+        public bool IsPermission { get; set; }
 
 
         public virtual ICollection<RoomLicense>? RoomLicenses { get; set; }
