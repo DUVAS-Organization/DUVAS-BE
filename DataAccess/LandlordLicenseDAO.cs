@@ -9,26 +9,26 @@ using System.Threading.Tasks;
 
 namespace DataAccess
 {
-    public class OwnerLicenseDAO
+    public class LandlordLicenseDAO
     {
         private readonly ApplicationDbContext _context;
 
-        public OwnerLicenseDAO(ApplicationDbContext context)
+        public LandlordLicenseDAO(ApplicationDbContext context)
         {
             _context = context;
         }
-        public static async Task<List<OwnerLicenseDTO>> GetOwnerLicensesAsync()
+        public static async Task<List<LandlordLicenseDTO>> GetLandlordLicensesAsync()
         {
 
             try
             {
                 using (var context = new ApplicationDbContext())
                 {
-                    var ownerLicenses = await context.OwnerLicenses
+                    var landlordLicenses = await context.LandlordLicenses
                         .AsNoTracking()
-                        .Select(p => new OwnerLicenseDTO
+                        .Select(p => new LandlordLicenseDTO
                         {
-                            OwnerLicenseId = p.OwnerLicenseId,
+                            LandlordLicenseId = p.LandlordLicenseId,
                             UserId = p.UserId,
                             OwnerLicense1 = p.OwnerLicense1,
                             OwnerLicense2 = p.OwnerLicense2,
@@ -41,7 +41,7 @@ namespace DataAccess
                         .ToListAsync();
 
 
-                    return ownerLicenses;
+                    return landlordLicenses;
                 }
 
             }
@@ -52,30 +52,30 @@ namespace DataAccess
 
         }
 
-        public static async Task<OwnerLicense> FindOwnerLicenseByIdAsync(int ownerLicenseId)
+        public static async Task<LandlordLicense> FindLandlordLicenseByIdAsync(int landlordLicenseId)
         {
-            OwnerLicense ownerLicense = null;
+            LandlordLicense landlordLicense = null;
             try
             {
                 using (var context = new ApplicationDbContext())
                 {
-                    ownerLicense = await context.OwnerLicenses.SingleOrDefaultAsync(x => x.OwnerLicenseId == ownerLicenseId);
+                    landlordLicense = await context.LandlordLicenses.SingleOrDefaultAsync(x => x.LandlordLicenseId == landlordLicenseId);
                 }
             }
             catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
-            return ownerLicense;
+            return landlordLicense;
         }
 
-        public static async Task SaveOwnerLicenseAsync(OwnerLicense ownerLicense)
+        public static async Task SaveLandlordLicenseAsync(LandlordLicense landlordLicense)
         {
             try
             {
                 using (var context = new ApplicationDbContext())
                 {
-                    await context.OwnerLicenses.AddAsync(ownerLicense);
+                    await context.LandlordLicenses.AddAsync(landlordLicense);
                     await context.SaveChangesAsync();
                 }
             }
@@ -85,13 +85,13 @@ namespace DataAccess
             }
         }
 
-        public static async Task UpdateOwnerLicenseAsync(OwnerLicense ownerLicense)
+        public static async Task UpdateLandlordLicenseAsync(LandlordLicense landlordLicense)
         {
             try
             {
                 using (var context = new ApplicationDbContext())
                 {
-                    context.Entry(ownerLicense).State = EntityState.Modified;
+                    context.Entry(landlordLicense).State = EntityState.Modified;
                     await context.SaveChangesAsync();
                 }
             }
@@ -101,16 +101,16 @@ namespace DataAccess
             }
         }
 
-        public static async Task DeleteOwnerLicenseAsync(OwnerLicense ownerLicense)
+        public static async Task DeleteLandlordLicenseAsync(LandlordLicense landlordLicense)
         {
             try
             {
                 using (var context = new ApplicationDbContext())
                 {
-                    var existingOwnerLicense = await context.OwnerLicenses.SingleOrDefaultAsync(c => c.OwnerLicenseId == ownerLicense.OwnerLicenseId);
-                    if (existingOwnerLicense != null)
+                    var existingLandlordLicense = await context.LandlordLicenses.SingleOrDefaultAsync(c => c.LandlordLicenseId == landlordLicense.LandlordLicenseId);
+                    if (existingLandlordLicense != null)
                     {
-                        context.OwnerLicenses.Remove(existingOwnerLicense);
+                        context.LandlordLicenses.Remove(existingLandlordLicense);
                         await context.SaveChangesAsync();
                     }
                 }

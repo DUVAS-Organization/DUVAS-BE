@@ -53,5 +53,12 @@ namespace API.Controllers.UserAPI
             await _messageRepository.DeleteMessageAsync(messageId);
             return Ok();
         }
+
+        [HttpGet("conversations/{userId}")]
+        public async Task<IActionResult> GetConversationsByUserId(int userId)
+        {
+            var conversations = await _messageRepository.GetConversationsByUserIdAsync(userId);
+            return Ok(conversations);
+        }
     }
 }

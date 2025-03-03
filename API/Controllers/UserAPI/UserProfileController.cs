@@ -35,7 +35,37 @@ namespace API.Controllers.UserAPI
             _rentalServiceListRepository = rentalServiceListRepository;
         }
 
-        // API: Edit profile
+        [HttpPut("{id}/ChangePassword")]
+        public async Task<IActionResult> ChangePassword(int id, [FromBody] ChangePasswordModel model)
+        {
+            if (string.IsNullOrEmpty(model.OldPassword) || string.IsNullOrEmpty(model.NewPassword))
+            {
+                return BadRequest("Mật khẩu không hợp lệ.");
+            }
+
+            var user = await _userRepository.GetUserByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound("User không tồn tại.");
+            }
+
+            if (user.Password != model.OldPassword)
+            {
+                return BadRequest("Mật khẩu cũ không đúng.");
+            }
+
+            user.Password = model.NewPassword;
+            await _userRepository.UpdateUserAsync(user);
+
+            return NoContent();
+        }
+
+        public class ChangePasswordModel
+        {
+            public string OldPassword { get; set; }
+            public string NewPassword { get; set; }
+        }
+
         [HttpPut("{id}/EditProfile")]
         public async Task<IActionResult> EditProfile(int id, [FromBody] User updatedUser)
         {
@@ -44,33 +74,25 @@ namespace API.Controllers.UserAPI
                 return BadRequest("ID không khớp.");
             }
 
-            try
+            var user = await _userRepository.GetUserByIdAsync(id);
+            if (user == null)
             {
-                var user = await _userRepository.GetUserByIdAsync(id);
-                if (user == null)
-                {
-                    return NotFound("User không tồn tại.");
-                }
-
-                // Cập nhật thông tin
-                user.UserName = updatedUser.UserName ?? user.UserName;
-                user.Name = updatedUser.Name ?? user.Name;
-                user.Gmail = updatedUser.Gmail ?? user.Gmail;
-                user.Password = updatedUser.Password ?? user.Password;
-                user.Phone = updatedUser.Phone ?? user.Phone;
-                user.Address = updatedUser.Address ?? user.Address;
-                user.Sex = updatedUser.Sex ?? user.Sex;
-                user.ProfilePicture = updatedUser.ProfilePicture ?? user.ProfilePicture;
-
-                await _userRepository.UpdateUserAsync(user);
-
-                return NoContent();
+                return NotFound("User không tồn tại.");
             }
-            catch
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Lỗi khi cập nhật thông tin.");
-            }
+
+            user.UserName = updatedUser.UserName ?? user.UserName;
+            user.Name = updatedUser.Name ?? user.Name;
+            //user.Gmail = updatedUser.Gmail ?? user.Gmail;
+            user.Phone = updatedUser.Phone ?? user.Phone;
+            user.Address = updatedUser.Address ?? user.Address;
+            user.Sex = updatedUser.Sex ?? user.Sex;
+            user.ProfilePicture = updatedUser.ProfilePicture ?? user.ProfilePicture;
+
+            await _userRepository.UpdateUserAsync(user);
+
+            return NoContent();
         }
+
 
         // API: View room rental history
         [HttpGet("{userId}/RoomRentalHistory")]

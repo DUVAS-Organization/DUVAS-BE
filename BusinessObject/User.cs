@@ -23,17 +23,21 @@ namespace DUVAS
         public int? RoleUser { get; set; }
         public int? RoleLandlord { get; set; }
         public int? RoleService { get; set; }
+        //1: Đang có role đó
+        //2: Dang chờ duyệt
+        //0: Không có role đó
+
 
         public virtual ICollection<Transaction>? Transactions { get; set; }
         public virtual ICollection<UserFeedback>? UserFeedbacks { get; set; }
         public virtual ICollection<ServiceLicense>? ServiceLicenses { get; set; }
-        public virtual ICollection<OwnerLicense>? OwnerLicenses { get; set; }
+        public virtual ICollection<LandlordLicense>? OwnerLicenses { get; set; }
         public virtual ICollection<Report>? Reports { get; set; }
         public virtual ICollection<RentalList>? RentalLists { get; set; }
         public virtual ICollection<WithdrawRequest> WithdrawRequests { get; set; }
         public virtual ICollection<Room>? Rooms { get; set; }
-        public virtual ICollection<Message> MessagesSent { get; set; }
-        public virtual ICollection<Message> MessagesReceived { get; set; }
+        //public virtual ICollection<Message> MessagesSent { get; set; }
+        //public virtual ICollection<Message> MessagesReceived { get; set; }
         public virtual ICollection<PriorityPackageServicePost>? PriorityPackageServicePosts { get; set; }
         public virtual ICollection<PriorityPackageRoom> PriorityPackageRooms { get; set; }
         //[JsonIgnore]

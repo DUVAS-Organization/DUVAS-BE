@@ -1,0 +1,161 @@
+﻿using DTO;
+using DUVAS;
+using Microsoft.AspNetCore.Mvc;
+using Repositories.IRepository;
+using System.Threading.Tasks;
+
+namespace API.Controllers.UserAPI
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class LandlordLicenseController : ControllerBase
+    {
+        private readonly ILandlordLicenseRepository _landlordLicenseRepository;
+        private readonly IServiceLicenseRepository _serviceLicenseRepository;
+        private readonly IUserRepository _userRepository;
+
+        public LandlordLicenseController(ILandlordLicenseRepository landlordLicenseRepository, IUserRepository userRepository, IServiceLicenseRepository serviceLicenseRepository)
+        {
+            _landlordLicenseRepository = landlordLicenseRepository;
+            _userRepository = userRepository;
+            _serviceLicenseRepository = serviceLicenseRepository;
+        }
+
+        [HttpPut("{id}/UpdateRoleLandlord")]
+        public async Task<IActionResult> UpdateRoleLandlord(int id, [FromBody] User updateRoleLandlord)
+        {
+            if (id != updateRoleLandlord.UserId)
+            {
+                return BadRequest("ID không khớp.");
+            }
+
+            var user = await _userRepository.GetUserByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound("User không tồn tại.");
+            }
+
+            user.RoleLandlord = 2;
+
+            await _userRepository.UpdateUserAsync(user);
+
+            return NoContent();
+        }
+
+        [HttpPut("{id}/UpdateRoleService")]
+        public async Task<IActionResult> UpdateRoleService(int id, [FromBody] User updateRoleService)
+        {
+            if (id != updateRoleService.UserId)
+            {
+                return BadRequest("ID không khớp.");
+            }
+
+            var user = await _userRepository.GetUserByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound("User không tồn tại.");
+            }
+
+            user.RoleLandlord = 2;
+
+            await _userRepository.UpdateUserAsync(user);
+
+            return NoContent();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetLandlordLicenses()
+        {
+            var result = await _landlordLicenseRepository.GetLandlordLicensesAsync();
+            return Ok(result);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetLandlordLicenseById(int id)
+        {
+            var result = await _landlordLicenseRepository.GetLandlordLicenseByIdAsync(id);
+            if (result == null)
+                return NotFound("License not found.");
+            return Ok(result);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateLandlordLicense([FromBody] LandlordLicense license)
+        {
+            if (license == null)
+                return BadRequest("Invalid data.");
+
+            await _landlordLicenseRepository.SaveLandlordLicenseAsync(license);
+            return StatusCode(201, "License created successfully.");
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateLandlordLicense(int id, [FromBody] LandlordLicense license)
+        {
+            if (id != license.LandlordLicenseId)
+                return BadRequest("ID mismatch.");
+
+            await _landlordLicenseRepository.UpdateLandlordLicenseAsync(license);
+            return NoContent();
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteLandlordLicense(int id)
+        {
+            var existingLicense = await _landlordLicenseRepository.GetLandlordLicenseByIdAsync(id);
+            if (existingLicense == null)
+                return NotFound("License not found.");
+
+            await _landlordLicenseRepository.DeleteLandlordLicenseAsync(existingLicense);
+            return NoContent();
+        }
+
+        // Service License API
+        [HttpGet("service")]
+        public async Task<IActionResult> GetServiceLicenses()
+        {
+            var result = await _serviceLicenseRepository.GetServiceLicensesAsync();
+            return Ok(result);
+        }
+
+        [HttpGet("service/{id}")]
+        public async Task<IActionResult> GetServiceLicenseById(int id)
+        {
+            var result = await _serviceLicenseRepository.GetServiceLicenseByIdAsync(id);
+            if (result == null)
+                return NotFound("Service License not found.");
+            return Ok(result);
+        }
+
+        [HttpPost("service")]
+        public async Task<IActionResult> CreateServiceLicense([FromBody] ServiceLicense license)
+        {
+            if (license == null)
+                return BadRequest("Invalid data.");
+
+            await _serviceLicenseRepository.SaveServiceLicenseAsync(license);
+            return StatusCode(201, "Service License created successfully.");
+        }
+
+        [HttpPut("service/{id}")]
+        public async Task<IActionResult> UpdateServiceLicense(int id, [FromBody] ServiceLicense license)
+        {
+            if (id != license.ServiceLicenseId)
+                return BadRequest("ID mismatch.");
+
+            await _serviceLicenseRepository.UpdateServiceLicenseAsync(license);
+            return NoContent();
+        }
+
+        [HttpDelete("service/{id}")]
+        public async Task<IActionResult> DeleteServiceLicense(int id)
+        {
+            var existingLicense = await _serviceLicenseRepository.GetServiceLicenseByIdAsync(id);
+            if (existingLicense == null)
+                return NotFound("Service License not found.");
+
+            await _serviceLicenseRepository.DeleteServiceLicenseAsync(existingLicense);
+            return NoContent();
+        }
+    }
+}

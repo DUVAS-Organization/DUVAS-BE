@@ -30,10 +30,15 @@ namespace DUVAS
         public bool? Garret { get; set; }
 
         public decimal Price { get; set; }
+        public decimal Deposit { get; set; }
 
         public string Image { get; set; }
 
         public string Note { get; set; }
+        public int status { get; set; }
+        // 1: Đang trống
+        // 2: Pending
+        // 3: Đang được thuê
         public bool IsPermission { get; set; }
 
 

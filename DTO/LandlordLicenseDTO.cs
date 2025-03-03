@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 
 namespace DTO
 {
-    public class OwnerLicenseDTO
+    public class LandlordLicenseDTO
     {
         [Key]
-        public int OwnerLicenseId { get; set; }
+        public int LandlordLicenseId { get; set; }
 
         public int UserId { get; set; }
         //public User? User { get; set; }

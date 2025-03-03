@@ -30,12 +30,13 @@ namespace DUVAS
         public virtual DbSet<CategoryRoom> CategoryRooms { get; set; }
         public virtual DbSet<ServiceFeedback> ServiceFeedbacks { get; set; }
         public virtual DbSet<CategoryService> CategoryServices { get; set; }
-        public virtual DbSet<OwnerLicense> OwnerLicenses { get; set; }
+        public virtual DbSet<LandlordLicense> LandlordLicenses { get; set; }
         public virtual DbSet<Message> Messages { get; set; }
         public virtual DbSet<CategoryPriorityPackageRoom> CategoryPriorityPackageRooms { get; set; }
         public virtual DbSet<CategoryPriorityPackageServicePost> CategoryPriorityPackageServicePosts { get; set; }
         public virtual DbSet<PriorityPackageRoom> PriorityPackageRooms { get; set; }
         public virtual DbSet<PriorityPackageServicePost> PriorityPackageServicePosts { get; set; }
+        public virtual DbSet<InsiderTrading> InsiderTradings { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
        : base(options)
@@ -160,7 +161,7 @@ namespace DUVAS
                 .OnDelete(DeleteBehavior.Restrict);
 
             // OwnerLicense - User
-            modelBuilder.Entity<OwnerLicense>()
+            modelBuilder.Entity<LandlordLicense>()
                 .HasOne(ol => ol.User)
                 .WithMany(u => u.OwnerLicenses)
                 .HasForeignKey(ol => ol.UserId);

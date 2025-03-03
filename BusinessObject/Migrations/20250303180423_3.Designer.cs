@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BusinessObject.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250227081504_1")]
-    partial class _1
+    [Migration("20250303180423_3")]
+    partial class _3
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -222,9 +222,78 @@ namespace BusinessObject.Migrations
                     b.Property<DateTime>("RentalDateTimeStart")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("status")
+                        .HasColumnType("int");
+
                     b.HasKey("ContractId");
 
                     b.ToTable("Contracts");
+                });
+
+            modelBuilder.Entity("DUVAS.InsiderTrading", b =>
+                {
+                    b.Property<int>("InsiderTradingId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("InsiderTradingId"));
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("Money")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Note")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("InsiderTradingId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("InsiderTradings");
+                });
+
+            modelBuilder.Entity("DUVAS.Message", b =>
+                {
+                    b.Property<int>("MessageId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MessageId"));
+
+                    b.Property<string>("Content")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("DateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Image")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserGetID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserSendID")
+                        .HasColumnType("int");
+
+                    b.HasKey("MessageId");
+
+                    b.HasIndex("UserGetID");
+
+                    b.HasIndex("UserSendID");
+
+                    b.ToTable("Message");
                 });
 
             modelBuilder.Entity("DUVAS.OwnerLicense", b =>
@@ -299,10 +368,13 @@ namespace BusinessObject.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RentalServiceId"));
 
+                    b.Property<DateTime?>("AcceppDateTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime>("CreationDateTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("RentalDateTime")
+                    b.Property<DateTime?>("RentalDateTime")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("RentalServiceStatus")
@@ -390,6 +462,9 @@ namespace BusinessObject.Migrations
                     b.Property<int>("CategoryRoomId")
                         .HasColumnType("int");
 
+                    b.Property<decimal>("Deposit")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -404,7 +479,7 @@ namespace BusinessObject.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool?>("IsPermission")
+                    b.Property<bool>("IsPermission")
                         .HasColumnType("bit");
 
                     b.Property<string>("LocationDetail")
@@ -412,6 +487,7 @@ namespace BusinessObject.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Note")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("NumberOfBathroom")
@@ -428,6 +504,9 @@ namespace BusinessObject.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("status")
                         .HasColumnType("int");
 
                     b.HasKey("RoomId");
@@ -710,17 +789,25 @@ namespace BusinessObject.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Image")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Star")
+                    b.Property<int?>("RoomId")
                         .HasColumnType("int");
+
+                    b.Property<double>("Star")
+                        .HasColumnType("float");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("UserFeedbackId");
+
+                    b.HasIndex("RoomId");
 
                     b.HasIndex("UserId");
 
@@ -841,6 +928,36 @@ namespace BusinessObject.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("DUVAS.InsiderTrading", b =>
+                {
+                    b.HasOne("DUVAS.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("DUVAS.Message", b =>
+                {
+                    b.HasOne("DUVAS.User", "UserGet")
+                        .WithMany()
+                        .HasForeignKey("UserGetID")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("DUVAS.User", "UserSend")
+                        .WithMany()
+                        .HasForeignKey("UserSendID")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("UserGet");
+
+                    b.Navigation("UserSend");
                 });
 
             modelBuilder.Entity("DUVAS.OwnerLicense", b =>
@@ -1021,11 +1138,17 @@ namespace BusinessObject.Migrations
 
             modelBuilder.Entity("DUVAS.UserFeedback", b =>
                 {
+                    b.HasOne("DUVAS.Room", "Room")
+                        .WithMany()
+                        .HasForeignKey("RoomId");
+
                     b.HasOne("DUVAS.User", "User")
                         .WithMany("UserFeedbacks")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Room");
 
                     b.Navigation("User");
                 });

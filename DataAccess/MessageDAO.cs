@@ -114,5 +114,31 @@ namespace DataAccess
                 throw new Exception(ex.Message);
             }
         }
+
+        public async Task<List<ConversationDTO>> GetConversationsByUserIdAsync(int currentUserId)
+        {
+            try
+            {
+                var conversations = await _context.Messages
+                    // Lấy tất cả tin nhắn mà currentUser tham gia
+                    .Where(m => m.UserSendID == currentUserId || m.UserGetID == currentUserId)
+                    // Nhóm theo đối phương: nếu currentUser là người gửi thì lấy UserGetID, ngược lại lấy UserSendID
+                    .GroupBy(m => m.UserSendID == currentUserId ? m.UserGetID : m.UserSendID)
+                    .Select(g => new ConversationDTO
+                    {
+                        UserGetID = g.Key,
+                        // Lấy tin nhắn mới nhất trong nhóm
+                        LatestMessageContent = g.OrderByDescending(m => m.DateTime).FirstOrDefault().Content,
+                        LatestMessageDateTime = g.OrderByDescending(m => m.DateTime).FirstOrDefault().DateTime
+                    })
+                    .ToListAsync();
+
+                return conversations;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
     }
 }
