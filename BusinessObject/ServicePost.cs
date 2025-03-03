@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using BusinessObject;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace DUVAS
@@ -23,6 +24,7 @@ namespace DUVAS
         // Mối quan hệ với ServiceFeedback
         public virtual ICollection<ServiceFeedback>? ServiceFeedbacks { get; set; }
         public virtual ICollection<RentalServiceList>? RentalServiceLists { get; set; }
+        public virtual ICollection<PriorityPackageServicePost>? PriorityPackageServicePosts {  get; set; }
 
     }
 }
