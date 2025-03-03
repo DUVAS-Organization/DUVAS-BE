@@ -1,6 +1,6 @@
 
 # DUVAS-S1
-Trang web quản lý căn hộ và dịch vụ đi kèm cho sinh viên tại làng đại học Đà Nẵng sử dụng ASP.NET Core API, ReactJs, SQL Server
+Trang web quản lý căn hộ và dịch vụ đi kèm cho sinh viên tại làng đại học Đà Nẵng sử dụng ASP.NET Core API, ReactJs + TailwindCss, SQL Server
 ================================================================
 
 Before running the program, remember to:
