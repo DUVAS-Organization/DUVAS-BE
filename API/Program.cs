@@ -100,6 +100,8 @@ namespace API
             builder.Services.AddScoped<ICategoryPriorityPackageServicePostRepository, CategoryPriorityPackageServicePostRepository>();
             builder.Services.AddScoped<IPriorityPackageRoomRepository, PriorityPackageRoomRepository>();
             builder.Services.AddScoped<IPriorityPackageServicePostRepository, PriorityPackageServicePostRepository>();
+            builder.Services.AddScoped<IMessageRepository, MessageRepository>();
+
             builder.Services.AddScoped<CloudinaryService>();
 
             // Add CORS policy for React app

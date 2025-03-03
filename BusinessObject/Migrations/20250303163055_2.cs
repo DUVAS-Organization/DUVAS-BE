@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace BusinessObject.Migrations
 {
     /// <inheritdoc />
-    public partial class _1 : Migration
+    public partial class _2 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -73,7 +73,8 @@ namespace BusinessObject.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     RentalDateTimeStart = table.Column<DateTime>(type: "datetime2", nullable: false),
                     RentalDateTimeEnd = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ContractFile = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    ContractFile = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    status = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -129,7 +130,30 @@ namespace BusinessObject.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Messages",
+                name: "InsiderTradings",
+                columns: table => new
+                {
+                    InsiderTradingId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    Money = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Note = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_InsiderTradings", x => x.InsiderTradingId);
+                    table.ForeignKey(
+                        name: "FK_InsiderTradings_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Message",
                 columns: table => new
                 {
                     MessageId = table.Column<int>(type: "int", nullable: false)
@@ -139,30 +163,18 @@ namespace BusinessObject.Migrations
                     Content = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Image = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     DateTime = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Status = table.Column<int>(type: "int", nullable: false),
-                    UserId = table.Column<int>(type: "int", nullable: true),
-                    UserId1 = table.Column<int>(type: "int", nullable: true)
+                    Status = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Messages", x => x.MessageId);
+                    table.PrimaryKey("PK_Message", x => x.MessageId);
                     table.ForeignKey(
-                        name: "FK_Messages_Users_UserGetID",
+                        name: "FK_Message_Users_UserGetID",
                         column: x => x.UserGetID,
                         principalTable: "Users",
                         principalColumn: "UserId");
                     table.ForeignKey(
-                        name: "FK_Messages_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "UserId");
-                    table.ForeignKey(
-                        name: "FK_Messages_Users_UserId1",
-                        column: x => x.UserId1,
-                        principalTable: "Users",
-                        principalColumn: "UserId");
-                    table.ForeignKey(
-                        name: "FK_Messages_Users_UserSendID",
+                        name: "FK_Message_Users_UserSendID",
                         column: x => x.UserSendID,
                         principalTable: "Users",
                         principalColumn: "UserId");
@@ -278,28 +290,6 @@ namespace BusinessObject.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "UserFeedbacks",
-                columns: table => new
-                {
-                    UserFeedbackId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<int>(type: "int", nullable: false),
-                    Comment = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Star = table.Column<int>(type: "int", nullable: false),
-                    Image = table.Column<string>(type: "nvarchar(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_UserFeedbacks", x => x.UserFeedbackId);
-                    table.ForeignKey(
-                        name: "FK_UserFeedbacks_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Rooms",
                 columns: table => new
                 {
@@ -318,8 +308,9 @@ namespace BusinessObject.Migrations
                     Garret = table.Column<bool>(type: "bit", nullable: true),
                     Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Image = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Note = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    IsPermission = table.Column<bool>(type: "bit", nullable: true)
+                    Note = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    status = table.Column<int>(type: "int", nullable: false),
+                    IsPermission = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -386,7 +377,8 @@ namespace BusinessObject.Migrations
                     RentalServiceId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     CreationDateTime = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    RentalDateTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    AcceppDateTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    RentalDateTime = table.Column<DateTime>(type: "datetime2", nullable: true),
                     ServicePostID = table.Column<int>(type: "int", nullable: false),
                     RenterID = table.Column<int>(type: "int", nullable: false),
                     UserId = table.Column<int>(type: "int", nullable: true),
@@ -600,29 +592,53 @@ namespace BusinessObject.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "UserFeedbacks",
+                columns: table => new
+                {
+                    UserFeedbackId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    RoomId = table.Column<int>(type: "int", nullable: true),
+                    Comment = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Star = table.Column<double>(type: "float", nullable: false),
+                    Image = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserFeedbacks", x => x.UserFeedbackId);
+                    table.ForeignKey(
+                        name: "FK_UserFeedbacks_Rooms_RoomId",
+                        column: x => x.RoomId,
+                        principalTable: "Rooms",
+                        principalColumn: "RoomId");
+                    table.ForeignKey(
+                        name: "FK_UserFeedbacks_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Buildings_UserId",
                 table: "Buildings",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Messages_UserGetID",
-                table: "Messages",
-                column: "UserGetID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Messages_UserId",
-                table: "Messages",
+                name: "IX_InsiderTradings_UserId",
+                table: "InsiderTradings",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Messages_UserId1",
-                table: "Messages",
-                column: "UserId1");
+                name: "IX_Message_UserGetID",
+                table: "Message",
+                column: "UserGetID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Messages_UserSendID",
-                table: "Messages",
+                name: "IX_Message_UserSendID",
+                table: "Message",
                 column: "UserSendID");
 
             migrationBuilder.CreateIndex(
@@ -751,6 +767,11 @@ namespace BusinessObject.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_UserFeedbacks_RoomId",
+                table: "UserFeedbacks",
+                column: "RoomId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_UserFeedbacks_UserId",
                 table: "UserFeedbacks",
                 column: "UserId");
@@ -771,7 +792,10 @@ namespace BusinessObject.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Messages");
+                name: "InsiderTradings");
+
+            migrationBuilder.DropTable(
+                name: "Message");
 
             migrationBuilder.DropTable(
                 name: "OwnerLicenses");
@@ -816,22 +840,22 @@ namespace BusinessObject.Migrations
                 name: "Contracts");
 
             migrationBuilder.DropTable(
-                name: "Rooms");
-
-            migrationBuilder.DropTable(
                 name: "ServicePosts");
 
             migrationBuilder.DropTable(
+                name: "Rooms");
+
+            migrationBuilder.DropTable(
                 name: "Transactions");
+
+            migrationBuilder.DropTable(
+                name: "CategoryServices");
 
             migrationBuilder.DropTable(
                 name: "Buildings");
 
             migrationBuilder.DropTable(
                 name: "CategoryRooms");
-
-            migrationBuilder.DropTable(
-                name: "CategoryServices");
 
             migrationBuilder.DropTable(
                 name: "Users");
