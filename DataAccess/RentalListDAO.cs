@@ -29,8 +29,12 @@ namespace DataAccess
                         .Select(p => new RentalListDTO
                         {
                             RentalId = p.RentalId,
+                            RoomId = p.RoomId,
                             ContractId = p.ContractId,
                             RenterID = p.RenterID,
+                            RentDate = p.RentDate,
+                            MonthForRent = p.MonthForRent,
+                            CreatedDate = p.CreatedDate
 
                             //CategoryName = p.Category.CategoryName,
                             //CategoryId = p.CategoryId,                            
@@ -62,8 +66,12 @@ namespace DataAccess
                         .Select(r => new RentalListDTO
                         {
                             RentalId = r.RentalId,
+                            RoomId = r.RoomId,
                             ContractId = r.ContractId,
                             RenterID = r.RenterID,
+                            RentDate = r.RentDate,
+                            MonthForRent = r.MonthForRent,
+                            CreatedDate = r.CreatedDate
                             // Thêm các thuộc tính khác nếu cần
                         })
                         .ToListAsync();
