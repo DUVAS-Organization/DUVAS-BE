@@ -42,7 +42,8 @@ public class JwtService
             new Claim(ClaimTypes.Role, user.getRoleString()),
             new Claim(JwtRegisteredClaimNames.Sub, notNullVar),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim("UserId", user.UserId.ToString())
+            new Claim("UserId", user.UserId.ToString()),
+            new Claim("ProfilePicture", user.ProfilePicture)
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));
@@ -99,12 +100,15 @@ public class JwtService
                 IssuerSigningKey = key
             }, out var validatedToken);
             var userIdClaim = principal.FindFirst("UserId");
-        
+            var profilePictureClaim = principal.FindFirst("ProfilePicture");
+
             if (userIdClaim != null)
             {
                 return int.TryParse(userIdClaim.Value, out int userId) ? userId : (int?)null;
             }
+            string? profilePicture = profilePictureClaim?.Value;
             return null;
+
         }
         catch
         {
