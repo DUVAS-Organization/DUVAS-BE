@@ -15,7 +15,7 @@ namespace DTO
         public int ServicePostId { get; set; }
         //public Room? Room { get; set; }
         public DateTime CreationDateTime { get; set; }
-        public DateTime RentalDateTime { get; set; }
+        public DateTime? RentalDateTime { get; set; }
 
         public int RenterServiceID { get; set; }
         //public User? User { get; set; }

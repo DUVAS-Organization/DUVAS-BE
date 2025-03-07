@@ -84,7 +84,7 @@ namespace API
             builder.Services.AddScoped<ICategoryRoomRepository, CategoryRoomRepository>();
             builder.Services.AddScoped<ICategoryServiceRepository, CategoryServiceRepository>();
             builder.Services.AddScoped<IContractRepository, ContractRepository>();
-            builder.Services.AddScoped<IOwnerLicenseRepository, OwnerLicenseRepository>();
+            builder.Services.AddScoped<ILandlordLicenseRepository, LandlordLicenseRepository>();
             builder.Services.AddScoped<IRentalListRepository, RentalListRepository>();
             builder.Services.AddScoped<IReportRepository, ReportRepository>();
             builder.Services.AddScoped<IRoomRepository, RoomRepository>();
@@ -100,6 +100,8 @@ namespace API
             builder.Services.AddScoped<ICategoryPriorityPackageServicePostRepository, CategoryPriorityPackageServicePostRepository>();
             builder.Services.AddScoped<IPriorityPackageRoomRepository, PriorityPackageRoomRepository>();
             builder.Services.AddScoped<IPriorityPackageServicePostRepository, PriorityPackageServicePostRepository>();
+            builder.Services.AddScoped<IMessageRepository, MessageRepository>();
+
             builder.Services.AddScoped<CloudinaryService>();
 
             // Add CORS policy for React app

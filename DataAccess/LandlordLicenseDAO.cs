@@ -1,5 +1,4 @@
-﻿using BusinessObject;
-using DTO;
+﻿using DTO;
 using DUVAS;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -10,63 +9,73 @@ using System.Threading.Tasks;
 
 namespace DataAccess
 {
-    public class CategoryPriorityPackageRoomDAO
+    public class LandlordLicenseDAO
     {
         private readonly ApplicationDbContext _context;
 
-        public CategoryPriorityPackageRoomDAO(ApplicationDbContext context)
+        public LandlordLicenseDAO(ApplicationDbContext context)
         {
             _context = context;
         }
-
-        public static async Task<List<CategoryPriorityPackageRoomDTO>> GetCategoryPriorityPackageRoomsAsync()
+        public static async Task<List<LandlordLicenseDTO>> GetLandlordLicensesAsync()
         {
+
             try
             {
                 using (var context = new ApplicationDbContext())
                 {
-                    var categoryPriorityPackageRooms = await context.CategoryPriorityPackageRooms
+                    var landlordLicenses = await context.LandlordLicenses
                         .AsNoTracking()
-                        .Select(p => new CategoryPriorityPackageRoomDTO
+                        .Select(p => new LandlordLicenseDTO
                         {
-                            CategoryPriorityPackageRoomId = p.CategoryPriorityPackageRoomId,
-                            CategoryPriorityPackageRoomValue = p.CategoryPriorityPackageRoomValue,
-                            Price = p.Price
+                            LandlordLicenseId = p.LandlordLicenseId,
+                            UserId = p.UserId,
+                            OwnerLicense1 = p.OwnerLicense1,
+                            OwnerLicense2 = p.OwnerLicense2,
+                            OwnerLicense3 = p.OwnerLicense3,
+
+                            //CategoryName = p.Category.CategoryName,
+                            //CategoryId = p.CategoryId,                            
+
                         })
                         .ToListAsync();
 
-                    return categoryPriorityPackageRooms;
+
+                    return landlordLicenses;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+
+        }
+
+        public static async Task<LandlordLicense> FindLandlordLicenseByIdAsync(int landlordLicenseId)
+        {
+            LandlordLicense landlordLicense = null;
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    landlordLicense = await context.LandlordLicenses.SingleOrDefaultAsync(x => x.LandlordLicenseId == landlordLicenseId);
                 }
             }
             catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
+            return landlordLicense;
         }
 
-        public static async Task<CategoryPriorityPackageRoom> FindCategoryPriorityPackageRoomByIdAsync(int categoryPriorityPackageRoomId)
+        public static async Task SaveLandlordLicenseAsync(LandlordLicense landlordLicense)
         {
             try
             {
                 using (var context = new ApplicationDbContext())
                 {
-                    return await context.CategoryPriorityPackageRooms
-                        .SingleOrDefaultAsync(x => x.CategoryPriorityPackageRoomId == categoryPriorityPackageRoomId);
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
-        public static async Task SaveCategoryPriorityPackageRoomAsync(CategoryPriorityPackageRoom categoryPriorityPackageRoom)
-        {
-            try
-            {
-                using (var context = new ApplicationDbContext())
-                {
-                    await context.CategoryPriorityPackageRooms.AddAsync(categoryPriorityPackageRoom);
+                    await context.LandlordLicenses.AddAsync(landlordLicense);
                     await context.SaveChangesAsync();
                 }
             }
@@ -76,13 +85,13 @@ namespace DataAccess
             }
         }
 
-        public static async Task UpdateCategoryPriorityPackageRoomAsync(CategoryPriorityPackageRoom categoryPriorityPackageRoom)
+        public static async Task UpdateLandlordLicenseAsync(LandlordLicense landlordLicense)
         {
             try
             {
                 using (var context = new ApplicationDbContext())
                 {
-                    context.Entry(categoryPriorityPackageRoom).State = EntityState.Modified;
+                    context.Entry(landlordLicense).State = EntityState.Modified;
                     await context.SaveChangesAsync();
                 }
             }
@@ -92,17 +101,16 @@ namespace DataAccess
             }
         }
 
-        public static async Task DeleteCategoryPriorityPackageRoomAsync(CategoryPriorityPackageRoom categoryPriorityPackageRoom)
+        public static async Task DeleteLandlordLicenseAsync(LandlordLicense landlordLicense)
         {
             try
             {
                 using (var context = new ApplicationDbContext())
                 {
-                    var existingCategory = await context.CategoryPriorityPackageRooms
-                        .SingleOrDefaultAsync(c => c.CategoryPriorityPackageRoomId == categoryPriorityPackageRoom.CategoryPriorityPackageRoomId);
-                    if (existingCategory != null)
+                    var existingLandlordLicense = await context.LandlordLicenses.SingleOrDefaultAsync(c => c.LandlordLicenseId == landlordLicense.LandlordLicenseId);
+                    if (existingLandlordLicense != null)
                     {
-                        context.CategoryPriorityPackageRooms.Remove(existingCategory);
+                        context.LandlordLicenses.Remove(existingLandlordLicense);
                         await context.SaveChangesAsync();
                     }
                 }
@@ -112,5 +120,6 @@ namespace DataAccess
                 throw new Exception(ex.Message);
             }
         }
+
     }
 }

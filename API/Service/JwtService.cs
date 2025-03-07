@@ -36,13 +36,13 @@ public class JwtService
         }
         var claims = new[]
         {
+            
+            //new Claim(ClaimTypes.Name, notNullVar),
             new Claim(ClaimTypes.Name, user.Name),
             new Claim(ClaimTypes.Role, user.getRoleString()),
-            new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
-            new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
+            new Claim(JwtRegisteredClaimNames.Sub, notNullVar),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim("UserId", user.UserId.ToString()),
-            new Claim("ProfilePicture", user.ProfilePicture),
+            new Claim("UserId", user.UserId.ToString())
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));

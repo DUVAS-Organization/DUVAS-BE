@@ -13,9 +13,8 @@ namespace DTO
         public int UserFeedbackId { get; set; }
         public int UserId { get; set; }       
         public string Comment { get; set; }
-        public double Star { get; set; }
+        public int Star { get; set; }
         public string Image { get; set; }
-        public DateTime CreatedDate { get; set; }
         //public User? User { get; set; }
     }
 }

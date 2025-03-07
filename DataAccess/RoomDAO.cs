@@ -66,70 +66,6 @@ namespace DataAccess
 
         }
 
-        public static async Task<List<RoomDTO>> GetRoomsByLandlordAsync(int userId)
-        {
-            using (var context = new ApplicationDbContext())
-            {
-                return await context.Rooms
-                    .Where(r => r.UserId == userId)
-                    .AsNoTracking()
-                    .Select(p => new RoomDTO
-                    {
-                        RoomId = p.RoomId,
-                        BuildingId = p.BuildingId,
-                        UserId = p.UserId,
-                        UserName = p.User.UserName,
-                        Title = p.Title,
-                        Description = p.Description,
-                        LocationDetail = p.LocationDetail,
-                        Acreage = p.Acreage,
-                        Furniture = p.Furniture,
-                        NumberOfBathroom = p.NumberOfBathroom,
-                        NumberOfBedroom = p.NumberOfBedroom,
-                        Garret = p.Garret,
-                        Price = p.Price,
-                        CategoryRoomId = p.CategoryRoomId,
-                        Image = p.Image,
-                        Note = p.Note,
-                        IsPermission = p.IsPermission
-                    })
-                    .ToListAsync();
-            }
-        }
-        public static async Task<RoomDTO> GetRoomByIdForLandlordAsync(int roomId, int landlordId)
-        {
-            using (var context = new ApplicationDbContext())
-            {
-
-                List<Room> room = context.Rooms.Where(r => r.RoomId == roomId && r.UserId == landlordId).ToList();
-
-                return await context.Rooms
-                    .Where(r => r.RoomId == roomId && r.UserId == landlordId) // Lọc theo RoomId và LandlordId
-                    .AsNoTracking()
-                    .Select(p => new RoomDTO
-                    {
-                        RoomId = p.RoomId,
-                        BuildingId = p.BuildingId,
-                        UserId = p.UserId,
-                        UserName = p.User.UserName,
-                        Title = p.Title,
-                        Description = p.Description,
-                        LocationDetail = p.LocationDetail,
-                        Acreage = p.Acreage,
-                        Furniture = p.Furniture,
-                        NumberOfBathroom = p.NumberOfBathroom,
-                        NumberOfBedroom = p.NumberOfBedroom,
-                        Garret = p.Garret,
-                        Price = p.Price,
-                        CategoryRoomId = p.CategoryRoomId,
-                        Image = p.Image,
-                        Note = p.Note,
-                        IsPermission = (bool)p.IsPermission
-                    })
-                    .FirstOrDefaultAsync();
-            }
-        }
-
         public static async Task<Room> FindRoomByIdAsync(int roomId)
         {
             Room room = null;
@@ -145,26 +81,6 @@ namespace DataAccess
                 throw new Exception(ex.Message);
             }
             return room;
-        }
-
-        public static async Task<List<UserFeedbackDTO>> GetRoomReviewsAsync(int roomId)
-        {
-            using (var context = new ApplicationDbContext())
-            {
-                return await context.UserFeedbacks
-                    .AsNoTracking()
-                    .Where(uf => uf.RoomId == roomId)
-                    .Select(uf => new UserFeedbackDTO
-                    {
-                        UserFeedbackId = uf.UserFeedbackId,
-                        UserId = uf.UserId,
-                        Comment = uf.Comment,
-                        Star = (int)uf.Star,
-                        Image = uf.Image,
-                        CreatedDate = uf.CreatedDate
-                    })
-                    .ToListAsync();
-            }
         }
 
         public static async Task SaveRoomAsync(Room room)

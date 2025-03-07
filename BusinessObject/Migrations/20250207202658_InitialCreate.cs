@@ -6,39 +6,11 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace BusinessObject.Migrations
 {
     /// <inheritdoc />
-    public partial class _1 : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateTable(
-                name: "CategoryPriorityPackageRooms",
-                columns: table => new
-                {
-                    CategoryPriorityPackageRoomId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    CategoryPriorityPackageRoomValue = table.Column<int>(type: "int", nullable: false),
-                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_CategoryPriorityPackageRooms", x => x.CategoryPriorityPackageRoomId);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "CategoryPriorityPackageServicePosts",
-                columns: table => new
-                {
-                    CategoryPriorityPackageServicePostId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    CategoryPriorityPackageServicePostValue = table.Column<int>(type: "int", nullable: false),
-                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_CategoryPriorityPackageServicePosts", x => x.CategoryPriorityPackageServicePostId);
-                });
-
             migrationBuilder.CreateTable(
                 name: "CategoryRooms",
                 columns: table => new
@@ -114,8 +86,7 @@ namespace BusinessObject.Migrations
                     UserId = table.Column<int>(type: "int", nullable: false),
                     BuildingName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Location = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Verify = table.Column<bool>(type: "bit", nullable: true),
-                    Image = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Verify = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -126,46 +97,6 @@ namespace BusinessObject.Migrations
                         principalTable: "Users",
                         principalColumn: "UserId",
                         onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Messages",
-                columns: table => new
-                {
-                    MessageId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserSendID = table.Column<int>(type: "int", nullable: false),
-                    UserGetID = table.Column<int>(type: "int", nullable: false),
-                    Content = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Image = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    DateTime = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Status = table.Column<int>(type: "int", nullable: false),
-                    UserId = table.Column<int>(type: "int", nullable: true),
-                    UserId1 = table.Column<int>(type: "int", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Messages", x => x.MessageId);
-                    table.ForeignKey(
-                        name: "FK_Messages_Users_UserGetID",
-                        column: x => x.UserGetID,
-                        principalTable: "Users",
-                        principalColumn: "UserId");
-                    table.ForeignKey(
-                        name: "FK_Messages_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "UserId");
-                    table.ForeignKey(
-                        name: "FK_Messages_Users_UserId1",
-                        column: x => x.UserId1,
-                        principalTable: "Users",
-                        principalColumn: "UserId");
-                    table.ForeignKey(
-                        name: "FK_Messages_Users_UserSendID",
-                        column: x => x.UserSendID,
-                        principalTable: "Users",
-                        principalColumn: "UserId");
                 });
 
             migrationBuilder.CreateTable(
@@ -312,14 +243,14 @@ namespace BusinessObject.Migrations
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     LocationDetail = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Acreage = table.Column<double>(type: "float", nullable: false),
-                    Furniture = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Furniture = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     NumberOfBathroom = table.Column<int>(type: "int", nullable: false),
                     NumberOfBedroom = table.Column<int>(type: "int", nullable: false),
-                    Garret = table.Column<bool>(type: "bit", nullable: true),
+                    Garret = table.Column<bool>(type: "bit", nullable: false),
                     Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Image = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Note = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    IsPermission = table.Column<bool>(type: "bit", nullable: true)
+                    Note = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsPermission = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -341,42 +272,6 @@ namespace BusinessObject.Migrations
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "UserId");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "PriorityPackageServicePosts",
-                columns: table => new
-                {
-                    PriorityPackageServicePostId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<int>(type: "int", nullable: false),
-                    ServicePostId = table.Column<int>(type: "int", nullable: false),
-                    CategoryPriorityPackageServicePostId = table.Column<int>(type: "int", nullable: false),
-                    StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    EndDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_PriorityPackageServicePosts", x => x.PriorityPackageServicePostId);
-                    table.ForeignKey(
-                        name: "FK_PriorityPackageServicePosts_CategoryPriorityPackageServicePosts_CategoryPriorityPackageServicePostId",
-                        column: x => x.CategoryPriorityPackageServicePostId,
-                        principalTable: "CategoryPriorityPackageServicePosts",
-                        principalColumn: "CategoryPriorityPackageServicePostId",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_PriorityPackageServicePosts_ServicePosts_ServicePostId",
-                        column: x => x.ServicePostId,
-                        principalTable: "ServicePosts",
-                        principalColumn: "ServicePostId",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_PriorityPackageServicePosts_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -464,51 +359,14 @@ namespace BusinessObject.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "PriorityPackageRooms",
-                columns: table => new
-                {
-                    PriorityPackageRoomId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<int>(type: "int", nullable: false),
-                    RoomId = table.Column<int>(type: "int", nullable: false),
-                    CategoryPriorityPackageRoomId = table.Column<int>(type: "int", nullable: false),
-                    StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    EndDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_PriorityPackageRooms", x => x.PriorityPackageRoomId);
-                    table.ForeignKey(
-                        name: "FK_PriorityPackageRooms_CategoryPriorityPackageRooms_CategoryPriorityPackageRoomId",
-                        column: x => x.CategoryPriorityPackageRoomId,
-                        principalTable: "CategoryPriorityPackageRooms",
-                        principalColumn: "CategoryPriorityPackageRoomId",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_PriorityPackageRooms_Rooms_RoomId",
-                        column: x => x.RoomId,
-                        principalTable: "Rooms",
-                        principalColumn: "RoomId",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_PriorityPackageRooms_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "RentalLists",
                 columns: table => new
                 {
                     RentalId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     RoomId = table.Column<int>(type: "int", nullable: false),
-                    ContractId = table.Column<int>(type: "int", nullable: true),
+                    ContractId = table.Column<int>(type: "int", nullable: false),
                     RenterID = table.Column<int>(type: "int", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     RentalStatus = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -606,58 +464,8 @@ namespace BusinessObject.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Messages_UserGetID",
-                table: "Messages",
-                column: "UserGetID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Messages_UserId",
-                table: "Messages",
-                column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Messages_UserId1",
-                table: "Messages",
-                column: "UserId1");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Messages_UserSendID",
-                table: "Messages",
-                column: "UserSendID");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_OwnerLicenses_UserId",
                 table: "OwnerLicenses",
-                column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_PriorityPackageRooms_CategoryPriorityPackageRoomId",
-                table: "PriorityPackageRooms",
-                column: "CategoryPriorityPackageRoomId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_PriorityPackageRooms_RoomId",
-                table: "PriorityPackageRooms",
-                column: "RoomId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_PriorityPackageRooms_UserId",
-                table: "PriorityPackageRooms",
-                column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_PriorityPackageServicePosts_CategoryPriorityPackageServicePostId",
-                table: "PriorityPackageServicePosts",
-                column: "CategoryPriorityPackageServicePostId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_PriorityPackageServicePosts_ServicePostId",
-                table: "PriorityPackageServicePosts",
-                column: "ServicePostId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_PriorityPackageServicePosts_UserId",
-                table: "PriorityPackageServicePosts",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
@@ -771,16 +579,7 @@ namespace BusinessObject.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Messages");
-
-            migrationBuilder.DropTable(
                 name: "OwnerLicenses");
-
-            migrationBuilder.DropTable(
-                name: "PriorityPackageRooms");
-
-            migrationBuilder.DropTable(
-                name: "PriorityPackageServicePosts");
 
             migrationBuilder.DropTable(
                 name: "RentalLists");
@@ -805,12 +604,6 @@ namespace BusinessObject.Migrations
 
             migrationBuilder.DropTable(
                 name: "WithdrawRequests");
-
-            migrationBuilder.DropTable(
-                name: "CategoryPriorityPackageRooms");
-
-            migrationBuilder.DropTable(
-                name: "CategoryPriorityPackageServicePosts");
 
             migrationBuilder.DropTable(
                 name: "Contracts");

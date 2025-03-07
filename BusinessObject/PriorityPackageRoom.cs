@@ -20,8 +20,8 @@ namespace BusinessObject
         public Room? Room { get; set; }
         public int CategoryPriorityPackageRoomId { get; set; }
         public CategoryPriorityPackageRoom? CategoryPriorityPackageRoom { get; set; }
-        public DateTime StartDate {  get; set; }
-        public DateTime EndDate {  get; set; }
-        public decimal Price {  get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
+        public decimal Price { get; set; }
     }
 }
