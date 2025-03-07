@@ -20,5 +20,7 @@ namespace DUVAS
         public DateTime CreatedDate { get; set; }
 
         public int RentalStatus { get; set; } = 0;
+        // 1: Đang chờ chủ liên hệ và đồng ý
+        // 2: Đã hủy yêu cầu thuê
     }
 }

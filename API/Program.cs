@@ -10,6 +10,8 @@ using Microsoft.IdentityModel.Tokens;
 using CloudinaryDotNet;
 using Microsoft.Extensions.Options;
 using API.Controllers;
+using System.Text.Json.Serialization;
+using Repository;
 
 namespace API
 {
@@ -72,13 +74,17 @@ namespace API
                 var account = new Account(config.CloudName, config.ApiKey, config.ApiSecret);
                 return new Cloudinary(account);
             });
+            builder.Services.AddControllers().AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+            });
 
             //// Add repositories
             builder.Services.AddScoped<IBuildingRepository, BuildingRepository>();
             builder.Services.AddScoped<ICategoryRoomRepository, CategoryRoomRepository>();
             builder.Services.AddScoped<ICategoryServiceRepository, CategoryServiceRepository>();
             builder.Services.AddScoped<IContractRepository, ContractRepository>();
-            builder.Services.AddScoped<IOwnerLicenseRepository, OwnerLicenseRepository>();
+            builder.Services.AddScoped<ILandlordLicenseRepository, LandlordLicenseRepository>();
             builder.Services.AddScoped<IRentalListRepository, RentalListRepository>();
             builder.Services.AddScoped<IReportRepository, ReportRepository>();
             builder.Services.AddScoped<IRoomRepository, RoomRepository>();
@@ -90,6 +96,12 @@ namespace API
             builder.Services.AddScoped<IWithdrawRequestRepository, WithdrawRequestRepository>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IUserFeedbackRepository, UserFeedbackRepository>();
+            builder.Services.AddScoped<ICategoryPriorityPackageRoomRepository, CategoryPriorityPackageRoomRepository>();
+            builder.Services.AddScoped<ICategoryPriorityPackageServicePostRepository, CategoryPriorityPackageServicePostRepository>();
+            builder.Services.AddScoped<IPriorityPackageRoomRepository, PriorityPackageRoomRepository>();
+            builder.Services.AddScoped<IPriorityPackageServicePostRepository, PriorityPackageServicePostRepository>();
+            builder.Services.AddScoped<IMessageRepository, MessageRepository>();
+
             builder.Services.AddScoped<CloudinaryService>();
 
             // Add CORS policy for React app

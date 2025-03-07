@@ -5,6 +5,7 @@ using DUVAS;
 using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using System.IO;
+using BusinessObject;
 
 namespace DUVAS
 {
@@ -25,11 +26,18 @@ namespace DUVAS
         public virtual DbSet<ServicePost> ServicePosts { get; set; }
         public virtual DbSet<UserFeedback> UserFeedbacks { get; set; }
         public virtual DbSet<Report> Reports { get; set; }
+        public virtual DbSet<OwnerLicense> OwnerLicenses { get; set; }
         public virtual DbSet<ServiceLicense> ServiceLicenses { get; set; }
         public virtual DbSet<CategoryRoom> CategoryRooms { get; set; }
         public virtual DbSet<ServiceFeedback> ServiceFeedbacks { get; set; }
         public virtual DbSet<CategoryService> CategoryServices { get; set; }
-        public virtual DbSet<OwnerLicense> OwnerLicenses { get; set; }
+        public virtual DbSet<LandlordLicense> LandlordLicenses { get; set; }
+        public virtual DbSet<Message> Messages { get; set; }
+        public virtual DbSet<CategoryPriorityPackageRoom> CategoryPriorityPackageRooms { get; set; }
+        public virtual DbSet<CategoryPriorityPackageServicePost> CategoryPriorityPackageServicePosts { get; set; }
+        public virtual DbSet<PriorityPackageRoom> PriorityPackageRooms { get; set; }
+        public virtual DbSet<PriorityPackageServicePost> PriorityPackageServicePosts { get; set; }
+        public virtual DbSet<InsiderTrading> InsiderTradings { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
        : base(options)
