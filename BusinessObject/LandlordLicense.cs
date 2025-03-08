@@ -10,9 +10,10 @@ namespace DUVAS
         public int UserId { get; set; }
         public User? User { get; set; }
 
-        public string AnhCCCDMatTruoc { get; set; }
+
+        public string AnhCCCDMatTruoc{ get; set; }
         public string AnhCCCDMatSau { get; set; }
         public int CCCD { get; set; }
-        public string? GiayPhepKinhDoanh { get; set; }
+        public string? GiayPhepKinhDoanh {  get; set; }
     }
 }
