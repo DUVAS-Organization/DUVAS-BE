@@ -32,15 +32,8 @@ public class WithDrawController : ControllerBase
             return BadRequest("UserId claim not found.");
         }
         int.TryParse(userIdClaim.Value, out int userId);
-        Console.WriteLine("user id: " + userId);
-        var user = _userRepository.GetUserByIdAsync(userId);
-        if (user == null)
-        {
-            return StatusCode(500, "Server error.");
-        }
-        Console.WriteLine("user money: " + user.Result.Money);
-        Console.WriteLine("user email: " + user.Result.Gmail);
-        if (user.Result.Money < withdrawRequestDto.Amount)
+        decimal money = _userRepository.GetUserMoneyWithIdAsync(userId).Result;
+        if (money < withdrawRequestDto.Amount)
         {
             return BadRequest("Your balance is not enough.");
         }
@@ -48,8 +41,13 @@ public class WithDrawController : ControllerBase
         string uuid = newUuid.ToString();
         uuid = uuid.Replace("-", "");
         var transaction = await _transactionRepository.AddTransaction(-withdrawRequestDto.Amount, uuid, userId);
-        await _withdrawRequestRepository.AddAsync(userId, withdrawRequestDto.Amount, transaction.Id, withdrawRequestDto.BankCode, withdrawRequestDto.AccountNumber);
-        return Ok(new {message = "Withdraw request successful."});
+        var bankAccount =  _userRepository.GetUserBankAccountByIdAndUserIdAsync(userId, withdrawRequestDto.BankAccountId).Result;
+        if (bankAccount == null)
+        {
+            return StatusCode(500, "Server error.");
+        }
+        await _withdrawRequestRepository.AddAsync(userId, -withdrawRequestDto.Amount, transaction.Id, bankAccount.BankCode, bankAccount.AccountNumber);
+        return Ok(new {message = "Withdraw request create successful."});
     }
     [HttpGet("payment-qr")]
     [Authorize(Policy = "Admin")]
@@ -70,12 +68,17 @@ public class WithDrawController : ControllerBase
         return Ok(new { QRCode = qrCodeImage });
     }
     
-    [HttpGet("user/{userId}")]
-    [AllowAnonymous]
-    public async Task<ActionResult<IEnumerable<WithdrawRequest>>> GetUserWithdrawRequests([FromRoute] int userId)
+    [HttpGet("user")]
+    [Authorize(Policy = "User")]
+    public async Task<ActionResult<IEnumerable<WithdrawRequest>>> GetUserWithdrawRequests()
     {
+        var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId");
+        if (userIdClaim == null)
+        {
+            return BadRequest("UserId claim not found.");
+        }
+        int.TryParse(userIdClaim.Value, out int userId);
         var withDrawReq = await _withdrawRequestRepository.GetAllByUserIdAsync(userId);
-        
         return Ok(withDrawReq);
     }
 }

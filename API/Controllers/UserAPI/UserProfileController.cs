@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using API.Service;
+using DTO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using DUVAS;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.OData.Routing.Controllers;
 using Microsoft.AspNetCore.OData.Query;
 using Repositories.IRepository; // Thay bằng namespace chứa các interface repository
@@ -22,10 +25,11 @@ namespace API.Controllers.UserAPI
         private readonly IRentalListRepository _rentalListRepository;
         private readonly IRentalServiceListRepository _rentalServiceListRepository;
         private readonly IContractRepository _contractRepository;
+        private readonly OtpService _otpService;
 
         public UserProfileController(IUserRepository userRepository, IRoomRepository roomRepository, 
             IServicePostRepository servicePostRepository, IRentalListRepository rentalListRepository, IContractRepository contractRepository,
-            IRentalServiceListRepository rentalServiceListRepository)
+            IRentalServiceListRepository rentalServiceListRepository, OtpService otpService)
         {
             _userRepository = userRepository;
             _roomRepository = roomRepository;
@@ -33,6 +37,7 @@ namespace API.Controllers.UserAPI
             _rentalListRepository = rentalListRepository;
             _contractRepository = contractRepository;
             _rentalServiceListRepository = rentalServiceListRepository;
+            _otpService = otpService;
         }
 
         // API: Edit profile
@@ -167,6 +172,117 @@ namespace API.Controllers.UserAPI
                 return StatusCode(StatusCodes.Status500InternalServerError, "Lỗi khi lấy thông tin ngày hết hạn sử dụng phòng.");
             }
         }
+        [HttpGet("BankAccount")]
+        [Authorize(Policy = "User")]
+        public async Task<ActionResult<IEnumerable<BankAccounts>>> GetUserBankAccounts()
+        {
+            try
+            {
+                var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId");
+                if (userIdClaim == null)
+                {
+                    return BadRequest("UserId claim not found.");
+                }
+                int.TryParse(userIdClaim.Value, out int userId);
+                var bankAccounts = await _userRepository.GetUserBankAccounts(userId);
+                return Ok(bankAccounts);
+                
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return Ok(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while fetching bank accounts.", details = ex.Message });
+            }
+        }
 
+        //This function require an otp which is called from otp api
+        [HttpPost("BankAccount")]
+        [Authorize(Policy = "User")]
+        public async Task<ActionResult<BankAccounts>> CreateUserBankAccount(BankAccountsDTO bankAccounts, string otp)
+        {
+            var verifiedOtp = _otpService.CheckOtp(otp) !=null;
+            if (!verifiedOtp) 
+            {
+                return NotFound("Wrong otp");
+            }
+            try
+            {
+                var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId");
+                if (userIdClaim == null)
+                {
+                    return Unauthorized();
+                }
+                int.TryParse(userIdClaim.Value, out int userId);
+                var userInfo = await _userRepository.GetUserByIdAsync(userId);
+                if (userInfo == null)
+                {
+                    return NotFound("User not found.");
+                }
+                
+                var newBankAccount = await _userRepository.CreateNewBankAccounts(userId, bankAccounts);
+                _otpService.RemoveOtp(userInfo.Gmail);
+                return CreatedAtAction(nameof(GetUserBankAccounts), new { userId = userId }, newBankAccount);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while creating the bank account.", details = ex.Message }); 
+            }
+        }
+
+        
+        //This function require an otp which is called from otp api
+        [HttpPut("BankAccount")]
+        public async Task<ActionResult<Boolean>> UpdateBankAccount([FromBody] BankAccountUpdateDto bankAccountUpdateDto)
+        {
+            try
+            {
+                var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId");
+                if (userIdClaim == null)
+                {
+                    return Unauthorized();
+                }
+                int.TryParse(userIdClaim.Value, out int userId);
+                var userInfo = await _userRepository.GetUserByIdAsync(userId);
+                if (userInfo == null)
+                {
+                    return NotFound("User not found.");
+                }
+
+                // Only verify OTP if activating the bank account
+                if (bankAccountUpdateDto.Active)
+                {
+                    var verifiedOtp = _otpService.CheckOtp(bankAccountUpdateDto.Otp) != null;
+                    if (!verifiedOtp)
+                    {
+                        return NotFound("Wrong OTP.");
+                    }
+                }
+
+                await _userRepository.UpdateBankAccountStatus(userId, bankAccountUpdateDto.BankAccountId, bankAccountUpdateDto.Active);
+
+                // Remove OTP after successful activation
+                if (bankAccountUpdateDto.Active)
+                {
+                    _otpService.RemoveOtp(userInfo.Gmail);
+                }
+
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while updating the bank account status." });
+            }
+        }
     }
 }

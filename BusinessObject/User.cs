@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using BusinessObject;
+using System.ComponentModel.DataAnnotations;
 namespace DUVAS
 {
     public class User
@@ -25,12 +26,13 @@ namespace DUVAS
         public virtual ICollection<Transaction>? Transactions { get; set; }
         public virtual ICollection<UserFeedback>? UserFeedbacks { get; set; }
         public virtual ICollection<ServiceLicense>? ServiceLicenses { get; set; }
-        public virtual ICollection<OwnerLicense>? OwnerLicenses { get; set; }
         public virtual ICollection<Report>? Reports { get; set; }
         public virtual ICollection<RentalList>? RentalLists { get; set; }
         public virtual ICollection<WithdrawRequest> WithdrawRequests { get; set; }
         public virtual ICollection<BankAccounts> BankAccounts { get; set; }
         public virtual ICollection<Room>? Rooms { get; set; }
+        public virtual ICollection<PriorityPackageServicePost>? PriorityPackageServicePosts { get; set; }
+        public virtual ICollection<PriorityPackageRoom> PriorityPackageRooms { get; set; }
 
         public User(string gmail, string userName, string name, string password, string address, string sex, string profilePicture, decimal money, int? roleUser)
         {
