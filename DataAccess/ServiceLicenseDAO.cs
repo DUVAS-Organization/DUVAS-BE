@@ -35,10 +35,6 @@ namespace DataAccess
                             CCCD = p.CCCD,
                             GiayPhepKinhDoanh = p.GiayPhepKinhDoanh,
                             GiayPhepChuyenMon = p.GiayPhepChuyenMon,
-
-                            //CategoryName = p.Category.CategoryName,
-                            //CategoryId = p.CategoryId,                            
-
                         })
                         .ToListAsync();
 

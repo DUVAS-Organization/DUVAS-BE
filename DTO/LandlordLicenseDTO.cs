@@ -14,7 +14,6 @@ namespace DTO
 
         public int UserId { get; set; }
         //public User? User { get; set; }
-
         public string AnhCCCDMatTruoc { get; set; }
         public string AnhCCCDMatSau { get; set; }
         public int CCCD { get; set; }

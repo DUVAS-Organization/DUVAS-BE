@@ -14,6 +14,6 @@ namespace DUVAS
         public string AnhCCCDMatSau { get; set; }
         public int CCCD { get; set; }
         public string? GiayPhepKinhDoanh { get; set; }
-        public string? GiayPhepChuyenMon { get; set; }
+        public string? GiayPhepChuyenMon {  get; set; }
     }
 }
