@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using BusinessObject;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 
@@ -38,5 +39,6 @@ namespace DUVAS
 
         public virtual ICollection<RoomLicense>? RoomLicenses { get; set; }
         public virtual ICollection<RentalList>? RentalLists { get; set; }
+        public virtual ICollection<PriorityPackageRoom>? PriorityPackageRooms { get; set; }
     }
 }

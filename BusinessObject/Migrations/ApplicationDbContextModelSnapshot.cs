@@ -22,6 +22,118 @@ namespace BusinessObject.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("BusinessObject.CategoryPriorityPackageRoom", b =>
+                {
+                    b.Property<int>("CategoryPriorityPackageRoomId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CategoryPriorityPackageRoomId"));
+
+                    b.Property<int>("CategoryPriorityPackageRoomValue")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("CategoryPriorityPackageRoomId");
+
+                    b.ToTable("CategoryPriorityPackageRooms");
+                });
+
+            modelBuilder.Entity("BusinessObject.CategoryPriorityPackageServicePost", b =>
+                {
+                    b.Property<int>("CategoryPriorityPackageServicePostId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CategoryPriorityPackageServicePostId"));
+
+                    b.Property<int>("CategoryPriorityPackageServicePostValue")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("CategoryPriorityPackageServicePostId");
+
+                    b.ToTable("CategoryPriorityPackageServicePosts");
+                });
+
+            modelBuilder.Entity("BusinessObject.PriorityPackageRoom", b =>
+                {
+                    b.Property<int>("PriorityPackageRoomId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PriorityPackageRoomId"));
+
+                    b.Property<int>("CategoryPriorityPackageRoomId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("RoomId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("PriorityPackageRoomId");
+
+                    b.HasIndex("CategoryPriorityPackageRoomId");
+
+                    b.HasIndex("RoomId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("PriorityPackageRooms");
+                });
+
+            modelBuilder.Entity("BusinessObject.PriorityPackageServicePost", b =>
+                {
+                    b.Property<int>("PriorityPackageServicePostId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PriorityPackageServicePostId"));
+
+                    b.Property<int>("CategoryPriorityPackageServicePostId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("ServicePostId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("PriorityPackageServicePostId");
+
+                    b.HasIndex("CategoryPriorityPackageServicePostId");
+
+                    b.HasIndex("ServicePostId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("PriorityPackageServicePosts");
+                });
+
             modelBuilder.Entity("DUVAS.Building", b =>
                 {
                     b.Property<int>("BuildingId")
@@ -112,34 +224,97 @@ namespace BusinessObject.Migrations
                     b.ToTable("Contracts");
                 });
 
-            modelBuilder.Entity("DUVAS.OwnerLicense", b =>
+            modelBuilder.Entity("DUVAS.InsiderTrading", b =>
                 {
-                    b.Property<int>("OwnerLicenseId")
+                    b.Property<int>("InsiderTradingId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("OwnerLicenseId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("InsiderTradingId"));
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("Money")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Note")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("InsiderTradingId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("InsiderTradings");
+                });
+
+            modelBuilder.Entity("DUVAS.LandlordLicense", b =>
+                {
+                    b.Property<int>("LandlordLicenseId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LandlordLicenseId"));
 
                     b.Property<string>("OwnerLicense1")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("OwnerLicense2")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("OwnerLicense3")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    b.HasKey("OwnerLicenseId");
+                    b.HasKey("LandlordLicenseId");
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("OwnerLicenses");
+                    b.ToTable("LandlordLicenses");
+                });
+
+            modelBuilder.Entity("DUVAS.Message", b =>
+                {
+                    b.Property<int>("MessageId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MessageId"));
+
+                    b.Property<string>("Content")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("DateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Image")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserGetID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserSendID")
+                        .HasColumnType("int");
+
+                    b.HasKey("MessageId");
+
+                    b.HasIndex("UserGetID");
+
+                    b.HasIndex("UserSendID");
+
+                    b.ToTable("Message");
                 });
 
             modelBuilder.Entity("DUVAS.RentalList", b =>
@@ -150,8 +325,11 @@ namespace BusinessObject.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RentalId"));
 
-                    b.Property<int>("ContractId")
+                    b.Property<int?>("ContractId")
                         .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("RentalStatus")
                         .HasColumnType("int");
@@ -181,10 +359,13 @@ namespace BusinessObject.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RentalServiceId"));
 
+                    b.Property<DateTime?>("AcceppDateTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime>("CreationDateTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("RentalDateTime")
+                    b.Property<DateTime?>("RentalDateTime")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("RentalServiceStatus")
@@ -660,6 +841,60 @@ namespace BusinessObject.Migrations
                     b.ToTable("WithdrawRequests");
                 });
 
+            modelBuilder.Entity("BusinessObject.PriorityPackageRoom", b =>
+                {
+                    b.HasOne("BusinessObject.CategoryPriorityPackageRoom", "CategoryPriorityPackageRoom")
+                        .WithMany("PriorityPackageRooms")
+                        .HasForeignKey("CategoryPriorityPackageRoomId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DUVAS.Room", "Room")
+                        .WithMany("PriorityPackageRooms")
+                        .HasForeignKey("RoomId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DUVAS.User", "User")
+                        .WithMany("PriorityPackageRooms")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CategoryPriorityPackageRoom");
+
+                    b.Navigation("Room");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("BusinessObject.PriorityPackageServicePost", b =>
+                {
+                    b.HasOne("BusinessObject.CategoryPriorityPackageServicePost", "CategoryPriorityPackageServicePost")
+                        .WithMany("PriorityPackageServicePosts")
+                        .HasForeignKey("CategoryPriorityPackageServicePostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DUVAS.ServicePost", "ServicePost")
+                        .WithMany("PriorityPackageServicePosts")
+                        .HasForeignKey("ServicePostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DUVAS.User", "User")
+                        .WithMany("PriorityPackageServicePosts")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CategoryPriorityPackageServicePost");
+
+                    b.Navigation("ServicePost");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("DUVAS.Building", b =>
                 {
                     b.HasOne("DUVAS.User", "User")
@@ -671,7 +906,18 @@ namespace BusinessObject.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("DUVAS.OwnerLicense", b =>
+            modelBuilder.Entity("DUVAS.InsiderTrading", b =>
+                {
+                    b.HasOne("DUVAS.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("DUVAS.LandlordLicense", b =>
                 {
                     b.HasOne("DUVAS.User", "User")
                         .WithMany("OwnerLicenses")
@@ -682,13 +928,31 @@ namespace BusinessObject.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("DUVAS.Message", b =>
+                {
+                    b.HasOne("DUVAS.User", "UserGet")
+                        .WithMany()
+                        .HasForeignKey("UserGetID")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("DUVAS.User", "UserSend")
+                        .WithMany()
+                        .HasForeignKey("UserSendID")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("UserGet");
+
+                    b.Navigation("UserSend");
+                });
+
             modelBuilder.Entity("DUVAS.RentalList", b =>
                 {
                     b.HasOne("DUVAS.Contract", "Contract")
                         .WithMany("RentalLists")
                         .HasForeignKey("ContractId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("DUVAS.User", "User")
                         .WithMany("RentalLists")
@@ -878,6 +1142,16 @@ namespace BusinessObject.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("BusinessObject.CategoryPriorityPackageRoom", b =>
+                {
+                    b.Navigation("PriorityPackageRooms");
+                });
+
+            modelBuilder.Entity("BusinessObject.CategoryPriorityPackageServicePost", b =>
+                {
+                    b.Navigation("PriorityPackageServicePosts");
+                });
+
             modelBuilder.Entity("DUVAS.Building", b =>
                 {
                     b.Navigation("Rooms");
@@ -900,6 +1174,8 @@ namespace BusinessObject.Migrations
 
             modelBuilder.Entity("DUVAS.Room", b =>
                 {
+                    b.Navigation("PriorityPackageRooms");
+
                     b.Navigation("RentalLists");
 
                     b.Navigation("RoomLicenses");
@@ -907,6 +1183,8 @@ namespace BusinessObject.Migrations
 
             modelBuilder.Entity("DUVAS.ServicePost", b =>
                 {
+                    b.Navigation("PriorityPackageServicePosts");
+
                     b.Navigation("RentalServiceLists");
 
                     b.Navigation("ServiceFeedbacks");
@@ -915,6 +1193,10 @@ namespace BusinessObject.Migrations
             modelBuilder.Entity("DUVAS.User", b =>
                 {
                     b.Navigation("OwnerLicenses");
+
+                    b.Navigation("PriorityPackageRooms");
+
+                    b.Navigation("PriorityPackageServicePosts");
 
                     b.Navigation("RentalLists");
 
