@@ -33,6 +33,7 @@ namespace DataAccess
                             Location = p.Location,
                             Name = p.User.Name,
                             UserId = p.UserId,
+                            Image = p.Image,
                             //CategoryName = p.Category.CategoryName,
                             //CategoryId = p.CategoryId,                            
 
@@ -146,6 +147,7 @@ namespace DataAccess
                             Location = p.Location,
                             Name = p.User.Name,
                             UserId = p.UserId,
+                            Image = p.Image,
                             //CategoryName = p.Category.CategoryName,
                             //CategoryId = p.CategoryId,
                             //Price = p.Price,

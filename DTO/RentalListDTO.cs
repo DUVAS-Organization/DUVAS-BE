@@ -15,10 +15,15 @@ namespace DTO
         public int RoomId { get; set; }
         //public Room? Room { get; set; }
 
-        public int ContractId { get; set; }
+        public int? ContractId { get; set; }
         //public Contract? Contract { get; set; }
 
         public int RenterID { get; set; }
         //public User? User { get; set; }
+
+        public DateTime CreatedDate { get; set; }
+
+        public int RentalStatus { get; set; } = 0;
+
     }
 }

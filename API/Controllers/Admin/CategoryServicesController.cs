@@ -56,7 +56,7 @@ namespace API.Controllers.Admin
 
         // PUT: odata/Category/{id}
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutCategory(int id, [FromBody] CategoryService categoryServices)
+        public async Task<IActionResult> PutCategoryService(int id, [FromBody] CategoryService categoryServices)
         {
             if (id != categoryServices.CategoryServiceId)
             {

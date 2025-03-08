@@ -15,8 +15,9 @@ namespace Repositories
         public async Task DeleteRentalListAsync(RentalList b) => await RentalListDAO.DeleteRentalListAsync(b);
         public async Task<RentalList> GetRentalListByIdAsync(int id) => await RentalListDAO.FindRentalListByIdAsync(id);
         public async Task<List<RentalListDTO>> GetRentalListsAsync() => await RentalListDAO.GetRentalListsAsync();
+        public async Task<List<RentalListDTO>> GetRentalsByUserIdAsync(int id) => await RentalListDAO.GetRentalsByUserIdAsync(id);
         public async Task SaveRentalListAsync(RentalList b) => await RentalListDAO.SaveRentalListAsync(b);
         public async Task UpdateRentalListAsync(RentalList b) => await RentalListDAO.UpdateRentalListAsync(b);
-       
+
     }
 }

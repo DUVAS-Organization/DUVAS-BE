@@ -50,6 +50,34 @@ namespace DataAccess
 
         }
 
+        public static async Task<List<RentalListDTO>> GetRentalsByUserIdAsync(int userId)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var rentals = await context.RentalLists
+                        .AsNoTracking()
+                        .Where(r => r.RenterID == userId) // Lọc theo RenterID
+                        .Select(r => new RentalListDTO
+                        {
+                            RentalId = r.RentalId,
+                            ContractId = r.ContractId,
+                            RenterID = r.RenterID,
+                            // Thêm các thuộc tính khác nếu cần
+                        })
+                        .ToListAsync();
+
+                    return rentals;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+
         public static async Task<RentalList> FindRentalListByIdAsync(int rentalId)
         {
             RentalList rental = null;
@@ -118,7 +146,7 @@ namespace DataAccess
                 throw new Exception(ex.Message);
             }
         }
-       
-        }
-    
+
+    }
+
 }

@@ -10,8 +10,6 @@ namespace DUVAS
 
         public int UserId { get; set; }
         public User? User { get; set; }
-
-
         public string Title { get; set; }
         public string PhoneNumber { get; set; }
         public decimal Price { get; set; }
