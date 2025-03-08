@@ -30,9 +30,10 @@ namespace DataAccess
                         {
                             LandlordLicenseId = p.LandlordLicenseId,
                             UserId = p.UserId,
-                            OwnerLicense1 = p.OwnerLicense1,
-                            OwnerLicense2 = p.OwnerLicense2,
-                            OwnerLicense3 = p.OwnerLicense3,
+                            AnhCCCDMatTruoc = p.AnhCCCDMatTruoc,
+                            AnhCCCDMatSau = p.AnhCCCDMatSau,
+                            CCCD = p.CCCD,
+                            GiayPhepKinhDoanh = p.GiayPhepKinhDoanh,
 
                             //CategoryName = p.Category.CategoryName,
                             //CategoryId = p.CategoryId,                            

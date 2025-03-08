@@ -30,9 +30,7 @@ namespace DataAccess
                         {
                             RoomLicenseId = p.RoomLicenseId,
                             RoomId = p.RoomId,
-                            RoomLicense1 = p.RoomLicense1,
-                            RoomLicense2 = p.RoomLicense2,
-                            RoomLicense3 = p.RoomLicense3,
+                            BienBanPCCC = p.BienBanPCCC,
 
                             //CategoryName = p.Category.CategoryName,
                             //CategoryId = p.CategoryId,                            
