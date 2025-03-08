@@ -12,6 +12,8 @@ using Microsoft.Extensions.Options;
 using API.Controllers;
 using System.Text.Json.Serialization;
 using Repository;
+using Microsoft.AspNetCore.SignalR; // Thêm using cho SignalR
+using API;
 
 namespace API
 {
@@ -114,7 +116,7 @@ namespace API
                           .AllowAnyHeader();
                 });
             });
-
+            builder.Services.AddSignalR();
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -130,6 +132,7 @@ namespace API
             app.UseAuthorization();
 
             app.MapControllers();
+            app.MapHub<ChatHub>("/chathub");
 
             app.Run();
         }

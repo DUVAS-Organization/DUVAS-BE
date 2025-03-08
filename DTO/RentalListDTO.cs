@@ -20,7 +20,8 @@ namespace DTO
 
         public int RenterID { get; set; }
         //public User? User { get; set; }
-
+        public DateTime RentDate { get; set; }
+        public int MonthForRent { get; set; }
         public DateTime CreatedDate { get; set; }
 
         public int RentalStatus { get; set; } = 0;

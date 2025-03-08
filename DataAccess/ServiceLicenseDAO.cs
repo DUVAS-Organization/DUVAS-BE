@@ -30,8 +30,11 @@ namespace DataAccess
                         {
                             ServiceLicenseId = p.ServiceLicenseId,
                             UserId = p.UserId,
-                            ServiceLicense1 = p.ServiceLicense1,
-                            ServiceLicense2 = p.ServiceLicense2,
+                            AnhCCCDMatTruoc = p.AnhCCCDMatTruoc,
+                            AnhCCCDMatSau = p.AnhCCCDMatSau,
+                            CCCD = p.CCCD,
+                            GiayPhepKinhDoanh = p.GiayPhepKinhDoanh,
+                            GiayPhepChuyenMon = p.GiayPhepChuyenMon,
 
                             //CategoryName = p.Category.CategoryName,
                             //CategoryId = p.CategoryId,                            
