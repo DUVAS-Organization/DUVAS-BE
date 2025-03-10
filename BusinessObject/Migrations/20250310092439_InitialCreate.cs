@@ -73,7 +73,8 @@ namespace BusinessObject.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     RentalDateTimeStart = table.Column<DateTime>(type: "datetime2", nullable: false),
                     RentalDateTimeEnd = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ContractFile = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    ContractFile = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    status = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -158,9 +159,10 @@ namespace BusinessObject.Migrations
                     LandlordLicenseId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<int>(type: "int", nullable: false),
-                    OwnerLicense1 = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    OwnerLicense2 = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    OwnerLicense3 = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    AnhCCCDMatTruoc = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    AnhCCCDMatSau = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CCCD = table.Column<int>(type: "int", nullable: false),
+                    GiayPhepKinhDoanh = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -208,8 +210,11 @@ namespace BusinessObject.Migrations
                     ServiceLicenseId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<int>(type: "int", nullable: false),
-                    ServiceLicense1 = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ServiceLicense2 = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    AnhCCCDMatTruoc = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    AnhCCCDMatSau = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CCCD = table.Column<int>(type: "int", nullable: false),
+                    GiayPhepKinhDoanh = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    GiayPhepChuyenMon = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -520,6 +525,8 @@ namespace BusinessObject.Migrations
                     RoomId = table.Column<int>(type: "int", nullable: false),
                     ContractId = table.Column<int>(type: "int", nullable: true),
                     RenterID = table.Column<int>(type: "int", nullable: false),
+                    RentDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    MonthForRent = table.Column<int>(type: "int", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     RentalStatus = table.Column<int>(type: "int", nullable: false)
                 },
@@ -597,9 +604,7 @@ namespace BusinessObject.Migrations
                     RoomLicenseId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     RoomId = table.Column<int>(type: "int", nullable: false),
-                    RoomLicense1 = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    RoomLicense2 = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    RoomLicense3 = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    BienBanPCCC = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {

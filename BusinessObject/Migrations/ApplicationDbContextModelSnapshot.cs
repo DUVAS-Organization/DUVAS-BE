@@ -219,6 +219,9 @@ namespace BusinessObject.Migrations
                     b.Property<DateTime>("RentalDateTimeStart")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("status")
+                        .HasColumnType("int");
+
                     b.HasKey("ContractId");
 
                     b.ToTable("Contracts");
@@ -263,13 +266,18 @@ namespace BusinessObject.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LandlordLicenseId"));
 
-                    b.Property<string>("OwnerLicense1")
+                    b.Property<string>("AnhCCCDMatSau")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("OwnerLicense2")
+                    b.Property<string>("AnhCCCDMatTruoc")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("OwnerLicense3")
+                    b.Property<int>("CCCD")
+                        .HasColumnType("int");
+
+                    b.Property<string>("GiayPhepKinhDoanh")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("UserId")
@@ -329,6 +337,12 @@ namespace BusinessObject.Migrations
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("MonthForRent")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("RentDate")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("RentalStatus")
@@ -512,20 +526,11 @@ namespace BusinessObject.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RoomLicenseId"));
 
+                    b.Property<string>("BienBanPCCC")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("RoomId")
                         .HasColumnType("int");
-
-                    b.Property<string>("RoomLicense1")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("RoomLicense2")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("RoomLicense3")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("RoomLicenseId");
 
@@ -571,12 +576,21 @@ namespace BusinessObject.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ServiceLicenseId"));
 
-                    b.Property<string>("ServiceLicense1")
+                    b.Property<string>("AnhCCCDMatSau")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("ServiceLicense2")
+                    b.Property<string>("AnhCCCDMatTruoc")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("CCCD")
+                        .HasColumnType("int");
+
+                    b.Property<string>("GiayPhepChuyenMon")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("GiayPhepKinhDoanh")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("UserId")

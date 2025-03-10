@@ -103,6 +103,7 @@ namespace API
             builder.Services.AddScoped<IPriorityPackageRoomRepository, PriorityPackageRoomRepository>();
             builder.Services.AddScoped<IPriorityPackageServicePostRepository, PriorityPackageServicePostRepository>();
             builder.Services.AddScoped<IMessageRepository, MessageRepository>();
+            builder.Services.AddScoped<IRentalServiceListRepository, RentalServiceListRepository>();
 
             builder.Services.AddScoped<CloudinaryService>();
 
