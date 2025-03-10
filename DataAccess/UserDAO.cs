@@ -63,21 +63,29 @@ namespace DataAccess
 
         public static async Task<User> FindUserByIdAsync(int userId)
         {
-            using (var context = new ApplicationDbContext())
+             try
             {
-                var user = await context.Users
-                    .FirstOrDefaultAsync(x => x.UserId == userId);
+                using (var context = new ApplicationDbContext())
+                    {
+                        var user = await context.Users
+                            .FirstOrDefaultAsync(x => x.UserId == userId);
 
-                if (user == null)
-                {
-                    Console.WriteLine("User not found with ID: " + userId);
-                }
-                else
-                {
-                    Console.WriteLine($"User found. Money: {user.Money}");
-                }
+                        if (user == null)
+                        {
+                            Console.WriteLine("User not found with ID: " + userId);
+                        }
+                        else
+                        {
+                            Console.WriteLine($"User found. Money: {user.Money}");
+                        }
 
-                return user;
+                        return user;
+                    }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                throw new Exception(ex.Message);
             }
         }
 

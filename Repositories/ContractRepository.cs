@@ -15,8 +15,16 @@ namespace Repositories
         public async Task DeleteContractAsync(Contract b) => await ContractDAO.DeleteContractAsync(b);
         public async Task<Contract> GetContractByIdAsync(int id) => await ContractDAO.FindContractByIdAsync(id);
         public async Task<List<ContractDTO>> GetContractsAsync() => await ContractDAO.GetContractsAsync();
+
+        public async Task<int> NewContractAsync(Contract b)
+        {
+            return await ContractDAO.NewContractAsync(b);
+        }
+
         public async Task SaveContractAsync(Contract b) => await ContractDAO.SaveContractAsync(b);
         public async Task UpdateContractAsync(Contract b) => await ContractDAO.UpdateContractAsync(b);
-       
+        public async Task UpdateContractStatusAsync(int contractId, int status)
+            => await ContractDAO.UpdateContractStatusAsync(contractId, status);
+
     }
 }

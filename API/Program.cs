@@ -12,6 +12,8 @@ using Microsoft.Extensions.Options;
 using API.Controllers;
 using System.Text.Json.Serialization;
 using Repository;
+using DataAccess;
+using Microsoft.OpenApi.Models;
 
 namespace API
 {
@@ -53,9 +55,34 @@ namespace API
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             //builder.Services.AddSwaggerGen();
-            builder.Services.AddSwaggerGen(c =>
+            builder.Services.AddSwaggerGen(options =>
             {
-                c.OperationFilter<FileUploadOperationFilter>();
+                options.OperationFilter<FileUploadOperationFilter>();
+
+                // Thêm Bearer Authorization header vào Swagger UI
+                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    In = ParameterLocation.Header,
+                    Description = "Please enter your Bearer token",
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.ApiKey
+                });
+
+                options.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        new string[] {}
+                    }
+                });
+
             });
             // Add database context
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -101,6 +128,8 @@ namespace API
             builder.Services.AddScoped<IPriorityPackageRoomRepository, PriorityPackageRoomRepository>();
             builder.Services.AddScoped<IPriorityPackageServicePostRepository, PriorityPackageServicePostRepository>();
             builder.Services.AddScoped<IMessageRepository, MessageRepository>();
+            builder.Services.AddScoped<UserDAO>();
+
 
             builder.Services.AddScoped<CloudinaryService>();
 
@@ -114,6 +143,15 @@ namespace API
                           .AllowAnyHeader();
                 });
             });
+
+            builder.Services.AddAuthorization(options =>
+            {
+                options.AddPolicy("Admin", policy => policy.RequireRole("Admin"));
+                options.AddPolicy("Landlord", policy => policy.RequireRole("Landlord"));
+                options.AddPolicy("Service", policy => policy.RequireRole("Service"));
+                options.AddPolicy("User", policy => policy.RequireRole("User"));
+            });
+
 
             var app = builder.Build();
 

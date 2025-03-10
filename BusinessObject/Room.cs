@@ -13,7 +13,7 @@ namespace DUVAS
         public int UserId { get; set; }
         public User? User { get; set; }
 
-        public int BuildingId { get; set; }
+        public int? BuildingId { get; set; }
         public Building? Building { get; set; }
         public int CategoryRoomId { get; set; }
         public CategoryRoom? CategoryRoom { get; set; }
@@ -35,12 +35,17 @@ namespace DUVAS
         public string Image { get; set; }
 
         public string Note { get; set; }
-        public int status { get; set; }
+        public int? status { get; set; }
         // 1: Đang trống
         // 2: Pending
         // 3: Đang được thuê
-        public bool IsPermission { get; set; }
+        public int? IsPermission { get; set; }
 
+        //0: Lock
+        //1: Bình thường
+        //2: Chờ tích xanh
+        //3: Có tích xanh
+        //4:
 
         public virtual ICollection<RoomLicense>? RoomLicenses { get; set; }
         public virtual ICollection<RentalList>? RentalLists { get; set; }

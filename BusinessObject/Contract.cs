@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-
+using System.ComponentModel.DataAnnotations.Schema;
 namespace DUVAS
 {
     public class Contract
@@ -7,7 +7,8 @@ namespace DUVAS
         [Key]
         public int ContractId { get; set; }
 
-        public DateTime RentalDateTimeStart { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public DateTime RentalDateTimeStart { get; set; } = DateTime.Now;
         public DateTime RentalDateTimeEnd { get; set; }
 
 

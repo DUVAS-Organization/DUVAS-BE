@@ -13,7 +13,7 @@ namespace DTO
         public int RoomId { get; set; }
         public int? UserId { get; set; }
         public string? UserName { get; set; }
-        public int BuildingId { get; set; }
+        public int? BuildingId { get; set; }
         public string BuildingName { get; set; }
 
         public string Title { get; set; }
@@ -30,7 +30,10 @@ namespace DTO
         public string Image { get; set; }
         public string Note { get; set; }
 
-        public bool IsPermission { get; set; }
+        public int? IsPermission { get; set; }
+
+        public decimal Deposit { get; set; }
+        public int? status { get; set; }
 
         //public Building? Building { get; set; }
         //public bool IsPermission { get; set; }

@@ -48,5 +48,24 @@ namespace Repositories
             using var context = new ApplicationDbContext();
             return await context.Users.AnyAsync(u => u.UserId == userId);
         }
+        public async Task<List<RoomDTO>> GetRoomsByStatusAsync(int landlordId, int status)
+        {
+            return await RoomDAO.GetRoomsByStatusAsync(landlordId, status);
+        }
+
+        public async Task<bool> UpdateRoomStatusAsync(int roomId, int landlordId, int status)
+        {
+            using var context = new ApplicationDbContext();
+            var room = await context.Rooms
+                                    .FirstOrDefaultAsync(r => r.RoomId == roomId && r.UserId == landlordId);
+
+            if (room == null) return false;
+
+            room.status = status;  // Gán giá trị trạng thái mới cho phòng
+            await context.SaveChangesAsync();
+            return true;
+        }
+
+
     }
 }

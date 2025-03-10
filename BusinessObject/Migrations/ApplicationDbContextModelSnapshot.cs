@@ -134,6 +134,40 @@ namespace BusinessObject.Migrations
                     b.ToTable("PriorityPackageServicePosts");
                 });
 
+            modelBuilder.Entity("BusinessObject.Reservation", b =>
+                {
+                    b.Property<int>("ReservationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ReservationId"));
+
+                    b.Property<DateTime?>("CancelledAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ConfirmedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("LandlordId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RoomId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TenantId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ReservationId");
+
+                    b.ToTable("Reservations");
+                });
+
             modelBuilder.Entity("DUVAS.Building", b =>
                 {
                     b.Property<int>("BuildingId")
@@ -453,11 +487,14 @@ namespace BusinessObject.Migrations
                     b.Property<double>("Acreage")
                         .HasColumnType("float");
 
-                    b.Property<int>("BuildingId")
+                    b.Property<int?>("BuildingId")
                         .HasColumnType("int");
 
                     b.Property<int>("CategoryRoomId")
                         .HasColumnType("int");
+
+                    b.Property<decimal>("Deposit")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -473,8 +510,8 @@ namespace BusinessObject.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("IsPermission")
-                        .HasColumnType("bit");
+                    b.Property<int?>("IsPermission")
+                        .HasColumnType("int");
 
                     b.Property<string>("LocationDetail")
                         .IsRequired()
@@ -500,7 +537,7 @@ namespace BusinessObject.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    b.Property<int>("status")
+                    b.Property<int?>("status")
                         .HasColumnType("int");
 
                     b.HasKey("RoomId");
@@ -1045,8 +1082,7 @@ namespace BusinessObject.Migrations
                     b.HasOne("DUVAS.Building", "Building")
                         .WithMany("Rooms")
                         .HasForeignKey("BuildingId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("DUVAS.CategoryRoom", "CategoryRoom")
                         .WithMany("Rooms")
