@@ -14,6 +14,8 @@ using System.Text.Json.Serialization;
 using Repository;
 using Microsoft.AspNetCore.SignalR; // Thêm using cho SignalR
 using API; // Nếu ChatHub nằm trong namespace API
+using DataAccess;
+using Microsoft.OpenApi.Models;
 
 namespace API
 {
@@ -56,11 +58,38 @@ namespace API
             // Add services to the container.
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen(c =>
+            //builder.Services.AddSwaggerGen(c =>
+            //{
+            //    c.OperationFilter<FileUploadOperationFilter>();
+            //});
+            builder.Services.AddSwaggerGen(options =>
             {
-                c.OperationFilter<FileUploadOperationFilter>();
-            });
+                options.OperationFilter<FileUploadOperationFilter>();
 
+                // Thêm Bearer Authorization header vào Swagger UI
+                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    In = ParameterLocation.Header,
+                    Description = "Please enter your Bearer token",
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.ApiKey
+                });
+
+                options.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        new string[] {}
+                    }
+                });
+            });
             // Add database context
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DBString")));
@@ -104,7 +133,7 @@ namespace API
             builder.Services.AddScoped<IPriorityPackageServicePostRepository, PriorityPackageServicePostRepository>();
             builder.Services.AddScoped<IMessageRepository, MessageRepository>();
             builder.Services.AddScoped<IRentalServiceListRepository, RentalServiceListRepository>();
-
+            builder.Services.AddScoped<UserDAO>();
             builder.Services.AddScoped<CloudinaryService>();
 
             // Add CORS policy for React app
@@ -120,6 +149,13 @@ namespace API
 
             // *** Bổ sung SignalR vào đây ***
             builder.Services.AddSignalR();
+            builder.Services.AddAuthorization(options =>
+            {
+                options.AddPolicy("Admin", policy => policy.RequireRole("Admin"));
+                options.AddPolicy("Landlord", policy => policy.RequireRole("Landlord"));
+                options.AddPolicy("Service", policy => policy.RequireRole("Service"));
+                options.AddPolicy("User", policy => policy.RequireRole("User"));
+            });
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
