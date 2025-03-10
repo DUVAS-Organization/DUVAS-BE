@@ -48,6 +48,7 @@ namespace DUVAS
         //4:
 
         public virtual ICollection<RoomLicense>? RoomLicenses { get; set; }
+        public virtual ICollection<SavedPost>? SavedPosts { get; set; }
         public virtual ICollection<RentalList>? RentalLists { get; set; }
         public virtual ICollection<PriorityPackageRoom>? PriorityPackageRooms { get; set; }
     }
