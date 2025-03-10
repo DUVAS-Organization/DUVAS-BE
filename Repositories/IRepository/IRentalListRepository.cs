@@ -16,5 +16,6 @@ namespace Repositories.IRepository
         Task UpdateRentalListAsync(RentalList b);
         Task<List<RentalListDTO>> GetRentalListsAsync();
         Task<List<RentalListDTO>> GetRentalsByUserIdAsync(int id);
+        Task UpdateRentalListContractAsync(int rentalId, int contractId);
     }
 }

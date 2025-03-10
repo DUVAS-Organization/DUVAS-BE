@@ -23,7 +23,7 @@ namespace DataAccess
             {
                 using (var context = new ApplicationDbContext())
                 {
-                    var contract = await context.Contracts
+                    var contracts = await context.Contracts
                         .AsNoTracking()
                         .Select(p => new ContractDTO
                         {
@@ -31,15 +31,17 @@ namespace DataAccess
                             RentalDateTimeStart = p.RentalDateTimeStart,
                             RentalDateTimeEnd = p.RentalDateTimeEnd,
                             ContractFile = p.ContractFile,
+                            Status = p.status, // Trạng thái hợp đồng\
+                            RoomId = 0
                         })
                         .ToListAsync();
 
-                    return contract;
+                    return contracts;
                 }
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                throw new Exception("Lỗi khi lấy danh sách hợp đồng: " + ex.Message);
             }
         }
 
@@ -77,6 +79,24 @@ namespace DataAccess
             }
         }
 
+        public static async Task<int> NewContractAsync(Contract contract)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    await context.Contracts.AddAsync(contract);
+                    await context.SaveChangesAsync();
+                    return contract.ContractId; // Trả về ID của hợp đồng sau khi lưu thành công
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Lỗi khi lưu hợp đồng: " + ex.Message);
+            }
+        }
+
+
         public static async Task UpdateContractAsync(Contract contract)
         {
             try
@@ -110,6 +130,27 @@ namespace DataAccess
             catch (Exception ex)
             {
                 throw new Exception(ex.Message);
+            }
+        }
+
+        // Cập nhật trạng thái hợp đồng (Xác nhận hoặc Hủy hợp đồng)
+        public static async Task UpdateContractStatusAsync(int contractId, int status)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var contract = await context.Contracts.SingleOrDefaultAsync(c => c.ContractId == contractId);
+                    if (contract != null)
+                    {
+                        contract.status = status; // 1: Đã xác nhận, 2: Đã hủy
+                        await context.SaveChangesAsync();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Lỗi khi cập nhật trạng thái hợp đồng: " + ex.Message);
             }
         }
     }

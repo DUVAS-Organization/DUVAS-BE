@@ -29,12 +29,8 @@ namespace DataAccess
                         .Select(p => new RentalListDTO
                         {
                             RentalId = p.RentalId,
-                            RoomId = p.RoomId,
                             ContractId = p.ContractId,
                             RenterID = p.RenterID,
-                            RentDate = p.RentDate,
-                            MonthForRent = p.MonthForRent,
-                            CreatedDate = p.CreatedDate
 
                             //CategoryName = p.Category.CategoryName,
                             //CategoryId = p.CategoryId,                            
@@ -66,12 +62,8 @@ namespace DataAccess
                         .Select(r => new RentalListDTO
                         {
                             RentalId = r.RentalId,
-                            RoomId = r.RoomId,
                             ContractId = r.ContractId,
                             RenterID = r.RenterID,
-                            RentDate = r.RentDate,
-                            MonthForRent = r.MonthForRent,
-                            CreatedDate = r.CreatedDate
                             // Thêm các thuộc tính khác nếu cần
                         })
                         .ToListAsync();
@@ -154,6 +146,26 @@ namespace DataAccess
                 throw new Exception(ex.Message);
             }
         }
+        public static async Task UpdateRentalListContractAsync(int rentalId, int contractId)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var rentalList = await context.RentalLists.SingleOrDefaultAsync(r => r.RentalId == rentalId);
+                    if (rentalList != null)
+                    {
+                        rentalList.ContractId = contractId; // Cập nhật ContractId vào RentalList
+                        await context.SaveChangesAsync();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Lỗi khi cập nhật hợp đồng cho RentalList: " + ex.Message);
+            }
+        }
+
 
     }
 

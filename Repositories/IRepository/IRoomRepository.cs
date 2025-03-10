@@ -16,5 +16,14 @@ namespace Repositories.IRepository
         Task UpdateRoomAsync(Room b);
         Task<List<RoomDTO>> GetRoomsAsync();
         Task<List<RoomDTO>> SearchRoomsAsync(string searchTerm);
+        Task<List<RoomDTO>> GetRoomsByLandlordAsync(int landlordId); // Phương thức lọc theo Landlord
+        Task<RoomDTO> GetRoomByIdForLandlordAsync(int roomId, int landlordId); // Lấy phòng theo quyền Landlord
+        Task<List<UserFeedbackDTO>> GetRoomReviewsAsync(int roomId); // Lấy đánh giá phòng
+        Task<bool> CheckBuildingExistsAsync(int buildingId);
+        Task<bool> CheckCategoryExistsAsync(int categoryRoomId);
+        Task<bool> CheckUserExistsAsync(int userId); // Kiểm tra UserId có tồn tại không
+        Task<List<RoomDTO>> GetRoomsByStatusAsync(int landlordId, int status); // lay phong theo status
+        Task<bool> UpdateRoomStatusAsync(int roomId, int landlordId, int status); // luu trang thai phong cua chuc nang manage room status
+
     }
 }

@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BusinessObject.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250310092439_InitialCreate")]
+    [Migration("20250310101657_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -220,6 +220,7 @@ namespace BusinessObject.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("RentalDateTimeStart")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2");
 
                     b.Property<int>("status")
@@ -339,13 +340,8 @@ namespace BusinessObject.Migrations
                     b.Property<int?>("ContractId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("MonthForRent")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("RentDate")
+                    b.Property<DateTime?>("CreatedDate")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2");
 
                     b.Property<int>("RentalStatus")
@@ -464,11 +460,14 @@ namespace BusinessObject.Migrations
                     b.Property<double>("Acreage")
                         .HasColumnType("float");
 
-                    b.Property<int>("BuildingId")
+                    b.Property<int?>("BuildingId")
                         .HasColumnType("int");
 
                     b.Property<int>("CategoryRoomId")
                         .HasColumnType("int");
+
+                    b.Property<decimal?>("Deposit")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -484,8 +483,8 @@ namespace BusinessObject.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool?>("IsPermission")
-                        .HasColumnType("bit");
+                    b.Property<int?>("IsPermission")
+                        .HasColumnType("int");
 
                     b.Property<string>("LocationDetail")
                         .IsRequired()
@@ -508,6 +507,9 @@ namespace BusinessObject.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("status")
                         .HasColumnType("int");
 
                     b.HasKey("RoomId");
@@ -790,17 +792,25 @@ namespace BusinessObject.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Image")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Star")
+                    b.Property<int?>("RoomId")
                         .HasColumnType("int");
+
+                    b.Property<double>("Star")
+                        .HasColumnType("float");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("UserFeedbackId");
+
+                    b.HasIndex("RoomId");
 
                     b.HasIndex("UserId");
 
@@ -1044,8 +1054,7 @@ namespace BusinessObject.Migrations
                     b.HasOne("DUVAS.Building", "Building")
                         .WithMany("Rooms")
                         .HasForeignKey("BuildingId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("DUVAS.CategoryRoom", "CategoryRoom")
                         .WithMany("Rooms")
@@ -1131,11 +1140,17 @@ namespace BusinessObject.Migrations
 
             modelBuilder.Entity("DUVAS.UserFeedback", b =>
                 {
+                    b.HasOne("DUVAS.Room", "Room")
+                        .WithMany()
+                        .HasForeignKey("RoomId");
+
                     b.HasOne("DUVAS.User", "User")
                         .WithMany("UserFeedbacks")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Room");
 
                     b.Navigation("User");
                 });
