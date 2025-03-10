@@ -596,6 +596,33 @@ namespace BusinessObject.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "SavedPosts",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    RoomId = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    SavedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SavedPosts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_SavedPosts_Rooms_RoomId",
+                        column: x => x.RoomId,
+                        principalTable: "Rooms",
+                        principalColumn: "RoomId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_SavedPosts_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "UserFeedbacks",
                 columns: table => new
                 {
@@ -745,6 +772,16 @@ namespace BusinessObject.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_SavedPosts_RoomId",
+                table: "SavedPosts",
+                column: "RoomId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SavedPosts_UserId",
+                table: "SavedPosts",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ServiceFeedbacks_ServicePostId",
                 table: "ServiceFeedbacks",
                 column: "ServicePostId");
@@ -820,6 +857,9 @@ namespace BusinessObject.Migrations
 
             migrationBuilder.DropTable(
                 name: "RoomLicenses");
+
+            migrationBuilder.DropTable(
+                name: "SavedPosts");
 
             migrationBuilder.DropTable(
                 name: "ServiceFeedbacks");

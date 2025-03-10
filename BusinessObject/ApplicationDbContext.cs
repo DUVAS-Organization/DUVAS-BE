@@ -37,7 +37,7 @@ namespace DUVAS
         public virtual DbSet<PriorityPackageRoom> PriorityPackageRooms { get; set; }
         public virtual DbSet<PriorityPackageServicePost> PriorityPackageServicePosts { get; set; }
         public virtual DbSet<InsiderTrading> InsiderTradings { get; set; }
-
+        public DbSet<SavedPost> SavedPosts { get; set; }
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
        : base(options)
         {
@@ -239,6 +239,19 @@ namespace DUVAS
                 .WithMany(c => c.PriorityPackageServicePosts)
                 .HasForeignKey(p => p.CategoryPriorityPackageServicePostId)
                 .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<SavedPost>()
+             .HasOne(sp => sp.Room)
+             .WithMany(r => r.SavedPosts)
+             .HasForeignKey(sp => sp.RoomId)
+             .OnDelete(DeleteBehavior.Cascade); // Xóa Room thì xóa luôn SavePost
+
+            modelBuilder.Entity<SavedPost>()
+                .HasOne(sp => sp.User)
+                .WithMany(u => u.SavedPosts)
+                .HasForeignKey(sp => sp.UserId)
+                .OnDelete(DeleteBehavior.Restrict); // Không xóa User nếu còn SavePost
+
+
         }
 
     }
