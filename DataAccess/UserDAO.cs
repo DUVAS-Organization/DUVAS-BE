@@ -309,6 +309,7 @@ namespace DataAccess
             var newBankAccount = new BankAccounts
             {
                 AccountNumber = bankAccountDto.AccountNumber,
+                AccountName = bankAccountDto.AccountName,
                 BankCode = bankAccountDto.BankCode,
                 Status = BankAccountStatus.Active,
                 UserId = userId

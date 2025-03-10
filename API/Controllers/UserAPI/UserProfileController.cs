@@ -26,10 +26,12 @@ namespace API.Controllers.UserAPI
         private readonly IRentalServiceListRepository _rentalServiceListRepository;
         private readonly IContractRepository _contractRepository;
         private readonly OtpService _otpService;
+        private readonly EmailService _emailService;
+
 
         public UserProfileController(IUserRepository userRepository, IRoomRepository roomRepository, 
             IServicePostRepository servicePostRepository, IRentalListRepository rentalListRepository, IContractRepository contractRepository,
-            IRentalServiceListRepository rentalServiceListRepository, OtpService otpService)
+            IRentalServiceListRepository rentalServiceListRepository, OtpService otpService, EmailService emailService)
         {
             _userRepository = userRepository;
             _roomRepository = roomRepository;
@@ -38,6 +40,7 @@ namespace API.Controllers.UserAPI
             _contractRepository = contractRepository;
             _rentalServiceListRepository = rentalServiceListRepository;
             _otpService = otpService;
+            _emailService = emailService;
         }
 
         // API: Edit profile
@@ -172,6 +175,7 @@ namespace API.Controllers.UserAPI
                 return StatusCode(StatusCodes.Status500InternalServerError, "Lỗi khi lấy thông tin ngày hết hạn sử dụng phòng.");
             }
         }
+
         [HttpGet("BankAccount")]
         [Authorize(Policy = "User")]
         public async Task<ActionResult<IEnumerable<BankAccounts>>> GetUserBankAccounts()
@@ -283,6 +287,37 @@ namespace API.Controllers.UserAPI
             {
                 return StatusCode(500, new { message = "An error occurred while updating the bank account status." });
             }
+        }
+
+
+        [HttpGet("otp")]
+        [Authorize(Policy = "User")]
+        public Task<IActionResult> GetOtp()
+        {
+            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId");
+            if (userIdClaim == null)
+            {
+                return Task.FromResult<IActionResult>(BadRequest(new { Message = "Unauthorized!" }));
+            }
+            int.TryParse(userIdClaim.Value, out int userId);
+            var email = _userRepository.GetUserByIdAsync(userId).GetAwaiter().GetResult().Gmail;
+            if (email == null)
+            {
+                return Task.FromResult<IActionResult>(StatusCode(500, new { Message = "Server Error." }));
+            }
+            var otp = _otpService.GenerateOtp(email);
+            
+            var emailContent = $@"
+                <p>Chào {email},</p>
+                <p>Chúng tôi thấy bạn đang gửi yêu cầu đối với ngân hàng của bạn trên tài khoản DUVAS.</p>
+                <p><b>Không nên chia sẻ thông tin này với bất kỳ ai.</b></p>
+                <p><b>Mã OTP để xác thực là: <span style='font-size: 18px; color: #ee1414;'>{otp}</span></b></p>
+                <p>Nếu đây không phải yêu cầu xác thực của bạn, bạn có thể bỏ qua email này. Có thể một ai đó đã gõ nhầm địa chỉ email của bạn.</p>
+                <p>Chúng tôi xin chân thành cảm ơn.</p>
+                <p><b>DUVAS Team</b></p>";
+            
+            _emailService.SendEmail(email,"Xác thực email", emailContent);
+            return Task.FromResult<IActionResult>(Ok(new { Message = "Please check your email to get an otp." }));
         }
     }
 }

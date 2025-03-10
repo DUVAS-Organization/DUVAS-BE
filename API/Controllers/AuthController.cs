@@ -35,7 +35,7 @@ namespace API.Controllers
         }
         [HttpPost("login")]
         [AllowAnonymous]
-        public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
+        public async Task<IActionResult> Login([FromBody] LoginDTO loginDto)
         {
             var user = await _iuserRepository.GetUserByGmailOrPhoneAsync(loginDto.Username);
             if (user == null)
@@ -57,7 +57,7 @@ namespace API.Controllers
 
         [HttpPost("register")]
         [AllowAnonymous]
-        public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
+        public async Task<IActionResult> Register([FromBody] RegisterDTO registerDto)
         {
             var emailOrPhone = _otpService.CheckOtp(registerDto.Otp);
             if (emailOrPhone == null)
@@ -98,7 +98,7 @@ namespace API.Controllers
 
         [HttpPost("verify")]
         [AllowAnonymous]
-        public async Task<IActionResult> Verify([FromBody] VerifyDto verifyDto)
+        public async Task<IActionResult> Verify([FromBody] VerifyDTO verifyDto)
         {
             var existingUser = await _iuserRepository.GetUserByGmailOrPhoneAsync(verifyDto.EmailOrPhone);
             if (existingUser == null)
@@ -208,7 +208,7 @@ namespace API.Controllers
 
 
         [HttpPost("reset-password")]
-        public async Task<IActionResult> ResetPassword([FromBody] ResetPassword resetPassword)
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDTO resetPassword)
         {
             var emailOrPhone = _otpService.CheckOtp(resetPassword.Otp);
             if (emailOrPhone == null)

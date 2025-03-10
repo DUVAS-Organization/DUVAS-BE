@@ -13,7 +13,11 @@ public class BankAccounts
     public string? AccountNumber { get; set; }
     [Required]
     [MaxLength(50)]
+    public string? AccountName { get; set; }
+    [Required]
+    [MaxLength(50)]
     public string? BankCode { get; set; }
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public BankAccountStatus Status { get; set; }
     
     [JsonIgnore]
