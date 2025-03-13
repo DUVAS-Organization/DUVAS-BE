@@ -21,7 +21,11 @@ namespace Repositories
         public async Task SaveUserAsync(User b) => await UserDAO.SaveUserAsync(b);
         public async Task UpdateUserAsync(User b) => await UserDAO.UpdateUserAsync(b);
         public async Task<List<UserDTO>> SearchUsersAsync(string searchTerm) => await UserDAO.SearchUsersAsync(searchTerm);
-        public Task UpdateUserMoneyAsync(int userId, decimal amount) =>
-            new UserDAO(new ApplicationDbContext()).UpdateUserMoneyAsync(userId, amount);
+        public async Task UpdateUserMoneyAsync(int userId, decimal amount) => await UserDAO.UpdateUserMoneyAsync(userId, amount);
+
+
+        public async Task<bool> CheckUserBalanceAsync(int userId, decimal amount) => await UserDAO.CheckUserBalanceAsync(userId, amount);
+
+
     }
 }

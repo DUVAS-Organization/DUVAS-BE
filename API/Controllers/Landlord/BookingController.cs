@@ -19,12 +19,14 @@ namespace API.Controllers.Landlord
 
         private readonly IRentalListRepository _rentalListRepository;
         private readonly IContractRepository _contractRepository;
+        private readonly IUserRepository _userRepository;
 
-        public BookingManagementController(IRoomRepository roomRepository, IRentalListRepository rentalListRepository, IContractRepository contractRepository)
+        public BookingManagementController(IRoomRepository roomRepository, IRentalListRepository rentalListRepository, IContractRepository contractRepository, IUserRepository userRepository)
         {
             _roomRepository = roomRepository;
             _rentalListRepository = rentalListRepository;
             _contractRepository = contractRepository;
+            _userRepository = userRepository;
         }
 
         private int GetLandlordId()
@@ -102,10 +104,12 @@ namespace API.Controllers.Landlord
             };
 
 
+
             await _rentalListRepository.SaveRentalListAsync(rental);
 
             return Ok("Hợp đồng đã được tạo và yêu cầu thuê đã được xác nhận.");
         }
+
 
 
 
@@ -179,6 +183,46 @@ namespace API.Controllers.Landlord
             await _roomRepository.UpdateRoomAsync(room);
 
             return Ok("Yêu cầu thuê phòng đã được hủy, phòng đã được mở lại để cho thuê.");
+        }
+        [HttpPost("check-balance")]
+        [Authorize]
+        public async Task<IActionResult> CheckUserBalance([FromBody] CheckBalanceDTO request)
+        {
+            // 🔹 Lấy thông tin User từ Database
+            var user = await _userRepository.GetUserByIdAsync(request.UserId);
+            if (user == null)
+            {
+                return NotFound("Người dùng không tồn tại.");
+            }
+
+            // 🔹 Kiểm tra số dư
+            if (user.Money >= request.Amount)
+            {
+                return Ok("Bạn đủ tiền.");
+            }
+            else
+            {
+                return BadRequest("Bạn không đủ tiền.");
+            }
+        }
+
+        [HttpPut("update-balance")]
+        [Authorize]
+        public async Task<IActionResult> UpdateUserBalance([FromBody] UpdateBalanceDTO request)
+        {
+            try
+            {
+                await _userRepository.UpdateUserMoneyAsync(request.UserId, request.Amount);
+                return Ok("Cập nhật số dư thành công.");
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Lỗi khi cập nhật số dư: {ex.Message}");
+            }
         }
 
 
