@@ -10,12 +10,12 @@ namespace DUVAS
         public int Id { get; set; }
 
         [Required]
-        public int RoomId { get; set; }  // 🔥 ID của bài đăng
+        public int RoomId { get; set; } 
 
         [Required]
-        public int UserId { get; set; }  // 🔥 ID của user đã lưu bài đăng
-        public virtual Room? Room { get; set; }  // Liên kết với bảng Room
-        public virtual User? User { get; set; }  // Liên kết với bảng User
+        public int UserId { get; set; }  
+        public virtual Room? Room { get; set; } 
+        public virtual User? User { get; set; }
 
         public DateTime? SavedAt { get; set; } = DateTime.Now;
     }

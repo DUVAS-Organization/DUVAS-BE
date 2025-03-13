@@ -127,6 +127,11 @@ namespace API.Controllers.Landlord
         [HttpPost]
         public async Task<IActionResult> AddRoom([FromBody] RoomDTO roomDto)
         {
+            if (roomDto == null)
+            {
+                return BadRequest("Dữ liệu phòng không được để trống.");
+            }
+
             int landlordId = GetLandlordId();
 
             // Kiểm tra quyền Landlord
@@ -177,7 +182,7 @@ namespace API.Controllers.Landlord
                     UserId = landlordId,
                     BuildingId = roomDto.BuildingId,
                     CategoryRoomId = roomDto.CategoryRoomId,
-                    status = 1,
+                    status = roomDto.status ?? 1,
                     Deposit = roomDto.Deposit,  // Thêm giá trị tiền đặt cọc
                     Garret = roomDto.Garret  // Thêm giá trị có gác mái
                 };

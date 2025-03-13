@@ -74,10 +74,10 @@ namespace DataAccess
                     {
                         Console.WriteLine("User not found with ID: " + userId);
                     }
-                    else
-                    {
-                        Console.WriteLine($"User found. Money: {user.Money}");
-                    }
+                    //else
+                    //{
+                    //    Console.WriteLine($"User found. Money: {user.Money}");
+                    //}
 
                     return user;
                 }
@@ -255,16 +255,55 @@ namespace DataAccess
                 return null;
             }
         }
-        public async Task UpdateUserMoneyAsync(int userId, decimal amount)
+        public static async Task UpdateUserMoneyAsync(int userId, decimal amount)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
-            if (user == null)
+            try
             {
-                throw new KeyNotFoundException($"User with ID {userId} not found.");
+                using (var context = new ApplicationDbContext())
+                {
+                    var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+                    if (user == null)
+                    {
+                        throw new KeyNotFoundException($"User với ID {userId} không tồn tại.");
+                    }
+
+                    // Cập nhật số dư của User
+                    user.Money += amount;
+                    context.Users.Update(user);
+
+                    // Tạo lịch sử giao dịch trong bảng InsiderTrading
+                    var transaction = new InsiderTrading
+                    {
+                        UserId = userId,
+                        Money = amount,
+                        Note = amount >= 0
+                            ? $"User ID {userId} vừa + {amount} vào tài khoản."
+                            : $"User ID {userId} vừa - {Math.Abs(amount)} khỏi tài khoản.",
+                        Status = 0, // 0: trạng thái mặc định
+                        CreatedDate = DateTime.UtcNow
+                    };
+
+                    await context.InsiderTradings.AddAsync(transaction);
+                    await context.SaveChangesAsync();
+                }
             }
-            user.Money += amount;
-            _context.Users.Update(user);
-            await _context.SaveChangesAsync();
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi cập nhật số dư: {ex.Message}");
+            }
+        }
+
+        // kiểm tra tiền xem đủ không
+        public static async Task<bool> CheckUserBalanceAsync(int userId, decimal amount)
+        {
+            using (var context = new ApplicationDbContext())
+            {
+                var user = await context.Users
+                    .Where(u => u.UserId == userId)
+                    .Select(u => u.Money)
+                    .FirstOrDefaultAsync();
+                return user >= amount;
+            }
         }
     }
 }

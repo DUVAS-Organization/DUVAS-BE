@@ -11,6 +11,6 @@ namespace DTO
     {
         public int UserIdLandlord { get; set; }
         public int RoomId { get; set; }
-        public string RenterName { get; set; }
+        public string RenterName {  get; set; }
     }
 }
