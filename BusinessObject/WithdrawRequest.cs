@@ -17,12 +17,13 @@ public class WithdrawRequest
     public required string BankCode { get; set; }
     [MaxLength(50)]
     public required string AccountNumber { get; set; }
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public WithdrawRequestStatus Status { get; set; }
     [MaxLength(500)]
     public string? Reason { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
-    public int TransactionId { get; set; }
+    public int? TransactionId { get; set; }
     [JsonIgnore]
     public Transaction? Transaction { get; set; }
 }

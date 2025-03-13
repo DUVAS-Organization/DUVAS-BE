@@ -29,7 +29,6 @@ public class WithdrawRequestController : ODataController
     
     [HttpGet("")]
     [EnableQuery]
-    [Authorize("Admin")]
     public async Task<ActionResult<IEnumerable<WithdrawRequest>>> GetWithdrawRequestsList(string searchTerm = null)
     {
 

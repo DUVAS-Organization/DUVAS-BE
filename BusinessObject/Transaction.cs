@@ -42,6 +42,7 @@ namespace DUVAS
         [JsonIgnore]
         public User? User { get; set; }
         [Required]
+        [JsonConverter(typeof(JsonStringEnumConverter))]
         public TransactionStatus Status { get; set; }
         public DateTime CreatedAt { get; set; }
     }
