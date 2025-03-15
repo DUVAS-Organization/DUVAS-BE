@@ -8,13 +8,13 @@ namespace DUVAS
     {
         [Key]
         public int Id { get; set; }
+        public int? RoomId { get; set; } 
 
         [Required]
-        public int RoomId { get; set; } 
-
-        [Required]
-        public int UserId { get; set; }  
-        public virtual Room? Room { get; set; } 
+        public int UserId { get; set; }
+        public int? ServicePostId { get; set; }
+        public virtual Room? Room { get; set; }
+        public virtual ServicePost? ServicePost { get; set; }
         public virtual User? User { get; set; }
 
         public DateTime? SavedAt { get; set; } = DateTime.Now;

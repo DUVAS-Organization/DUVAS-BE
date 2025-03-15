@@ -28,13 +28,9 @@ namespace API.Controllers.Landlord
 
         private int GetLandlordId()
         {
-            // Lấy UserId từ Claims nếu bạn sử dụng JWT hoặc bất kỳ xác thực nào.
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            var userIdClaim = User.FindFirst("UserId"); // Lấy claim "UserId" thay vì NameIdentifier
             var landlordId = userIdClaim != null ? int.Parse(userIdClaim.Value) : 0;
-
-            // Ghi log giá trị để kiểm tra
             Console.WriteLine($"LandlordId: {landlordId}");
-
             return landlordId;
         }
 

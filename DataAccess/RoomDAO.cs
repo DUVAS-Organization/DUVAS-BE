@@ -44,6 +44,8 @@ namespace DataAccess
                             CategoryRoomId = p.CategoryRoomId,
                             Image = p.Image,
                             Note = p.Note,
+                            status = p.status,
+                            Deposit = p.Deposit,
                             BuildingName = p.Building != null ? p.Building.BuildingName : null,
                             CategoryName = p.CategoryRoom.CategoryName,
                             IsPermission = p.IsPermission,
@@ -127,6 +129,8 @@ namespace DataAccess
                         CategoryRoomId = p.CategoryRoomId,
                         Image = p.Image,
                         Note = p.Note,
+                        status = p.status,
+                        Deposit = p.Deposit,
                         IsPermission = p.IsPermission,
                         BuildingName = p.Building != null ? p.Building.BuildingName : null,
                     })
@@ -290,6 +294,8 @@ namespace DataAccess
                             NumberOfBedroom = p.NumberOfBedroom,
                             Garret = p.Garret,
                             Price = p.Price,
+                            status = p.status,
+                            Deposit = p.Deposit,
                             CategoryRoomId = p.CategoryRoomId,
                             CategoryName = p.CategoryRoom.CategoryName,
 
