@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BusinessObject.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250310133015_InitialCreate")]
+    [Migration("20250314140032_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -552,11 +552,14 @@ namespace BusinessObject.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("RoomId")
+                    b.Property<int?>("RoomId")
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("SavedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<int?>("ServicePostId")
+                        .HasColumnType("int");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
@@ -564,6 +567,8 @@ namespace BusinessObject.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("RoomId");
+
+                    b.HasIndex("ServicePostId");
 
                     b.HasIndex("UserId");
 
@@ -646,6 +651,10 @@ namespace BusinessObject.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Image")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -1117,16 +1126,22 @@ namespace BusinessObject.Migrations
                     b.HasOne("DUVAS.Room", "Room")
                         .WithMany("SavedPosts")
                         .HasForeignKey("RoomId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("DUVAS.ServicePost", "ServicePost")
+                        .WithMany("SavedPosts")
+                        .HasForeignKey("ServicePostId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("DUVAS.User", "User")
                         .WithMany("SavedPosts")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Room");
+
+                    b.Navigation("ServicePost");
 
                     b.Navigation("User");
                 });
@@ -1162,9 +1177,9 @@ namespace BusinessObject.Migrations
                         .IsRequired();
 
                     b.HasOne("DUVAS.User", "User")
-                        .WithMany()
+                        .WithMany("ServicePosts")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("CategoryService");
@@ -1266,6 +1281,8 @@ namespace BusinessObject.Migrations
 
                     b.Navigation("RentalServiceLists");
 
+                    b.Navigation("SavedPosts");
+
                     b.Navigation("ServiceFeedbacks");
                 });
 
@@ -1286,6 +1303,8 @@ namespace BusinessObject.Migrations
                     b.Navigation("SavedPosts");
 
                     b.Navigation("ServiceLicenses");
+
+                    b.Navigation("ServicePosts");
 
                     b.Navigation("Transactions");
 

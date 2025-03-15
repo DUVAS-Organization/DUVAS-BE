@@ -160,7 +160,11 @@ namespace DUVAS
                 .HasForeignKey(r => r.TransactionId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-           
+            modelBuilder.Entity<ServicePost>()
+                .HasOne(r => r.User)
+                .WithMany(u => u.ServicePosts)
+                .HasForeignKey(r => r.UserId)
+                .OnDelete(DeleteBehavior.NoAction);
 
             // Transaction-User
             modelBuilder.Entity<Transaction>()
@@ -240,16 +244,23 @@ namespace DUVAS
                 .HasForeignKey(p => p.CategoryPriorityPackageServicePostId)
                 .OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<SavedPost>()
-             .HasOne(sp => sp.Room)
-             .WithMany(r => r.SavedPosts)
-             .HasForeignKey(sp => sp.RoomId)
-             .OnDelete(DeleteBehavior.Cascade); // Xóa Room thì xóa luôn SavePost
+    .HasOne(sp => sp.Room)
+    .WithMany(r => r.SavedPosts)
+    .HasForeignKey(sp => sp.RoomId)
+    .OnDelete(DeleteBehavior.Restrict); // Không xóa nếu còn SavedPost liên quan
 
             modelBuilder.Entity<SavedPost>()
                 .HasOne(sp => sp.User)
                 .WithMany(u => u.SavedPosts)
                 .HasForeignKey(sp => sp.UserId)
-                .OnDelete(DeleteBehavior.Restrict); // Không xóa User nếu còn SavePost
+                .OnDelete(DeleteBehavior.Cascade); // Xóa User thì xóa luôn SavedPost liên quan
+
+            modelBuilder.Entity<SavedPost>()
+               .HasOne(sp => sp.ServicePost)
+               .WithMany(s => s.SavedPosts)
+               .HasForeignKey(sp => sp.ServicePostId)
+               .OnDelete(DeleteBehavior.Restrict); // Xóa ServicePost thì xóa luôn SavedPost
+
 
 
         }

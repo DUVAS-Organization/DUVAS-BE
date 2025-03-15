@@ -31,6 +31,7 @@ namespace DUVAS
         public virtual ICollection<RentalList>? RentalLists { get; set; }
         public virtual ICollection<WithdrawRequest> WithdrawRequests { get; set; }
         public virtual ICollection<Room>? Rooms { get; set; }
+        public virtual ICollection<ServicePost>? ServicePosts { get; set; }
         public virtual ICollection<SavedPost>? SavedPosts { get; set; }
         public virtual ICollection<PriorityPackageServicePost>? PriorityPackageServicePosts { get; set; }
         public virtual ICollection<PriorityPackageRoom> PriorityPackageRooms { get; set; }

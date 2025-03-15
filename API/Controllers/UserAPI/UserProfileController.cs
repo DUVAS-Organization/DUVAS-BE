@@ -44,6 +44,25 @@ namespace API.Controllers.UserAPI
             public string NewPassword { get; set; }
         }
 
+        // Thêm endpoint GET để lấy thông tin người dùng theo userId
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetUserProfile(int id)
+        {
+            try
+            {
+                var user = await _userRepository.GetUserByIdAsync(id);
+                if (user == null)
+                {
+                    return NotFound(new { Message = "User không tồn tại." });
+                }
+                return Ok(user);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "Lỗi khi lấy thông tin người dùng.", Details = ex.Message });
+            }
+        }
+
         [HttpPut("{id}/EditProfile")]
         public async Task<IActionResult> EditProfile(int id, [FromBody] User updatedUser)
         {
@@ -71,7 +90,6 @@ namespace API.Controllers.UserAPI
             return NoContent();
         }
 
-
         // API: View room rental history
         [HttpGet("{userId}/RoomRentalHistory")]
         public async Task<IActionResult> GetRoomRentalHistory(int userId)
@@ -94,7 +112,6 @@ namespace API.Controllers.UserAPI
                 return StatusCode(StatusCodes.Status500InternalServerError, "Lỗi khi lấy lịch sử thuê phòng.");
             }
         }
-
 
         // API: View service rental history
         [HttpGet("{userId}/ServiceRentalHistory")]
@@ -126,7 +143,7 @@ namespace API.Controllers.UserAPI
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto changePasswordDto)
         {
             // Lấy thông tin người dùng từ token JWT
-            var userId = User.FindFirst("userId")?.Value;
+            var userId = User.FindFirst("UserId")?.Value;
             if (string.IsNullOrEmpty(userId))
             {
                 return Unauthorized(new { Message = "Unauthorized" });
@@ -144,7 +161,6 @@ namespace API.Controllers.UserAPI
             {
                 return BadRequest(new { Message = "Old password is incorrect" });
             }
-
 
             // Kiểm tra mật khẩu mới và xác nhận mật khẩu mới
             if (changePasswordDto.NewPassword != changePasswordDto.ConfirmNewPassword)
@@ -172,7 +188,7 @@ namespace API.Controllers.UserAPI
         public async Task<IActionResult> AddPassword([FromBody] ChangePasswordDto addPasswordDto)
         {
             // Lấy thông tin người dùng từ token JWT
-            var userId = User.FindFirst("userId")?.Value;
+            var userId = User.FindFirst("UserId")?.Value;
             if (string.IsNullOrEmpty(userId))
             {
                 return Unauthorized(new { Message = "Unauthorized" });
@@ -184,13 +200,6 @@ namespace API.Controllers.UserAPI
             {
                 return NotFound(new { Message = "User not found" });
             }
-
-            //// Kiểm tra mật khẩu cũ
-            //if (!BCrypt.Net.BCrypt.Verify(addPasswordDto.OldPassword, user.Password))
-            //{
-            //    return BadRequest(new { Message = "Old password is incorrect" });
-            //}
-
 
             // Kiểm tra mật khẩu mới và xác nhận mật khẩu mới
             if (addPasswordDto.NewPassword != addPasswordDto.ConfirmNewPassword)
@@ -258,6 +267,5 @@ namespace API.Controllers.UserAPI
                 return StatusCode(StatusCodes.Status500InternalServerError, "Lỗi khi lấy thông tin ngày hết hạn sử dụng phòng.");
             }
         }
-
     }
 }

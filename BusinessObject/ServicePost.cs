@@ -16,6 +16,7 @@ namespace DUVAS
         public decimal Price { get; set; }
         public string Location { get; set; }
         public string Description { get; set; }
+        public string Image { get; set; }
 
         // Mối quan hệ với CategoryService
         public int CategoryServiceId { get; set; }
@@ -23,6 +24,7 @@ namespace DUVAS
 
         // Mối quan hệ với ServiceFeedback
         public virtual ICollection<ServiceFeedback>? ServiceFeedbacks { get; set; }
+        public virtual ICollection<SavedPost>? SavedPosts { get; set; }
         public virtual ICollection<RentalServiceList>? RentalServiceLists { get; set; }
         public virtual ICollection<PriorityPackageServicePost>? PriorityPackageServicePosts { get; set; }
 

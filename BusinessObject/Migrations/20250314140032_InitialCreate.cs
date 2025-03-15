@@ -239,6 +239,7 @@ namespace BusinessObject.Migrations
                     Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Location = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Image = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CategoryServiceId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -254,8 +255,7 @@ namespace BusinessObject.Migrations
                         name: "FK_ServicePosts_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "UserId");
                 });
 
             migrationBuilder.CreateTable(
@@ -601,8 +601,9 @@ namespace BusinessObject.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    RoomId = table.Column<int>(type: "int", nullable: false),
+                    RoomId = table.Column<int>(type: "int", nullable: true),
                     UserId = table.Column<int>(type: "int", nullable: false),
+                    ServicePostId = table.Column<int>(type: "int", nullable: true),
                     SavedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
@@ -613,13 +614,19 @@ namespace BusinessObject.Migrations
                         column: x => x.RoomId,
                         principalTable: "Rooms",
                         principalColumn: "RoomId",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_SavedPosts_ServicePosts_ServicePostId",
+                        column: x => x.ServicePostId,
+                        principalTable: "ServicePosts",
+                        principalColumn: "ServicePostId",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_SavedPosts_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "UserId",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -775,6 +782,11 @@ namespace BusinessObject.Migrations
                 name: "IX_SavedPosts_RoomId",
                 table: "SavedPosts",
                 column: "RoomId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SavedPosts_ServicePostId",
+                table: "SavedPosts",
+                column: "ServicePostId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_SavedPosts_UserId",
