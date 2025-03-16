@@ -2,6 +2,7 @@
 using DataAccess;
 using DTO;
 using DUVAS;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Repositories.IRepository;
 using System.Collections.Generic;
@@ -121,6 +122,7 @@ namespace API.Controllers.Landlord
 
         // POST: api/landlord/RoomManagement
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> AddRoom([FromBody] RoomDTO roomDto)
         {
             if (roomDto == null)
@@ -144,11 +146,7 @@ namespace API.Controllers.Landlord
             }
 
             // Kiểm tra BuildingId có tồn tại không
-            var buildingExists = roomDto.BuildingId.HasValue
-                ? await _roomRepository.CheckBuildingExistsAsync(roomDto.BuildingId.Value)
-                : false;  // Kiểm tra BuildingId nếu có giá trị
-
-            if (!buildingExists)
+            if (roomDto.BuildingId.HasValue && !await _roomRepository.CheckBuildingExistsAsync(roomDto.BuildingId.Value))
             {
                 return BadRequest("BuildingId không tồn tại.");
             }
@@ -199,6 +197,7 @@ namespace API.Controllers.Landlord
 
         // PUT: api/landlord/RoomManagement/{id}
         [HttpPut("{id}")]
+        [Authorize]
         public async Task<IActionResult> UpdateRoom(int id, [FromBody] RoomDTO roomDto)
         {
             int landlordId = GetLandlordId();
