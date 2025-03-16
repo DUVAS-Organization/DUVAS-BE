@@ -312,5 +312,37 @@ namespace DataAccess
                 throw new Exception(ex.Message);
             }
         }
+        public static async Task<List<RoomDTO>> GetAllRoomsByStatusAsync(int status)
+        {
+            using (var context = new ApplicationDbContext())
+            {
+                return await context.Rooms
+                    .Where(p => p.status == 1)
+                    .Select(p => new RoomDTO
+                    {
+                        RoomId = p.RoomId,
+                        BuildingId = p.BuildingId,
+                        UserId = p.UserId,
+                        UserName = p.User.UserName,
+                        Title = p.Title,
+                        Description = p.Description,
+                        LocationDetail = p.LocationDetail,
+                        Acreage = p.Acreage,
+                        Furniture = p.Furniture,
+                        NumberOfBathroom = p.NumberOfBathroom,
+                        NumberOfBedroom = p.NumberOfBedroom,
+                        Garret = p.Garret,
+                        Price = p.Price,
+                        CategoryRoomId = p.CategoryRoomId,
+                        Image = p.Image,
+                        Note = p.Note,
+                        IsPermission = p.IsPermission,
+                        status = p.status,
+                        Deposit = p.Deposit,
+                        BuildingName = p.Building != null ? p.Building.BuildingName : null,
+                    })
+                    .ToListAsync();
+            }
+        }
     }
 }

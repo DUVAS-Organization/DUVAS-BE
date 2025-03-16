@@ -244,10 +244,10 @@ namespace DUVAS
                 .HasForeignKey(p => p.CategoryPriorityPackageServicePostId)
                 .OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<SavedPost>()
-    .HasOne(sp => sp.Room)
-    .WithMany(r => r.SavedPosts)
-    .HasForeignKey(sp => sp.RoomId)
-    .OnDelete(DeleteBehavior.Restrict); // Không xóa nếu còn SavedPost liên quan
+                .HasOne(sp => sp.Room)
+                .WithMany(r => r.SavedPosts)
+                .HasForeignKey(sp => sp.RoomId)
+                .OnDelete(DeleteBehavior.Restrict); // Không xóa nếu còn SavedPost liên quan
 
             modelBuilder.Entity<SavedPost>()
                 .HasOne(sp => sp.User)
