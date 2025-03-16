@@ -17,7 +17,7 @@ namespace DUVAS.Controllers
             _context = context;
         }
 
-        // 🔹 Lấy danh sách bài đã lưu của một user
+        // 🔹 Lấy danh sách bài đã lưu của một user (bao gồm cả Room và ServicePost)
         [HttpGet("{userId}")]
         public async Task<IActionResult> GetSavedPosts(int userId)
         {
@@ -28,16 +28,26 @@ namespace DUVAS.Controllers
                     .Select(sp => new
                     {
                         sp.RoomId,
+                        sp.ServicePostId,
                         sp.UserId,
                         sp.SavedAt,
-                        Room = new
+                        Room = sp.Room != null ? new
                         {
                             sp.Room.Title,
                             sp.Room.Price,
                             sp.Room.Acreage,
                             sp.Room.LocationDetail,
                             sp.Room.Image
-                        }
+                        } : null,
+                        ServicePost = sp.ServicePost != null ? new
+                        {
+                            sp.ServicePost.Title,
+                            sp.ServicePost.Price,
+                            sp.ServicePost.PhoneNumber,
+                            sp.ServicePost.Location,
+                            sp.ServicePost.Description,
+                            sp.ServicePost.Image
+                        } : null
                     })
                     .ToListAsync();
 
@@ -49,37 +59,76 @@ namespace DUVAS.Controllers
             }
         }
 
-        // 🔹 Thêm hoặc xóa bài đã lưu
+        // 🔹 Thêm hoặc xóa bài đã lưu cho Room hoặc ServicePost
         [HttpPost]
         public async Task<IActionResult> ToggleSavePost([FromBody] SavePostRequest request)
         {
-            if (request.RoomId == 0 || request.UserId == 0)
+            // Kiểm tra UserId
+            if (request.UserId == 0)
             {
-                return BadRequest(new { message = "RoomId hoặc UserId không hợp lệ!" });
+                return BadRequest(new { message = "UserId không hợp lệ!" });
+            }
+            // Cần có ít nhất một trong 2: RoomId hoặc ServicePostId
+            if (request.RoomId == 0 && request.ServicePostId == 0)
+            {
+                return BadRequest(new { message = "Cần cung cấp RoomId hoặc ServicePostId!" });
             }
 
-            var existingPost = await _context.SavedPosts
-                .FirstOrDefaultAsync(sp => sp.RoomId == request.RoomId && sp.UserId == request.UserId);
+            // Nếu có RoomId (ưu tiên xử lý Room nếu có)
+            if (request.RoomId > 0)
+            {
+                var existingPost = await _context.SavedPosts
+                    .FirstOrDefaultAsync(sp => sp.RoomId == request.RoomId && sp.UserId == request.UserId);
 
-            if (existingPost != null)
-            {
-                _context.SavedPosts.Remove(existingPost);
-                await _context.SaveChangesAsync();
-                return Ok(new { message = "Đã bỏ lưu bài đăng.", status = "removed" });
-            }
-            else
-            {
-                var newSavedPost = new SavedPost
+                if (existingPost != null)
                 {
-                    RoomId = request.RoomId,
-                    UserId = request.UserId, // Quan trọng!
-                    SavedAt = DateTime.Now
-                };
+                    _context.SavedPosts.Remove(existingPost);
+                    await _context.SaveChangesAsync();
+                    return Ok(new { message = "Đã bỏ lưu bài đăng.", status = "removed" });
+                }
+                else
+                {
+                    var newSavedPost = new SavedPost
+                    {
+                        RoomId = request.RoomId,
+                        UserId = request.UserId,
+                        // Nếu cần, bạn có thể gán thêm ServicePostId = 0 (hoặc null) cho rõ ràng
+                        SavedAt = DateTime.Now
+                    };
 
-                _context.SavedPosts.Add(newSavedPost);
-                await _context.SaveChangesAsync();
-                return Ok(new { message = "Đã lưu bài đăng thành công.", status = "saved" });
+                    _context.SavedPosts.Add(newSavedPost);
+                    await _context.SaveChangesAsync();
+                    return Ok(new { message = "Đã lưu bài đăng thành công.", status = "saved" });
+                }
             }
+            // Nếu không có RoomId mà có ServicePostId
+            else if (request.ServicePostId > 0)
+            {
+                var existingPost = await _context.SavedPosts
+                    .FirstOrDefaultAsync(sp => sp.ServicePostId == request.ServicePostId && sp.UserId == request.UserId);
+
+                if (existingPost != null)
+                {
+                    _context.SavedPosts.Remove(existingPost);
+                    await _context.SaveChangesAsync();
+                    return Ok(new { message = "Đã bỏ lưu bài đăng.", status = "removed" });
+                }
+                else
+                {
+                    var newSavedPost = new SavedPost
+                    {
+                        ServicePostId = request.ServicePostId,
+                        UserId = request.UserId,
+                        SavedAt = DateTime.Now
+                    };
+
+                    _context.SavedPosts.Add(newSavedPost);
+                    await _context.SaveChangesAsync();
+                    return Ok(new { message = "Đã lưu bài đăng thành công.", status = "saved" });
+                }
+            }
+
+            return BadRequest(new { message = "Yêu cầu không hợp lệ." });
         }
     }
 
@@ -87,5 +136,6 @@ namespace DUVAS.Controllers
     {
         public int RoomId { get; set; }
         public int UserId { get; set; }
+        public int ServicePostId { get; set; }
     }
 }

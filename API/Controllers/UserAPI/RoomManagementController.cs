@@ -215,6 +215,23 @@ namespace API.Controllers.UserAPI
 
             return Ok(roomFeedbacks);
         }
+        [HttpGet("rooms")]
+        public async Task<IActionResult> GetAvailableRooms()
+        {
+            try
+            {
+                var rooms = await _roomRepository.GetAllRoomsByStatusAsync(1); 
+                if (rooms == null || !rooms.Any())
+                {
+                    return NotFound("Không có phòng trống nào hiện tại.");
+                }
+                return Ok(rooms);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi hệ thống: {ex.Message}");
+            }
+        }
 
     }
 }

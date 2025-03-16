@@ -65,7 +65,11 @@ namespace Repositories
             await context.SaveChangesAsync();
             return true;
         }
-
+        public async Task<List<RoomDTO>> GetAllRoomsByStatusAsync(int status)
+        {
+            using var context = new ApplicationDbContext();
+            return await RoomDAO.GetAllRoomsByStatusAsync(status);
+        }
 
     }
 }
