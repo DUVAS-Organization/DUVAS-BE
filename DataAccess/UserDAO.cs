@@ -351,7 +351,7 @@ namespace DataAccess
                             ? $"User ID {userId} vừa + {amount} vào tài khoản."
                             : $"User ID {userId} vừa - {Math.Abs(amount)} khỏi tài khoản.",
                         Status = 0, // 0: trạng thái mặc định
-                        CreatedDate = DateTime.UtcNow
+                        CreatedDate = DateTime.Now
                     };
 
                     await context.InsiderTradings.AddAsync(transaction);

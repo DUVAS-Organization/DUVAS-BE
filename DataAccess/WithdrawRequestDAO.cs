@@ -25,8 +25,8 @@ public class WithdrawRequestDAO
             AccountNumber = AccountNumber,
             Status = WithdrawRequestStatus.Pending, // Set default status to Pending
             Reason = null, // Default to null for Reason
-            CreatedAt = DateTime.UtcNow, // Current UTC time for CreatedAt
-            UpdatedAt = DateTime.UtcNow, // Current UTC time for UpdatedAt
+            CreatedAt = DateTime.Now, // Current UTC time for CreatedAt
+            UpdatedAt = DateTime.Now, // Current UTC time for UpdatedAt
             TransactionId = transactionId
         };
         await _context.WithdrawRequests.AddAsync(withdrawRequest);
@@ -45,7 +45,7 @@ public class WithdrawRequestDAO
         // Update fields
         existingRequest.Status = withdrawRequest.Status;
         existingRequest.Reason = withdrawRequest.Reason;
-        existingRequest.UpdatedAt = DateTime.UtcNow;
+        existingRequest.UpdatedAt = DateTime.Now;
 
         _context.WithdrawRequests.Update(existingRequest);
         await _context.SaveChangesAsync();

@@ -28,7 +28,7 @@ namespace DataAccess
                 Description = description,
                 UserId = userId,
                 Status = TransactionStatus.Pending, // Set default status
-                CreatedAt = DateTime.UtcNow // Use current UTC time
+                CreatedAt = DateTime.Now // Use current UTC time
             };
             await _context.Transactions.AddAsync(transaction);
             await _context.SaveChangesAsync();
