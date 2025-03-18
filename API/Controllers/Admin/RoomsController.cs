@@ -37,7 +37,42 @@ namespace API.Controllers.Admin
             var rooms = await _roomRepository.SearchRoomsAsync(searchTerm);
             return Ok(rooms);
         }
+        [HttpGet("room-locked")]
+        public async Task<IActionResult> GetListRoomLock()
+        {
+            try
+            {
+                var lockedRooms = await _roomRepository.GetListRoomLockAsync();
+                if (lockedRooms == null || lockedRooms.Count == 0)
+                {
+                    return NotFound("Không có phòng nào đang bị khóa.");
+                }
 
+                return Ok(lockedRooms);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi lấy danh sách phòng bị khóa: {ex.Message}");
+            }
+        }
+        [HttpGet("room-active")]
+        public async Task<IActionResult> GetListRoomActiveAsync()
+        {
+            try
+            {
+                var activeRooms = await _roomRepository.GetListRoomActiveAsync();
+                if (activeRooms == null || activeRooms.Count == 0)
+                {
+                    return NotFound("Không có phòng nào đang bị khóa.");
+                }
+
+                return Ok(activeRooms);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi lấy danh sách phòng active: {ex.Message}");
+            }
+        }
         // GET: odata/Rooms/{id}
         [HttpGet("{id}")]
         public async Task<ActionResult<Room>> GetRoom(int id)
@@ -126,6 +161,96 @@ namespace API.Controllers.Admin
             var Room = await _roomRepository.GetRoomByIdAsync(id);
             return Room != null;
         }
+        [HttpPut("lock/{id}")]
+        public async Task<IActionResult> LockRoom(int id)
+        {
+            var room = await _roomRepository.GetRoomByIdAsync(id);
+            if (room == null)
+            {
+                return NotFound("Room không tồn tại.");
+            }
 
+            try
+            {
+                await _roomRepository.LockRoomAsync(id);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi khóa room: {ex.Message}");
+            }
+
+            return NoContent();
+        }
+        [HttpPut("unlock/{id}")]
+        public async Task<IActionResult> UnLockRoom(int id)
+        {
+            var room = await _roomRepository.GetRoomByIdAsync(id);
+            if (room == null)
+            {
+                return NotFound("Room không tồn tại.");
+            }
+
+            try
+            {
+                await _roomRepository.UnLockRoomAsync(id);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi khóa room: {ex.Message}");
+            }
+
+            return NoContent();
+        }
+        [HttpPut("acceptReputation/{id}")]
+        public async Task<IActionResult> AcceptReputationAsync(int id)
+        {
+            var room = await _roomRepository.GetRoomByIdAsync(id);
+            if (room == null)
+            {
+                return NotFound("Room không tồn tại.");
+            }
+
+            try
+            {
+                await _roomRepository.AcceptReputationAsync(id);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi xác nhận tích xanh: {ex.Message}");
+            }
+
+            return NoContent();
+        }
+        [HttpPut("cancelReputation/{id}")]
+        public async Task<IActionResult> CancelReputationAsync(int id)
+        {
+            var room = await _roomRepository.GetRoomByIdAsync(id);
+            if (room == null)
+            {
+                return NotFound("Room không tồn tại.");
+            }
+
+            try
+            {
+                await _roomRepository.CancelReputationAsync(id);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi hủy tích xanh: {ex.Message}");
+            }
+
+            return NoContent();
+        }
+        [HttpGet("reputation")]
+        public async Task<IActionResult> GetRoomReputation()
+        {
+            var rooms = await _roomRepository.GetRoomReputationAsync();
+            if (rooms == null || rooms.Count == 0)
+            {
+                return NotFound("Không có phòng nào đăng ký uy tín.");
+            }
+
+            return Ok(rooms);
+        }
     }
 }

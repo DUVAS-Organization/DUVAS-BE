@@ -22,5 +22,10 @@ namespace Repositories.IRepository
         Task<List<UserDTO>> SearchUsersAsync(string searchTerm);
         Task UpdateUserMoneyAsync(int userId, decimal amount);
         Task<bool> CheckUserBalanceAsync(int userId, decimal amount);
+        Task LockUserAsync(int userId);
+        Task UnLockUserAsync(int userId);
+        Task<List<UserDTO>> GetListUserLockAsync();
+
+        Task<List<UserDTO>> GetListUserActiveAsync();
     }
 }

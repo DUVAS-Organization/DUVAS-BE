@@ -9,6 +9,7 @@ using DUVAS;
 using Microsoft.AspNetCore.OData.Routing.Controllers;
 using Microsoft.AspNetCore.OData.Query;
 using Repositories.IRepository;
+using DTO;
 
 namespace API.Controllers.Admin
 {
@@ -49,6 +50,34 @@ namespace API.Controllers.Admin
             }
 
             return Ok(ServicePost);
+        }
+
+        [HttpGet("servicepost-locked")]
+        public async Task<ActionResult<IEnumerable<ServicePostDTO>>> GetListServicePostLock()
+        {
+            try
+            {
+                var lockedPosts = await _servicePostRepository.GetListServicePostLockAsync();
+                return Ok(lockedPosts);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi lấy danh sách bài đăng bị khóa: {ex.Message}");
+            }
+        }
+
+        [HttpGet("servicepost-active")]
+        public async Task<ActionResult<IEnumerable<ServicePostDTO>>> GetListServicePostActiveAsync()
+        {
+            try
+            {
+                var lockedPosts = await _servicePostRepository.GetListServicePostActiveAsync();
+                return Ok(lockedPosts);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi lấy danh sách bài đăng active: {ex.Message}");
+            }
         }
 
         // POST: odata/ServicePosts
@@ -126,6 +155,46 @@ namespace API.Controllers.Admin
             var ServicePost = await _servicePostRepository.GetServicePostByIdAsync(id);
             return ServicePost != null;
         }
+        [HttpPut("lock/{id}")]
+        public async Task<IActionResult> LockServicePost(int id)
+        {
+            var servicepost = await _servicePostRepository.GetServicePostByIdAsync(id);
+            if (servicepost == null)
+            {
+                return NotFound("ServicePost không tồn tại.");
+            }
 
+            try
+            {
+                await _servicePostRepository.LockServicePostAsync(id);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi khóa ServicePost: {ex.Message}");
+            }
+
+            return NoContent();
+        }
+
+        [HttpPut("unlock/{id}")]
+        public async Task<IActionResult> UnLockServicePost(int id)
+        {
+            var servicepost = await _servicePostRepository.GetServicePostByIdAsync(id);
+            if (servicepost == null)
+            {
+                return NotFound("ServicePost không tồn tại.");
+            }
+
+            try
+            {
+                await _servicePostRepository.UnLockServicePostAsync(id);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi khóa ServicePost: {ex.Message}");
+            }
+
+            return NoContent();
+        }
     }
 }

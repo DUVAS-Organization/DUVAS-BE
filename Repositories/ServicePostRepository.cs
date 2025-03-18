@@ -19,6 +19,10 @@ namespace Repositories
         public async Task UpdateServicePostAsync(ServicePost b) => await ServicePostDAO.UpdateServicePostAsync(b);
 
         public async Task<List<ServicePostDTO>> SearchServicePostsAsync(string searchTerm) => await ServicePostDAO.SearchServicePostsAsync(searchTerm);
+        public async Task LockServicePostAsync(int servicepostId) => await ServicePostDAO.LockServicePostAsync(servicepostId);
+        public async Task UnLockServicePostAsync(int servicepostId) => await ServicePostDAO.UnLockServicePostAsync(servicepostId);
+        public async Task<List<ServicePostDTO>> GetListServicePostLockAsync() => await ServicePostDAO.GetListServicePostLockAsync();
 
+        public async Task<List<ServicePostDTO>> GetListServicePostActiveAsync() => await ServicePostDAO.GetListServicePostActiveAsync();
     }
 }

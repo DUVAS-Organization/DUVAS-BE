@@ -61,6 +61,76 @@ namespace DataAccess
 
         }
 
+        public static async Task<List<UserDTO>> GetListUserLockAsync()
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var lockedUsers = await context.Users
+                        .AsNoTracking()
+                        .Where(u => u.RoleUser == 0)
+                        .Select(p => new UserDTO
+                        {
+                            UserId = p.UserId,
+                            UserName = p.UserName,
+                            Name = p.Name,
+                            Gmail = p.Gmail,
+                            Phone = p.Phone,
+                            Address = p.Address,
+                            Sex = p.Sex,
+                            ProfilePicture = p.ProfilePicture,
+                            Money = p.Money,
+                            RoleAdmin = p.RoleAdmin,
+                            RoleLandlord = p.RoleLandlord,
+                            RoleService = p.RoleService,
+                            RoleUser = p.RoleUser,
+                        })
+                        .ToListAsync();
+
+                    return lockedUsers;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi lấy danh sách User bị khóa: {ex.Message}");
+            }
+        }
+        public static async Task<List<UserDTO>> GetListUserActiveAsync()
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var lockedUsers = await context.Users
+                        .AsNoTracking()
+                        .Where(u => u.RoleUser == 1)
+                        .Select(p => new UserDTO
+                        {
+                            UserId = p.UserId,
+                            UserName = p.UserName,
+                            Name = p.Name,
+                            Gmail = p.Gmail,
+                            Phone = p.Phone,
+                            Address = p.Address,
+                            Sex = p.Sex,
+                            ProfilePicture = p.ProfilePicture,
+                            Money = p.Money,
+                            RoleAdmin = p.RoleAdmin,
+                            RoleLandlord = p.RoleLandlord,
+                            RoleService = p.RoleService,
+                            RoleUser = p.RoleUser,
+                        })
+                        .ToListAsync();
+
+                    return lockedUsers;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi lấy danh sách User bị khóa: {ex.Message}");
+            }
+        }
         public static async Task<User> FindUserByIdAsync(int userId)
         {
             try
@@ -303,6 +373,50 @@ namespace DataAccess
                     .Select(u => u.Money)
                     .FirstOrDefaultAsync();
                 return user >= amount;
+            }
+        }
+        public static async Task LockUserAsync(int userId)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+                    if (user == null)
+                    {
+                        throw new KeyNotFoundException($"User với ID {userId} không tồn tại.");
+                    }
+
+                    user.RoleUser = 0;
+                    context.Users.Update(user);
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi khóa User: {ex.Message}");
+            }
+        }
+        public static async Task UnLockUserAsync(int userId)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+                    if (user == null)
+                    {
+                        throw new KeyNotFoundException($"User với ID {userId} không tồn tại.");
+                    }
+
+                    user.RoleUser = 1;
+                    context.Users.Update(user);
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi mở khóa User: {ex.Message}");
             }
         }
     }

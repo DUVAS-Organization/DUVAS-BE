@@ -21,6 +21,7 @@ namespace DTO
         public string Image { get; set; }
         public string CategoryServiceName { get; set; }
         public int? UserId { get; set; }
+        public int? IsPermission { get; set; }
 
     }
 }
