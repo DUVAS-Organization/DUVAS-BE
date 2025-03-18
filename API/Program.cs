@@ -58,6 +58,7 @@ namespace API
             // Add services to the container.
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSingleton<AiService>();
             //builder.Services.AddSwaggerGen(c =>
             //{
             //    c.OperationFilter<FileUploadOperationFilter>();
