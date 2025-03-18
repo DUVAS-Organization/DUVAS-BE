@@ -17,6 +17,9 @@ namespace DUVAS
         public string Location { get; set; }
         public string Description { get; set; }
         public string Image { get; set; }
+        public int? IsPermission { get; set; }
+        //0: Lock
+        //1: Bình thường
 
         // Mối quan hệ với CategoryService
         public int CategoryServiceId { get; set; }

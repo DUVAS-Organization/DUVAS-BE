@@ -170,15 +170,16 @@ namespace API.Controllers.Landlord
                     NumberOfBathroom = roomDto.NumberOfBathroom,
                     NumberOfBedroom = roomDto.NumberOfBedroom,
                     Price = roomDto.Price,
-                    Image = roomDto.Image,  // Sử dụng URL ảnh trực tiếp
+                    Image = roomDto.Image,
                     Note = roomDto.Note,
-                    IsPermission = roomDto.IsPermission,
+                    IsPermission = roomDto.IsPermission ?? 1,
                     UserId = landlordId,
                     BuildingId = roomDto.BuildingId,
                     CategoryRoomId = roomDto.CategoryRoomId,
-                    status = roomDto.status ?? 1,
+                    status = roomDto.status ?? 1, //Còn trống
                     Deposit = roomDto.Deposit,  // Thêm giá trị tiền đặt cọc
-                    Garret = roomDto.Garret  // Thêm giá trị có gác mái
+                    Garret = roomDto.Garret,
+                    reputation = roomDto.reputation ?? 0, //không tích xanh
                 };
 
                 await _roomRepository.SaveRoomAsync(room);
@@ -238,6 +239,7 @@ namespace API.Controllers.Landlord
                     Note = roomDto.Note,
                     IsPermission = roomDto.IsPermission.HasValue ? roomDto.IsPermission.Value : existingRoom.IsPermission,  // Nếu IsPermission không được truyền, giữ giá trị cũ
                     status = roomDto.status.HasValue ? roomDto.status.Value : existingRoom.status,  // Nếu status không được truyền, giữ giá trị cũ
+                    reputation = roomDto.reputation.HasValue ? roomDto.reputation.Value : existingRoom.reputation,  // Nếu reputation không được truyền, giữ giá trị cũ
                     UserId = landlordId,
                     BuildingId = roomDto.BuildingId,
                     CategoryRoomId = roomDto.CategoryRoomId,

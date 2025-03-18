@@ -9,6 +9,7 @@ using DUVAS;
 using Microsoft.AspNetCore.OData.Query;
 using Repositories.IRepository;
 using Microsoft.AspNetCore.OData.Routing.Controllers;
+using DTO;
 
 namespace API.Controllers.Admin
 {
@@ -36,6 +37,33 @@ namespace API.Controllers.Admin
 
             var users = await _userRepository.SearchUsersAsync(searchTerm);
             return Ok(users);
+        }
+
+        [HttpGet("locked-users")]
+        public async Task<ActionResult<IEnumerable<UserDTO>>> GetLockedUsers()
+        {
+            try
+            {
+                var lockedUsers = await _userRepository.GetListUserLockAsync();
+                return Ok(lockedUsers);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi lấy danh sách người dùng bị khóa: {ex.Message}");
+            }
+        }
+        [HttpGet("active-users")]
+        public async Task<ActionResult<IEnumerable<UserDTO>>> GetListUserActiveAsync()
+        {
+            try
+            {
+                var activeUsers = await _userRepository.GetListUserActiveAsync();
+                return Ok(activeUsers);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi lấy danh sách người dùng active: {ex.Message}");
+            }
         }
 
         // GET: odata/Users/{id}
@@ -125,6 +153,46 @@ namespace API.Controllers.Admin
         {
             var User = await _userRepository.GetUserByIdAsync(id);
             return User != null;
+        }
+        [HttpPut("lock/{id}")]
+        public async Task<IActionResult> LockUser(int id)
+        {
+            var user = await _userRepository.GetUserByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound("User không tồn tại.");
+            }
+
+            try
+            {
+                await _userRepository.LockUserAsync(id);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi khóa user: {ex.Message}");
+            }
+
+            return NoContent();
+        }
+        [HttpPut("unlock/{id}")]
+        public async Task<IActionResult> UnLockUser(int id)
+        {
+            var user = await _userRepository.GetUserByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound("User không tồn tại.");
+            }
+
+            try
+            {
+                await _userRepository.UnLockUserAsync(id);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi khóa user: {ex.Message}");
+            }
+
+            return NoContent();
         }
     }
 }

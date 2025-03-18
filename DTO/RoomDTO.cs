@@ -34,6 +34,7 @@ namespace DTO
 
         public decimal? Deposit { get; set; }
         public int? status { get; set; }
+        public int? reputation { get; set; }
 
         //public Building? Building { get; set; }
         //public bool IsPermission { get; set; }
