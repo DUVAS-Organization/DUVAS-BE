@@ -429,7 +429,7 @@ namespace DataAccess
             using (var context = new ApplicationDbContext())
             {
                 return await context.Rooms
-                    .Where(p => p.status == 1)
+                    .Where(p => p.status == 1 && p.IsPermission == 1)
                     .Select(p => new RoomDTO
                     {
                         RoomId = p.RoomId,

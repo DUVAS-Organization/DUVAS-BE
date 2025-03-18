@@ -90,7 +90,6 @@ namespace API.Controllers.Admin
         [HttpPost]
         public async Task<ActionResult<Room>> PostRoom([FromBody] Room room)
         {
-
             try
             {
                 if (!ModelState.IsValid)
@@ -98,7 +97,12 @@ namespace API.Controllers.Admin
                     return BadRequest(ModelState);
                 }
 
-                // Lưu sách vào cơ sở dữ liệu
+                // Thiết lập giá trị mặc định
+                room.IsPermission = 1; //Trạng thái bình thường không bị khóa
+                room.status = 1; //Trạng thái bình thường(còn trống)
+                room.reputation = 0; //Không có tích xanh
+
+                // Lưu phòng vào cơ sở dữ liệu
                 await _roomRepository.SaveRoomAsync(room);
 
                 return CreatedAtAction(nameof(GetRoom), new { id = room.RoomId }, room);
@@ -110,6 +114,7 @@ namespace API.Controllers.Admin
                 return StatusCode(500, $"Error: {ex.Message}");
             }
         }
+
 
         // PUT: odata/Rooms/{id}
         [HttpPut("{id}")]

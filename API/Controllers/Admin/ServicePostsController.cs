@@ -91,7 +91,7 @@ namespace API.Controllers.Admin
                 {
                     return BadRequest(ModelState);
                 }
-
+                ServicePost.IsPermission = 1;
                 // Lưu sách vào cơ sở dữ liệu
                 await _servicePostRepository.SaveServicePostAsync(ServicePost);
 
