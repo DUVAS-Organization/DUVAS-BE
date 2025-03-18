@@ -40,7 +40,6 @@ namespace API.Controllers
         }
         
         [HttpGet()]
-        [Authorize(Policy = "User")]
         public async Task<IActionResult> CheckTransactionStatus(string description)
         {
             bool isPaid = await _transactionRepository.IsTransactionPaidAsync(description);

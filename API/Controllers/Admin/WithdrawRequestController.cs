@@ -44,7 +44,7 @@ public class WithdrawRequestController : ODataController
 
     [HttpPatch("{id}/status")]
     [Authorize("Admin")]
-    public async Task<IActionResult> RejectWithdrawRequestStatus(int id)
+    public async Task<IActionResult> RejectWithdrawRequestStatus(int id,RejectTransactionDTO rejectTransactionDTO)
     {
         var withdrawRequest = await _withdrawRequestRepository.GetByIdAsync(id);
         if (withdrawRequest == null)
@@ -52,7 +52,12 @@ public class WithdrawRequestController : ODataController
             return NotFound("Withdraw request not found.");
         }
 
+        if (withdrawRequest.Status != WithdrawRequestStatus.Pending)
+        {
+            return BadRequest("Withdraw request is not pending.");
+        }
         withdrawRequest.Status = WithdrawRequestStatus.Rejected;
+        withdrawRequest.Reason = rejectTransactionDTO.reason;
         withdrawRequest.UpdatedAt = DateTime.UtcNow;
 
         await _withdrawRequestRepository.UpdateStatusAsync(withdrawRequest);

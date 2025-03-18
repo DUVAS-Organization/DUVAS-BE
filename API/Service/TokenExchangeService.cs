@@ -16,7 +16,7 @@ public class TokenExchangeService
         _userRepository = userRepository;
         _tokenDictionaryService = tokenDictionaryService;
     }
-    
+
     public string HandleExchangeRequest(string code)
     {
         Console.WriteLine("Handling code exchange...");

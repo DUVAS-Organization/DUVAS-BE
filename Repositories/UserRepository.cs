@@ -21,8 +21,6 @@ namespace Repositories
         public async Task SaveUserAsync(User b) => await UserDAO.SaveUserAsync(b);
         public async Task UpdateUserAsync(User b) => await UserDAO.UpdateUserAsync(b);
         public async Task<List<UserDTO>> SearchUsersAsync(string searchTerm) => await UserDAO.SearchUsersAsync(searchTerm);
-        public Task UpdateUserMoneyAsync(int userId, decimal amount) =>
-            new UserDAO(new ApplicationDbContext()).UpdateUserMoneyAsync(userId, amount);
         public Task<BankAccounts> CreateNewBankAccounts(int userId, BankAccountsDTO bankAccounts) =>
             new UserDAO(new ApplicationDbContext()).CreateNewUserBankAccount(userId, bankAccounts);
         public Task<List<BankAccounts>> GetUserBankAccounts(int userId) =>
@@ -32,5 +30,13 @@ namespace Repositories
 
         public Task<decimal> GetUserMoneyWithIdAsync(int userId) =>
             new UserDAO(new ApplicationDbContext()).GetUserMoneyWithIdAsync(userId);
+        public async Task UpdateUserMoneyAsync(int userId, decimal amount) => await UserDAO.UpdateUserMoneyAsync(userId, amount);
+        public async Task<bool> CheckUserBalanceAsync(int userId, decimal amount) => await UserDAO.CheckUserBalanceAsync(userId, amount);
+        public async Task LockUserAsync(int userId) => await UserDAO.LockUserAsync(userId);
+        public async Task UnLockUserAsync(int userId) => await UserDAO.UnLockUserAsync(userId);
+        public async Task<List<UserDTO>> GetListUserLockAsync() => await UserDAO.GetListUserLockAsync();
+
+        public async Task<List<UserDTO>> GetListUserActiveAsync() => await UserDAO.GetListUserActiveAsync();
+
     }
 }

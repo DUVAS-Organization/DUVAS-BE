@@ -146,6 +146,26 @@ namespace DataAccess
                 throw new Exception(ex.Message);
             }
         }
+        public static async Task UpdateRentalListContractAsync(int rentalId, int contractId)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var rentalList = await context.RentalLists.SingleOrDefaultAsync(r => r.RentalId == rentalId);
+                    if (rentalList != null)
+                    {
+                        rentalList.ContractId = contractId; // Cập nhật ContractId vào RentalList
+                        await context.SaveChangesAsync();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Lỗi khi cập nhật hợp đồng cho RentalList: " + ex.Message);
+            }
+        }
+
 
     }
 

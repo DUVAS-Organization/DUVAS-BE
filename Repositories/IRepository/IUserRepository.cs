@@ -26,5 +26,11 @@ namespace Repositories.IRepository
         Task<Boolean> UpdateBankAccountStatus(int userId, int BankAccountId, bool active);
         Task<BankAccounts> GetUserBankAccountByIdAndUserIdAsync(int userId, int bankAccountId);
         Task<decimal> GetUserMoneyWithIdAsync(int userId);
+        Task<bool> CheckUserBalanceAsync(int userId, decimal amount);
+        Task LockUserAsync(int userId);
+        Task UnLockUserAsync(int userId);
+        Task<List<UserDTO>> GetListUserLockAsync();
+
+        Task<List<UserDTO>> GetListUserActiveAsync();
     }
 }

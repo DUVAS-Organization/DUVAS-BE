@@ -11,9 +11,12 @@ namespace Repositories.IRepository
     public interface IContractRepository
     {
         Task SaveContractAsync(Contract b);
+
+        Task<int> NewContractAsync(Contract b);
         Task<Contract> GetContractByIdAsync(int id);
         Task DeleteContractAsync(Contract b);
         Task UpdateContractAsync(Contract b);
         Task<List<ContractDTO>> GetContractsAsync();
+        Task UpdateContractStatusAsync(int contractId, int status);
     }
 }

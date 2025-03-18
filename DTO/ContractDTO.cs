@@ -9,10 +9,14 @@ namespace DTO
 {
     public class ContractDTO
     {
-        [Key]
         public int ContractId { get; set; }
         public DateTime RentalDateTimeStart { get; set; }
         public DateTime RentalDateTimeEnd { get; set; }
         public string ContractFile { get; set; }
+        public int Status { get; set; }
+        public decimal? Deposit { get; set; }
+        public decimal? Price { get; set; }
+        public required int RoomId { get; set; }
+
     }
 }

@@ -24,6 +24,11 @@ public class WithdrawRequestRepository : IWithdrawRequestRepository
     {
         await using var db = new ApplicationDbContext();
         db.WithdrawRequests.Update(withdrawRequest);
+        if (withdrawRequest.Transaction != null)
+        {
+            withdrawRequest.Transaction.Status = TransactionStatus.Canceled;
+            db.Transactions.Update(withdrawRequest.Transaction);
+        }
         await db.SaveChangesAsync();
     }
     
