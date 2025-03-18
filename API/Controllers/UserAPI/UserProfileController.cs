@@ -12,6 +12,7 @@ using Repositories.IRepository;
 using Microsoft.AspNetCore.Authorization;
 using DTO;
 using System.Text.RegularExpressions;
+using API.Service;
 
 namespace API.Controllers.UserAPI
 {
@@ -25,10 +26,13 @@ namespace API.Controllers.UserAPI
         private readonly IRentalListRepository _rentalListRepository;
         private readonly IRentalServiceListRepository _rentalServiceListRepository;
         private readonly IContractRepository _contractRepository;
+        private readonly OtpService _otpService;
+        private readonly EmailService _emailService;
 
         public UserProfileController(IUserRepository userRepository, IRoomRepository roomRepository,
             IServicePostRepository servicePostRepository, IRentalListRepository rentalListRepository, IContractRepository contractRepository,
-            IRentalServiceListRepository rentalServiceListRepository)
+            IRentalServiceListRepository rentalServiceListRepository,
+            OtpService otpService, EmailService emailService)
         {
             _userRepository = userRepository;
             _roomRepository = roomRepository;
@@ -36,6 +40,8 @@ namespace API.Controllers.UserAPI
             _rentalListRepository = rentalListRepository;
             _contractRepository = contractRepository;
             _rentalServiceListRepository = rentalServiceListRepository;
+            _otpService = otpService;
+            _emailService = emailService;
         }
 
         public class ChangePasswordModel
@@ -266,6 +272,149 @@ namespace API.Controllers.UserAPI
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, "Lỗi khi lấy thông tin ngày hết hạn sử dụng phòng.");
             }
+        }
+        [HttpGet("BankAccount")]
+        [Authorize(Policy = "User")]
+        public async Task<ActionResult<IEnumerable<BankAccounts>>> GetUserBankAccounts()
+        {
+            try
+            {
+                var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId");
+                if (userIdClaim == null)
+                {
+                    return BadRequest("UserId claim not found.");
+                }
+                int.TryParse(userIdClaim.Value, out int userId);
+                var bankAccounts = await _userRepository.GetUserBankAccounts(userId);
+                return Ok(bankAccounts);
+
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return Ok(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while fetching bank accounts.", details = ex.Message });
+            }
+        }
+
+        //This function require an otp which is called from otp api
+        [HttpPost("BankAccount")]
+        [Authorize(Policy = "User")]
+        public async Task<ActionResult<BankAccounts>> CreateUserBankAccount(BankAccountsDTO bankAccounts, string otp)
+        {
+            var verifiedOtp = _otpService.CheckOtp(otp) != null;
+            if (!verifiedOtp)
+            {
+                return NotFound("Wrong otp");
+            }
+            try
+            {
+                var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId");
+                if (userIdClaim == null)
+                {
+                    return Unauthorized();
+                }
+                int.TryParse(userIdClaim.Value, out int userId);
+                var userInfo = await _userRepository.GetUserByIdAsync(userId);
+                if (userInfo == null)
+                {
+                    return NotFound("User not found.");
+                }
+
+                var newBankAccount = await _userRepository.CreateNewBankAccounts(userId, bankAccounts);
+                _otpService.RemoveOtp(userInfo.Gmail);
+                return CreatedAtAction(nameof(GetUserBankAccounts), new { userId = userId }, newBankAccount);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while creating the bank account.", details = ex.Message });
+            }
+        }
+
+
+        //This function require an otp which is called from otp api
+        [HttpPut("BankAccount")]
+        public async Task<ActionResult<Boolean>> UpdateBankAccount([FromBody] BankAccountUpdateDto bankAccountUpdateDto)
+        {
+            try
+            {
+                var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId");
+                if (userIdClaim == null)
+                {
+                    return Unauthorized();
+                }
+                int.TryParse(userIdClaim.Value, out int userId);
+                var userInfo = await _userRepository.GetUserByIdAsync(userId);
+                if (userInfo == null)
+                {
+                    return NotFound("User not found.");
+                }
+
+                // Only verify OTP if activating the bank account
+                if (bankAccountUpdateDto.Active)
+                {
+                    var verifiedOtp = _otpService.CheckOtp(bankAccountUpdateDto.Otp) != null;
+                    if (!verifiedOtp)
+                    {
+                        return NotFound("Wrong OTP.");
+                    }
+                }
+
+                await _userRepository.UpdateBankAccountStatus(userId, bankAccountUpdateDto.BankAccountId, bankAccountUpdateDto.Active);
+
+                // Remove OTP after successful activation
+                if (bankAccountUpdateDto.Active)
+                {
+                    _otpService.RemoveOtp(userInfo.Gmail);
+                }
+
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while updating the bank account status." });
+            }
+        }
+
+
+        [HttpGet("otp")]
+        [Authorize(Policy = "User")]
+        public Task<IActionResult> GetOtp()
+        {
+            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId");
+            if (userIdClaim == null)
+            {
+                return Task.FromResult<IActionResult>(BadRequest(new { Message = "Unauthorized!" }));
+            }
+            int.TryParse(userIdClaim.Value, out int userId);
+            var email = _userRepository.GetUserByIdAsync(userId).GetAwaiter().GetResult().Gmail;
+            if (email == null)
+            {
+                return Task.FromResult<IActionResult>(StatusCode(500, new { Message = "Server Error." }));
+            }
+            var otp = _otpService.GenerateOtp(email);
+
+            var emailContent = $@"
+                <p>Chào {email},</p>
+                <p>Chúng tôi thấy bạn đang gửi yêu cầu đối với ngân hàng của bạn trên tài khoản DUVAS.</p>
+                <p><b>Không nên chia sẻ thông tin này với bất kỳ ai.</b></p>
+                <p><b>Mã OTP để xác thực là: <span style='font-size: 18px; color: #ee1414;'>{otp}</span></b></p>
+                <p>Nếu đây không phải yêu cầu xác thực của bạn, bạn có thể bỏ qua email này. Có thể một ai đó đã gõ nhầm địa chỉ email của bạn.</p>
+                <p>Chúng tôi xin chân thành cảm ơn.</p>
+                <p><b>DUVAS Team</b></p>";
+
+            _emailService.SendEmail(email, "Xác thực email", emailContent);
+            return Task.FromResult<IActionResult>(Ok(new { Message = "Please check your email to get an otp." }));
         }
     }
 }

@@ -17,5 +17,6 @@ namespace Repositories.IRepository
         Task<Transaction?> GetTransactionById(int id);
         Task<List<Transaction>> GetTransactionsByUserId(int userId);
         Task<bool> DoesTransactionProcessedAsync(int cassoId);
+        Task<bool> IsTransactionPaidAsync(string description);
     }
 }

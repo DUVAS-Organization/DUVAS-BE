@@ -21,7 +21,7 @@ namespace DataAccess
 
         public async Task<Transaction> AddTransaction(decimal amount, string description, int userId)
         {
-            
+
             var transaction = new Transaction
             {
                 Amount = amount,
@@ -34,11 +34,11 @@ namespace DataAccess
             await _context.SaveChangesAsync();
             return transaction;
         }
-        
+
         public async Task<Transaction> UpdateTransaction(Transaction transaction)
         {
             var existingTransaction = await _context.Transactions
-                .FirstOrDefaultAsync(t => t.Description != null && transaction.Description.ToLower().Contains(t.Description.ToLower())  && t.Amount == transaction.Amount);
+                .FirstOrDefaultAsync(t => t.Description != null && transaction.Description.ToLower().Contains(t.Description.ToLower()) && t.Amount == transaction.Amount);
             if (existingTransaction == null)
             {
                 throw new KeyNotFoundException($"Transaction with Description '{transaction.Description}' and Amount {transaction.Amount} not found.");
@@ -82,6 +82,13 @@ namespace DataAccess
             var exists = await _context.Transactions
                 .AnyAsync(t => t.CassoId == cassoId);
             return exists;
+        }
+        public async Task<bool> IsTransactionPaidAsync(string description)
+        {
+            var transaction = await _context.Transactions
+                .FirstOrDefaultAsync(t => t.Description != null && t.Description.ToLower() == description.ToLower());
+
+            return transaction != null && transaction.Status == TransactionStatus.Paid;
         }
 
     }

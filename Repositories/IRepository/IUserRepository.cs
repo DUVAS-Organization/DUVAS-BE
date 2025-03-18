@@ -25,7 +25,11 @@ namespace Repositories.IRepository
         Task LockUserAsync(int userId);
         Task UnLockUserAsync(int userId);
         Task<List<UserDTO>> GetListUserLockAsync();
-
         Task<List<UserDTO>> GetListUserActiveAsync();
+        Task<List<BankAccounts>> GetUserBankAccounts(int userId);
+        Task<BankAccounts> CreateNewBankAccounts(int userId, BankAccountsDTO bankAccount);
+        Task<Boolean> UpdateBankAccountStatus(int userId, int BankAccountId, bool active);
+        Task<BankAccounts> GetUserBankAccountByIdAndUserIdAsync(int userId, int bankAccountId);
+        Task<decimal> GetUserMoneyWithIdAsync(int userId);
     }
 }

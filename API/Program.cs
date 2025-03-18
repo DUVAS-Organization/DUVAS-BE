@@ -58,6 +58,7 @@ namespace API
             // Add services to the container.
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSingleton<AiService>();
             //builder.Services.AddSwaggerGen(c =>
             //{
             //    c.OperationFilter<FileUploadOperationFilter>();
@@ -117,6 +118,7 @@ namespace API
             builder.Services.AddScoped<IContractRepository, ContractRepository>();
             builder.Services.AddScoped<ILandlordLicenseRepository, LandlordLicenseRepository>();
             builder.Services.AddScoped<IRentalListRepository, RentalListRepository>();
+            builder.Services.AddScoped<IRentalServiceListRepository, RentalServiceListRepository>();
             builder.Services.AddScoped<IReportRepository, ReportRepository>();
             builder.Services.AddScoped<IRoomRepository, RoomRepository>();
             builder.Services.AddScoped<IRoomLicenseRepository, RoomLicenseRepository>();

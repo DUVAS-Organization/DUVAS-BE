@@ -8,6 +8,7 @@ using System.Net;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
+using BusinessObject.Enums;
 
 namespace DataAccess
 {
@@ -417,6 +418,112 @@ namespace DataAccess
             catch (Exception ex)
             {
                 throw new Exception($"Lỗi khi mở khóa User: {ex.Message}");
+            }
+        }
+        public async Task<List<BankAccounts>> GetUserBankAccountsByIdAsync(int userId)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+            if (user == null)
+            {
+                throw new KeyNotFoundException($"User with ID {userId} not found.");
+            }
+
+            var bankAccounts = await _context.BankAccounts
+                .AsNoTracking()
+                .Where(b => b.UserId == userId)
+                .ToListAsync();
+
+            if (!bankAccounts.Any())
+            {
+                throw new KeyNotFoundException($"User with ID {userId} does not have any bank accounts.");
+            }
+
+            return bankAccounts;
+        }
+
+
+        public async Task<BankAccounts> GetUserBankAccountByIdAndUserIdAsync(int userId, int bankAccountId)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+            if (user == null)
+            {
+                throw new KeyNotFoundException($"User with ID {userId} not found.");
+            }
+
+            var bankAccount = await _context.BankAccounts
+                .AsNoTracking()
+                .FirstOrDefaultAsync(b => b.UserId == userId && b.Id == bankAccountId);
+
+            if (bankAccount == null)
+            {
+                throw new KeyNotFoundException($"Bank account with ID {bankAccountId} not found for user ID {userId}.");
+            }
+
+            return bankAccount;
+        }
+
+
+
+        public async Task<BankAccounts> CreateNewUserBankAccount(int userId, BankAccountsDTO bankAccountDto)
+        {
+            var newBankAccount = new BankAccounts
+            {
+                AccountNumber = bankAccountDto.AccountNumber,
+                AccountName = bankAccountDto.AccountName,
+                BankCode = bankAccountDto.BankCode,
+                Status = BankAccountStatus.Active,
+                UserId = userId
+            };
+
+            _context.BankAccounts.Add(newBankAccount);
+            await _context.SaveChangesAsync();
+
+            return newBankAccount;
+        }
+
+        public async Task<bool> UpdateBankAccountStatus(int userId, int bankAccountId, bool active)
+        {
+            try
+            {
+                var bankAccount = await _context.BankAccounts.FirstOrDefaultAsync(
+                    b => b.UserId == userId && b.Id == bankAccountId);
+
+                if (bankAccount == null)
+                {
+                    throw new KeyNotFoundException($"Bank account with ID {bankAccountId} not found for user {userId}.");
+                }
+
+                bankAccount.Status = active ? BankAccountStatus.Active : BankAccountStatus.Inactive;
+
+                _context.BankAccounts.Update(bankAccount);
+                await _context.SaveChangesAsync();
+
+                return true;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error updating bank account status: {e.Message}");
+                throw;
+            }
+        }
+
+        public async Task<decimal> GetUserMoneyWithIdAsync(int userId)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var money = await context.Users
+                        .Where(x => x.UserId == userId)
+                        .Select(x => x.Money) // Select only the Money field
+                        .SingleOrDefaultAsync();
+
+                    return money;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error fetching user money: " + ex.Message);
             }
         }
     }

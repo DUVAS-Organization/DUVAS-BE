@@ -18,12 +18,13 @@ namespace API.Controllers.Landlord
         private readonly IRoomRepository _roomRepository;
         private readonly UserDAO _userDAO;
         private readonly CloudinaryService _cloudinaryService;
+        private readonly AiService _aiService;
 
-        public RoomManagementLandlordController(IRoomRepository roomRepository, UserDAO userDAO, CloudinaryService cloudinaryService)
-        {
-            _roomRepository = roomRepository;
+        public RoomManagementLandlordController(IRoomRepository roomRepository, UserDAO userDAO, CloudinaryService cloudinaryService, AiService aiService)
+        {    _roomRepository = roomRepository;
             _userDAO = userDAO;
             _cloudinaryService = cloudinaryService; // Inject service upload ảnh
+            _aiService = aiService;
         }
 
 
@@ -320,6 +321,38 @@ namespace API.Controllers.Landlord
             }
 
             return Ok(new { Message = "Trạng thái phòng đã được cập nhật thành công." });
+        }
+        [HttpPost("generate-description")]
+        public async Task<IActionResult> GenerateRoomDescription([FromBody] RoomDTO roomDto)
+        {
+            if (roomDto == null)
+            {
+                return BadRequest("Dữ liệu phòng không được để trống.");
+            }
+
+            var roomInfo = $"Diện tích: {roomDto.Acreage} m², Nội thất: {roomDto.Furniture}, " +
+                           $"Số phòng ngủ: {roomDto.NumberOfBedroom}, Số phòng tắm: {roomDto.NumberOfBathroom}, " +
+                           $"Giá: {roomDto.Price} VND, Ghi chú: {roomDto.Note}";
+
+            Console.WriteLine($"[LOG] Dữ liệu gửi đi: {roomInfo}");
+
+            try
+            {
+                // Gọi phương thức sử dụng Mistral AI thay vì OpenAI
+                (string title, string description) = await _aiService.GenerateRoomTitleAndDescription(roomInfo);
+                Console.WriteLine($"[LOG] Nhận được kết quả từ AI: Tiêu đề - {title}, Mô tả - {description}");
+                return Ok(new { title, description });
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"[LỖI] Lỗi kết nối Mistral AI: {ex.Message}");
+                return StatusCode(500, new { message = "Lỗi kết nối Mistral AI", error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[LỖI] Lỗi khi tạo tiêu đề/mô tả: {ex.Message}");
+                return BadRequest(new { message = "Lỗi khi tạo tiêu đề và mô tả", error = ex.Message });
+            }
         }
     }
 }
