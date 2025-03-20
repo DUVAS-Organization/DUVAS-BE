@@ -93,12 +93,9 @@ namespace DataAccess
                         CategoryRoomId = p.CategoryRoomId,
                         Image = p.Image,
                         Note = p.Note,
-                        status = p.status,
-                        reputation = p.reputation,
-                        Deposit = p.Deposit,
                         BuildingName = p.Building != null ? p.Building.BuildingName : null,
                         CategoryName = p.CategoryRoom.CategoryName,
-                        IsPermission = p.IsPermission,
+                        IsPermission = p.IsPermission
                     })
                     .ToListAsync();
             }
@@ -128,12 +125,9 @@ namespace DataAccess
                         CategoryRoomId = p.CategoryRoomId,
                         Image = p.Image,
                         Note = p.Note,
-                        status = p.status,
-                        reputation = p.reputation,
-                        Deposit = p.Deposit,
                         BuildingName = p.Building != null ? p.Building.BuildingName : null,
                         CategoryName = p.CategoryRoom.CategoryName,
-                        IsPermission = p.IsPermission,
+                        IsPermission = p.IsPermission
                     })
                     .ToListAsync();
             }
@@ -458,6 +452,94 @@ namespace DataAccess
                     .ToListAsync();
             }
         }
+
+        public static async Task<RoomDTO> GetRoomContractByIdAsync(int roomId)
+        {
+            using (var context = new ApplicationDbContext())
+            {
+                var room = await context.Rooms
+                    .Where(r => r.RoomId == roomId)
+                    .AsNoTracking()
+                    .Include(r => r.RentalLists) // Đảm bảo tải RentalLists
+                    .ThenInclude(rl => rl.User) // Tải thông tin Renter (User)
+                    .FirstOrDefaultAsync();
+
+                if (room == null) return null;
+
+                return new RoomDTO
+                {
+                    RoomId = room.RoomId,
+                    UserId = room.UserId,
+                    User = room.User != null ? new UserDTO
+                    {
+                        UserId = room.User.UserId,
+                        Name = room.User.Name,
+                        Gmail = room.User.Gmail,
+                        Phone = room.User.Phone
+                    } : null,
+                    Title = room.Title,
+                    Description = room.Description,
+                    LocationDetail = room.LocationDetail,
+                    Acreage = room.Acreage,
+                    Furniture = room.Furniture,
+                    NumberOfBathroom = room.NumberOfBathroom,
+                    NumberOfBedroom = room.NumberOfBedroom,
+                    Garret = room.Garret,
+                    Price = room.Price,
+                    Deposit = room.Deposit,
+                    Image = room.Image,
+                    Note = room.Note,
+                    status = room.status,
+                    IsPermission = room.IsPermission,
+                    reputation = room.reputation,
+                    RentalLists = room.status == 2 && room.RentalLists != null ? room.RentalLists
+                        .Select(rl => new RentalListDTO
+                        {
+                            RentalId = rl.RentalId,
+                            RoomId = rl.RoomId,
+                            RenterID = rl.RenterID,
+                            RenterName = rl.User != null ? rl.User.Name : "Không có",
+                            RenterEmail = rl.User != null ? rl.User.Gmail : "Không có",
+                            RenterPhone = rl.User != null ? rl.User.Phone : "Không có",
+                            MonthForRent = rl.MonthForRent,
+                            RentDate = rl.RentDate,
+                            RentalStatus = rl.RentalStatus
+                        }).ToList() : null
+                };
+            }
+        }
+        public static async Task<List<RoomDTO>> GetRoomRegisterReputationAsync()
+        {
+            using var context = new ApplicationDbContext();
+            var rooms = await context.Rooms
+                .Where(r => r.reputation == 0 && context.RoomLicenses
+                    .Any(rl => rl.RoomId == r.RoomId && !string.IsNullOrEmpty(rl.BienBanPCCC)))
+                .Select(r => new RoomDTO
+                {
+                    RoomId = r.RoomId,
+                    BuildingId = r.BuildingId,
+                    UserId = r.UserId,
+                    UserName = r.User.UserName,
+                    Title = r.Title,
+                    Description = r.Description,
+                    LocationDetail = r.LocationDetail,
+                    Acreage = r.Acreage,
+                    Furniture = r.Furniture,
+                    NumberOfBathroom = r.NumberOfBathroom,
+                    NumberOfBedroom = r.NumberOfBedroom,
+                    Garret = r.Garret,
+                    Price = r.Price,
+                    CategoryRoomId = r.CategoryRoomId,
+                    Image = r.Image,
+                    Note = r.Note,
+                    BuildingName = r.Building != null ? r.Building.BuildingName : null,
+                    CategoryName = r.CategoryRoom.CategoryName,
+                    IsPermission = r.IsPermission
+                })
+                .ToListAsync();
+
+            return rooms;
+        }
         public static async Task LockRoomAsync(int roomId)
         {
             try
@@ -521,7 +603,7 @@ namespace DataAccess
             }
             catch (Exception ex)
             {
-                throw new Exception($"Lỗi khi khóa Room: {ex.Message}");
+                throw new Exception($"Lỗi khi Accept Reputation: {ex.Message}");
             }
         }
         public static async Task CancelReputationAsync(int roomId)
@@ -548,65 +630,8 @@ namespace DataAccess
             }
             catch (Exception ex)
             {
-                throw new Exception($"Lỗi khi khóa Room: {ex.Message}");
+                throw new Exception($"Lỗi khi Cancel Reputation: {ex.Message}");
             }
         }
-
-        public static async Task<RoomDTO> GetRoomContractByIdAsync(int roomId)
-        {
-            using (var context = new ApplicationDbContext())
-            {
-                var room = await context.Rooms
-                    .Where(r => r.RoomId == roomId)
-                    .AsNoTracking()
-                    .Include(r => r.RentalLists) // Đảm bảo tải RentalLists
-                    .ThenInclude(rl => rl.User) // Tải thông tin Renter (User)
-                    .FirstOrDefaultAsync();
-
-                if (room == null) return null;
-
-                return new RoomDTO
-                {
-                    RoomId = room.RoomId,
-                    UserId = room.UserId,
-                    User = room.User != null ? new UserDTO
-                    {
-                        UserId = room.User.UserId,
-                        Name = room.User.Name,
-                        Gmail = room.User.Gmail,
-                        Phone = room.User.Phone
-                    } : null,
-                    Title = room.Title,
-                    Description = room.Description,
-                    LocationDetail = room.LocationDetail,
-                    Acreage = room.Acreage,
-                    Furniture = room.Furniture,
-                    NumberOfBathroom = room.NumberOfBathroom,
-                    NumberOfBedroom = room.NumberOfBedroom,
-                    Garret = room.Garret,
-                    Price = room.Price,
-                    Deposit = room.Deposit,
-                    Image = room.Image,
-                    Note = room.Note,
-                    status = room.status,
-                    IsPermission = room.IsPermission,
-                    reputation = room.reputation,
-                    RentalLists = room.status == 2 && room.RentalLists != null ? room.RentalLists
-                        .Select(rl => new RentalListDTO
-                        {
-                            RentalId = rl.RentalId,
-                            RoomId = rl.RoomId,
-                            RenterID = rl.RenterID,
-                            RenterName = rl.User != null ? rl.User.Name : "Không có",
-                            RenterEmail = rl.User != null ? rl.User.Gmail : "Không có",
-                            RenterPhone = rl.User != null ? rl.User.Phone : "Không có",
-                            MonthForRent = rl.MonthForRent,
-                            RentDate = rl.RentDate,
-                            RentalStatus = rl.RentalStatus
-                        }).ToList() : null
-                };
-            }
-        }
-
     }
 }

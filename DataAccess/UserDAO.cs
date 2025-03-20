@@ -61,77 +61,6 @@ namespace DataAccess
             }
 
         }
-
-        public static async Task<List<UserDTO>> GetListUserLockAsync()
-        {
-            try
-            {
-                using (var context = new ApplicationDbContext())
-                {
-                    var lockedUsers = await context.Users
-                        .AsNoTracking()
-                        .Where(u => u.RoleUser == 0)
-                        .Select(p => new UserDTO
-                        {
-                            UserId = p.UserId,
-                            UserName = p.UserName,
-                            Name = p.Name,
-                            Gmail = p.Gmail,
-                            Phone = p.Phone,
-                            Address = p.Address,
-                            Sex = p.Sex,
-                            ProfilePicture = p.ProfilePicture,
-                            Money = p.Money,
-                            RoleAdmin = p.RoleAdmin,
-                            RoleLandlord = p.RoleLandlord,
-                            RoleService = p.RoleService,
-                            RoleUser = p.RoleUser,
-                        })
-                        .ToListAsync();
-
-                    return lockedUsers;
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Lỗi khi lấy danh sách User bị khóa: {ex.Message}");
-            }
-        }
-        public static async Task<List<UserDTO>> GetListUserActiveAsync()
-        {
-            try
-            {
-                using (var context = new ApplicationDbContext())
-                {
-                    var lockedUsers = await context.Users
-                        .AsNoTracking()
-                        .Where(u => u.RoleUser == 1)
-                        .Select(p => new UserDTO
-                        {
-                            UserId = p.UserId,
-                            UserName = p.UserName,
-                            Name = p.Name,
-                            Gmail = p.Gmail,
-                            Phone = p.Phone,
-                            Address = p.Address,
-                            Sex = p.Sex,
-                            ProfilePicture = p.ProfilePicture,
-                            Money = p.Money,
-                            RoleAdmin = p.RoleAdmin,
-                            RoleLandlord = p.RoleLandlord,
-                            RoleService = p.RoleService,
-                            RoleUser = p.RoleUser,
-                        })
-                        .ToListAsync();
-
-                    return lockedUsers;
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Lỗi khi lấy danh sách User bị khóa: {ex.Message}");
-            }
-        }
         public static async Task<User> FindUserByIdAsync(int userId)
         {
             using (var context = new ApplicationDbContext())
@@ -357,50 +286,7 @@ namespace DataAccess
                 return user >= amount;
             }
         }
-        public static async Task LockUserAsync(int userId)
-        {
-            try
-            {
-                using (var context = new ApplicationDbContext())
-                {
-                    var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
-                    if (user == null)
-                    {
-                        throw new KeyNotFoundException($"User với ID {userId} không tồn tại.");
-                    }
 
-                    user.RoleUser = 0;
-                    context.Users.Update(user);
-                    await context.SaveChangesAsync();
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Lỗi khi khóa User: {ex.Message}");
-            }
-        }
-        public static async Task UnLockUserAsync(int userId)
-        {
-            try
-            {
-                using (var context = new ApplicationDbContext())
-                {
-                    var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
-                    if (user == null)
-                    {
-                        throw new KeyNotFoundException($"User với ID {userId} không tồn tại.");
-                    }
-
-                    user.RoleUser = 1;
-                    context.Users.Update(user);
-                    await context.SaveChangesAsync();
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Lỗi khi mở khóa User: {ex.Message}");
-            }
-        }
         public async Task<List<BankAccounts>> GetUserBankAccountsByIdAsync(int userId)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
@@ -505,6 +391,234 @@ namespace DataAccess
             catch (Exception ex)
             {
                 throw new Exception("Error fetching user money: " + ex.Message);
+            }
+        }
+        public static async Task<List<UserDTO>> GetListUserLockAsync()
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var lockedUsers = await context.Users
+                        .AsNoTracking()
+                        .Where(u => u.RoleUser == 0)
+                        .Select(p => new UserDTO
+                        {
+                            UserId = p.UserId,
+                            UserName = p.UserName,
+                            Name = p.Name,
+                            Gmail = p.Gmail,
+                            Phone = p.Phone,
+                            Address = p.Address,
+                            Sex = p.Sex,
+                            ProfilePicture = p.ProfilePicture,
+                            Money = p.Money,
+                            RoleAdmin = p.RoleAdmin,
+                            RoleLandlord = p.RoleLandlord,
+                            RoleService = p.RoleService,
+                            RoleUser = p.RoleUser,
+                        })
+                        .ToListAsync();
+
+                    return lockedUsers;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi lấy danh sách User bị khóa: {ex.Message}");
+            }
+        }
+        public static async Task<List<UserDTO>> GetListUserActiveAsync()
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var lockedUsers = await context.Users
+                        .AsNoTracking()
+                        .Where(u => u.RoleUser == 1)
+                        .Select(p => new UserDTO
+                        {
+                            UserId = p.UserId,
+                            UserName = p.UserName,
+                            Name = p.Name,
+                            Gmail = p.Gmail,
+                            Phone = p.Phone,
+                            Address = p.Address,
+                            Sex = p.Sex,
+                            ProfilePicture = p.ProfilePicture,
+                            Money = p.Money,
+                            RoleAdmin = p.RoleAdmin,
+                            RoleLandlord = p.RoleLandlord,
+                            RoleService = p.RoleService,
+                            RoleUser = p.RoleUser,
+                        })
+                        .ToListAsync();
+
+                    return lockedUsers;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi lấy danh sách User bị khóa: {ex.Message}");
+            }
+        }
+        public static async Task<List<UserDTO>> GetListUpRoleLandLord()
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var Landlord = await context.Users
+                        .AsNoTracking()
+                        .Where(u => u.RoleLandlord == 2)
+                        .Select(p => new UserDTO
+                        {
+                            UserId = p.UserId,
+                            UserName = p.UserName,
+                            Name = p.Name,
+                            Gmail = p.Gmail,
+                            Phone = p.Phone,
+                            Address = p.Address,
+                            Sex = p.Sex,
+                            ProfilePicture = p.ProfilePicture,
+                            Money = p.Money,
+                            RoleAdmin = p.RoleAdmin,
+                            RoleLandlord = p.RoleLandlord,
+                            RoleService = p.RoleService,
+                            RoleUser = p.RoleUser,
+                        })
+                        .ToListAsync();
+
+                    return Landlord;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi lấy danh sách UpRole LandLord: {ex.Message}");
+            }
+        }
+        public static async Task<List<UserDTO>> GetListUpRoleService()
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var Service = await context.Users
+                        .AsNoTracking()
+                        .Where(u => u.RoleService == 2)
+                        .Select(p => new UserDTO
+                        {
+                            UserId = p.UserId,
+                            UserName = p.UserName,
+                            Name = p.Name,
+                            Gmail = p.Gmail,
+                            Phone = p.Phone,
+                            Address = p.Address,
+                            Sex = p.Sex,
+                            ProfilePicture = p.ProfilePicture,
+                            Money = p.Money,
+                            RoleAdmin = p.RoleAdmin,
+                            RoleLandlord = p.RoleLandlord,
+                            RoleService = p.RoleService,
+                            RoleUser = p.RoleUser,
+                        })
+                        .ToListAsync();
+
+                    return Service;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi lấy danh sách UpRole Service: {ex.Message}");
+            }
+        }
+        public static async Task LockUserAsync(int userId)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+                    if (user == null)
+                    {
+                        throw new KeyNotFoundException($"User với ID {userId} không tồn tại.");
+                    }
+
+                    user.RoleUser = 0;
+                    context.Users.Update(user);
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi khóa User: {ex.Message}");
+            }
+        }
+        public static async Task UnLockUserAsync(int userId)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+                    if (user == null)
+                    {
+                        throw new KeyNotFoundException($"User với ID {userId} không tồn tại.");
+                    }
+
+                    user.RoleUser = 1;
+                    context.Users.Update(user);
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi mở khóa User: {ex.Message}");
+            }
+        }
+        public static async Task AcceptUpRoleLandLordAsync(int userId)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+                    if (user == null)
+                    {
+                        throw new KeyNotFoundException($"User với ID {userId} không tồn tại.");
+                    }
+
+                    user.RoleLandlord = 1;
+                    context.Users.Update(user);
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi Accept UpRole LandLord: {ex.Message}");
+            }
+        }
+        public static async Task AcceptUpRoleServiceAsync(int userId)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+                    if (user == null)
+                    {
+                        throw new KeyNotFoundException($"User với ID {userId} không tồn tại.");
+                    }
+
+                    user.RoleService = 1;
+                    context.Users.Update(user);
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi Accept UpRole Service: {ex.Message}");
             }
         }
     }

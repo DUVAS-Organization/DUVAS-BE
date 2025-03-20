@@ -246,10 +246,10 @@ namespace API.Controllers.Admin
 
             return NoContent();
         }
-        [HttpGet("reputation")]
-        public async Task<IActionResult> GetRoomReputation()
+        [HttpGet("register-reputation")]
+        public async Task<IActionResult> GetRoomRegisterReputationAsync()
         {
-            var rooms = await _roomRepository.GetRoomReputationAsync();
+            var rooms = await _roomRepository.GetRoomRegisterReputationAsync();
             if (rooms == null || rooms.Count == 0)
             {
                 return NotFound("Không có phòng nào đăng ký uy tín.");

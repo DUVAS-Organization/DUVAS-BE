@@ -24,5 +24,5 @@ namespace Repositories
         public async Task<List<ServicePostDTO>> GetListServicePostLockAsync() => await ServicePostDAO.GetListServicePostLockAsync();
 
         public async Task<List<ServicePostDTO>> GetListServicePostActiveAsync() => await ServicePostDAO.GetListServicePostActiveAsync();
-    }
+       }
 }

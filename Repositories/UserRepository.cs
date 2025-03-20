@@ -36,6 +36,9 @@ namespace Repositories
 
         public Task<decimal> GetUserMoneyWithIdAsync(int userId) =>
             new UserDAO(new ApplicationDbContext()).GetUserMoneyWithIdAsync(userId);
-
+        public async Task<List<UserDTO>> GetListUpRoleLandLord() => await UserDAO.GetListUpRoleLandLord();
+        public async Task<List<UserDTO>> GetListUpRoleService() => await UserDAO.GetListUpRoleService();
+        public async Task AcceptUpRoleLandLordAsync(int userId) => await UserDAO.AcceptUpRoleLandLordAsync(userId);
+        public async Task AcceptUpRoleServiceAsync(int userId) => await UserDAO.AcceptUpRoleServiceAsync(userId);
     }
 }

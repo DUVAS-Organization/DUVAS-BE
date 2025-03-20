@@ -90,5 +90,10 @@ namespace Repositories
         {
             return await RoomDAO.GetRoomContractByIdAsync(roomId);
         }
+        public async Task<List<RoomDTO>> GetRoomRegisterReputationAsync()
+        {
+            return await RoomDAO.GetRoomRegisterReputationAsync();
+        }
+      
     }
 }
