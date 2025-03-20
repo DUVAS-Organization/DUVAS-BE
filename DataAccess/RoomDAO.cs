@@ -551,5 +551,62 @@ namespace DataAccess
                 throw new Exception($"Lỗi khi khóa Room: {ex.Message}");
             }
         }
+
+        public static async Task<RoomDTO> GetRoomContractByIdAsync(int roomId)
+        {
+            using (var context = new ApplicationDbContext())
+            {
+                var room = await context.Rooms
+                    .Where(r => r.RoomId == roomId)
+                    .AsNoTracking()
+                    .Include(r => r.RentalLists) // Đảm bảo tải RentalLists
+                    .ThenInclude(rl => rl.User) // Tải thông tin Renter (User)
+                    .FirstOrDefaultAsync();
+
+                if (room == null) return null;
+
+                return new RoomDTO
+                {
+                    RoomId = room.RoomId,
+                    UserId = room.UserId,
+                    User = room.User != null ? new UserDTO
+                    {
+                        UserId = room.User.UserId,
+                        Name = room.User.Name,
+                        Gmail = room.User.Gmail,
+                        Phone = room.User.Phone
+                    } : null,
+                    Title = room.Title,
+                    Description = room.Description,
+                    LocationDetail = room.LocationDetail,
+                    Acreage = room.Acreage,
+                    Furniture = room.Furniture,
+                    NumberOfBathroom = room.NumberOfBathroom,
+                    NumberOfBedroom = room.NumberOfBedroom,
+                    Garret = room.Garret,
+                    Price = room.Price,
+                    Deposit = room.Deposit,
+                    Image = room.Image,
+                    Note = room.Note,
+                    status = room.status,
+                    IsPermission = room.IsPermission,
+                    reputation = room.reputation,
+                    RentalLists = room.status == 2 && room.RentalLists != null ? room.RentalLists
+                        .Select(rl => new RentalListDTO
+                        {
+                            RentalId = rl.RentalId,
+                            RoomId = rl.RoomId,
+                            RenterID = rl.RenterID,
+                            RenterName = rl.User != null ? rl.User.Name : "Không có",
+                            RenterEmail = rl.User != null ? rl.User.Gmail : "Không có",
+                            RenterPhone = rl.User != null ? rl.User.Phone : "Không có",
+                            MonthForRent = rl.MonthForRent,
+                            RentDate = rl.RentDate,
+                            RentalStatus = rl.RentalStatus
+                        }).ToList() : null
+                };
+            }
+        }
+
     }
 }

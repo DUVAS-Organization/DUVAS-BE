@@ -69,33 +69,50 @@ namespace API.Controllers.UserAPI
             }
         }
 
-        [HttpPut("{id}/EditProfile")]
-        public async Task<IActionResult> EditProfile(int id, [FromBody] User updatedUser)
-        {
-            if (id != updatedUser.UserId)
-            {
-                return BadRequest("ID không khớp.");
-            }
+        //[HttpPut("{id}/EditProfile")]
+        //public async Task<IActionResult> EditProfile(int id, [FromBody] User updatedUser)
+        //{
+        //    if (id != updatedUser.UserId)
+        //    {
+        //        return BadRequest("ID không khớp.");
+        //    }
 
+        //    var user = await _userRepository.GetUserByIdAsync(id);
+        //    if (user == null)
+        //    {
+        //        return NotFound("User không tồn tại.");
+        //    }
+
+        //    user.UserName = updatedUser.UserName ?? user.UserName;
+        //    user.Name = updatedUser.Name ?? user.Name;
+        //    //user.Gmail = updatedUser.Gmail ?? user.Gmail;
+        //    user.Phone = updatedUser.Phone ?? user.Phone;
+        //    user.Address = updatedUser.Address ?? user.Address;
+        //    user.Sex = updatedUser.Sex ?? user.Sex;
+        //    user.ProfilePicture = updatedUser.ProfilePicture ?? user.ProfilePicture;
+
+        //    await _userRepository.UpdateUserAsync(user);
+
+        //    return NoContent();
+        //}
+        [HttpPut("edit-profile/{id}")]
+        public async Task<IActionResult> EditProfile(int id, [FromBody] EditProfileRequest request)
+        {
             var user = await _userRepository.GetUserByIdAsync(id);
             if (user == null)
             {
-                return NotFound("User không tồn tại.");
+                return NotFound("User not found");
             }
-
-            user.UserName = updatedUser.UserName ?? user.UserName;
-            user.Name = updatedUser.Name ?? user.Name;
-            //user.Gmail = updatedUser.Gmail ?? user.Gmail;
-            user.Phone = updatedUser.Phone ?? user.Phone;
-            user.Address = updatedUser.Address ?? user.Address;
-            user.Sex = updatedUser.Sex ?? user.Sex;
-            user.ProfilePicture = updatedUser.ProfilePicture ?? user.ProfilePicture;
+            if (request.UserName != null) user.UserName = request.UserName;
+            if (request.Name != null) user.Name = request.Name;
+            if (request.Phone != null) user.Phone = request.Phone;
+            if (request.Address != null) user.Address = request.Address;
+            if (request.Sex != null) user.Sex = request.Sex;
+            if (request.ProfilePicture != null) user.ProfilePicture = request.ProfilePicture;
 
             await _userRepository.UpdateUserAsync(user);
-
-            return NoContent();
+            return Ok("Profile updated successfully");
         }
-
         // API: View room rental history
         [HttpGet("{userId}/RoomRentalHistory")]
         public async Task<IActionResult> GetRoomRentalHistory(int userId)
@@ -146,7 +163,7 @@ namespace API.Controllers.UserAPI
 
         [HttpPost("changePassword")]
         [Authorize] // Chỉ cho phép người dùng đã đăng nhập
-        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto changePasswordDto)
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDTO changePasswordDto)
         {
             // Lấy thông tin người dùng từ token JWT
             var userId = User.FindFirst("UserId")?.Value;
@@ -191,7 +208,7 @@ namespace API.Controllers.UserAPI
 
         [HttpPost("addPassword")]
         [Authorize] // Chỉ cho phép người dùng đã đăng nhập
-        public async Task<IActionResult> AddPassword([FromBody] ChangePasswordDto addPasswordDto)
+        public async Task<IActionResult> AddPassword([FromBody] ChangePasswordDTO addPasswordDto)
         {
             // Lấy thông tin người dùng từ token JWT
             var userId = User.FindFirst("UserId")?.Value;
@@ -274,7 +291,7 @@ namespace API.Controllers.UserAPI
             }
         }
         [HttpGet("BankAccount")]
-        [Authorize(Policy = "User")]
+        [Authorize]
         public async Task<ActionResult<IEnumerable<BankAccounts>>> GetUserBankAccounts()
         {
             try
@@ -301,7 +318,7 @@ namespace API.Controllers.UserAPI
 
         //This function require an otp which is called from otp api
         [HttpPost("BankAccount")]
-        [Authorize(Policy = "User")]
+        [Authorize]
         public async Task<ActionResult<BankAccounts>> CreateUserBankAccount(BankAccountsDTO bankAccounts, string otp)
         {
             var verifiedOtp = _otpService.CheckOtp(otp) != null;
@@ -388,7 +405,7 @@ namespace API.Controllers.UserAPI
 
 
         [HttpGet("otp")]
-        [Authorize(Policy = "User")]
+        [Authorize]
         public Task<IActionResult> GetOtp()
         {
             var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId");

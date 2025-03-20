@@ -257,5 +257,18 @@ namespace API.Controllers.Admin
 
             return Ok(rooms);
         }
+        [HttpGet("{id}/contract")]
+        public async Task<IActionResult> GetRoomContract(int id)
+        {
+
+            var roomContract = await _roomRepository.GetRoomContractByIdAsync(id);
+            if (roomContract == null)
+            {
+                return NotFound("Thông tin hợp đồng phòng không được tìm thấy.");
+            }
+
+            return Ok(roomContract);
+        }
+
     }
 }

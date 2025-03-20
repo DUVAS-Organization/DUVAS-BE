@@ -23,7 +23,7 @@ public class WithDrawController : ControllerBase
         _userRepository = userRepository;
     }
     [HttpPost("")]
-    [Authorize(Policy = "User")]
+    [Authorize]
     public async Task<IActionResult> CreateWithDrawRequest([FromBody] WithdrawRequestDTO withdrawRequestDto)
     {
         var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId");
@@ -69,7 +69,7 @@ public class WithDrawController : ControllerBase
     }
 
     [HttpGet("user")]
-    [Authorize(Policy = "User")]
+    [Authorize]
     public async Task<ActionResult<IEnumerable<WithdrawRequest>>> GetUserWithdrawRequests()
     {
         var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId");

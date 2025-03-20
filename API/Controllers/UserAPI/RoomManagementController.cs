@@ -56,7 +56,7 @@ namespace API.Controllers.UserAPI
                 }
 
                 // Ghi nhận yêu cầu thuê (không thay đổi trạng thái của phòng)
-                rentalRequest.RentalStatus = 0; // Yêu cầu thuê mới
+                rentalRequest.RentalStatus = 1; // Yêu cầu thuê mới
                 rentalRequest.CreatedDate = DateTime.Now; // Ghi nhận thời điểm tạo
                 await _rentalListRepository.SaveRentalListAsync(rentalRequest);
 

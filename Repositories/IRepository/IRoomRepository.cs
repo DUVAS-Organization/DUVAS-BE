@@ -32,5 +32,7 @@ namespace Repositories.IRepository
         Task<List<RoomDTO>> GetRoomReputationAsync();
         Task<List<RoomDTO>> GetListRoomLockAsync();
         Task<List<RoomDTO>> GetListRoomActiveAsync();
+        Task<RoomDTO> GetRoomContractByIdAsync(int roomId);
+
     }
 }
