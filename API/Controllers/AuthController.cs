@@ -35,7 +35,7 @@ namespace API.Controllers
         }
         [HttpPost("login")]
         [AllowAnonymous]
-        public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
+        public async Task<IActionResult> Login([FromBody] LoginDTO loginDto)
         {
             var user = await _iuserRepository.GetUserByGmailOrPhoneAsync(loginDto.Username);
             if (user == null)
@@ -45,19 +45,19 @@ namespace API.Controllers
 
             if (user == null)
             {
-                return BadRequest(new { Message = "Username or password is incorrect" });
+                return BadRequest(new { Message = "Tài khoản hoặc mật khẩu sai" });
             }
 
             if (BCrypt.Net.BCrypt.Verify(loginDto.Password, user.Password))
             {
                 return Ok(new { Message = _jwtService.GenerateToken(user) });
             }
-            return BadRequest(new { Message = "Username or password is incorrect" });
+            return BadRequest(new { Message = "Tài khoản hoặc mật khẩu sai" });
         }
 
         [HttpPost("register")]
         [AllowAnonymous]
-        public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
+        public async Task<IActionResult> Register([FromBody] RegisterDTO registerDto)
         {
             var emailOrPhone = _otpService.CheckOtp(registerDto.Otp);
             if (emailOrPhone == null)
@@ -98,7 +98,7 @@ namespace API.Controllers
 
         [HttpPost("verify")]
         [AllowAnonymous]
-        public async Task<IActionResult> Verify([FromBody] VerifyDto verifyDto)
+        public async Task<IActionResult> Verify([FromBody] VerifyDTO verifyDto)
         {
             var existingUser = await _iuserRepository.GetUserByGmailOrPhoneAsync(verifyDto.EmailOrPhone);
             if (existingUser == null)
@@ -185,9 +185,13 @@ namespace API.Controllers
         [HttpGet("forgot-password")]
         public async Task<IActionResult> ForgotPassword([FromQuery] String emailOrPhone)
         {
+            var user = await _iuserRepository.GetUserByGmailOrPhoneAsync(emailOrPhone);
+            if (user == null)
+            {
+                return BadRequest(new { Message = "Email không tồn tại trong hệ thống." });
+            }
+
             var otp = _otpService.GenerateOtp(emailOrPhone);
-
-
             // Nội dung email được định dạng bằng HTML
             var emailContent = $@"
             <p>Chào {emailOrPhone},</p>
@@ -196,7 +200,7 @@ namespace API.Controllers
             <p><b>Mã OTP để đặt lại mật khẩu là: <span style='font-size: 18px; color: #ee1414;'>{otp}</span></b></p>
             <p>Nếu bạn không yêu cầu đặt lại mật khẩu, bạn có thể bỏ qua email này. Mật khẩu của bạn sẽ không bị thay đổi.</p>
             <p>Chúng tôi xin chân thành cảm ơn.</p>
-            <p><b>DUVAs Team</b></p>";
+            <<p><b>DUVAS Team</b></p>";
 
             // Gửi email với nội dung HTML
             _emailService.SendEmail(emailOrPhone, "Đặt lại mật khẩu", emailContent);
@@ -206,7 +210,7 @@ namespace API.Controllers
         }
 
         [HttpPost("reset-password")]
-        public async Task<IActionResult> ResetPassword([FromBody] ResetPassword resetPassword)
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDTO resetPassword)
         {
             var emailOrPhone = _otpService.CheckOtp(resetPassword.Otp);
             if (emailOrPhone == null)

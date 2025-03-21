@@ -37,7 +37,8 @@ namespace DUVAS
         public virtual DbSet<PriorityPackageRoom> PriorityPackageRooms { get; set; }
         public virtual DbSet<PriorityPackageServicePost> PriorityPackageServicePosts { get; set; }
         public virtual DbSet<InsiderTrading> InsiderTradings { get; set; }
-
+        public DbSet<SavedPost> SavedPosts { get; set; }
+        public virtual DbSet<BankAccounts> BankAccounts { get; set; }
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
        : base(options)
         {
@@ -160,7 +161,11 @@ namespace DUVAS
                 .HasForeignKey(r => r.TransactionId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-           
+            modelBuilder.Entity<ServicePost>()
+                .HasOne(r => r.User)
+                .WithMany(u => u.ServicePosts)
+                .HasForeignKey(r => r.UserId)
+                .OnDelete(DeleteBehavior.NoAction);
 
             // Transaction-User
             modelBuilder.Entity<Transaction>()
@@ -239,6 +244,26 @@ namespace DUVAS
                 .WithMany(c => c.PriorityPackageServicePosts)
                 .HasForeignKey(p => p.CategoryPriorityPackageServicePostId)
                 .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<SavedPost>()
+                .HasOne(sp => sp.Room)
+                .WithMany(r => r.SavedPosts)
+                .HasForeignKey(sp => sp.RoomId)
+                .OnDelete(DeleteBehavior.Restrict); // Không xóa nếu còn SavedPost liên quan
+
+            modelBuilder.Entity<SavedPost>()
+                .HasOne(sp => sp.User)
+                .WithMany(u => u.SavedPosts)
+                .HasForeignKey(sp => sp.UserId)
+                .OnDelete(DeleteBehavior.Cascade); // Xóa User thì xóa luôn SavedPost liên quan
+
+            modelBuilder.Entity<SavedPost>()
+               .HasOne(sp => sp.ServicePost)
+               .WithMany(s => s.SavedPosts)
+               .HasForeignKey(sp => sp.ServicePostId)
+               .OnDelete(DeleteBehavior.Restrict); // Xóa ServicePost thì xóa luôn SavedPost
+
+
+
         }
 
     }

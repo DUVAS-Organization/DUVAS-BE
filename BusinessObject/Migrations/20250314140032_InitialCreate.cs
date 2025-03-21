@@ -239,6 +239,7 @@ namespace BusinessObject.Migrations
                     Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Location = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Image = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CategoryServiceId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -254,8 +255,7 @@ namespace BusinessObject.Migrations
                         name: "FK_ServicePosts_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "UserId");
                 });
 
             migrationBuilder.CreateTable(
@@ -294,35 +294,13 @@ namespace BusinessObject.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "UserFeedbacks",
-                columns: table => new
-                {
-                    UserFeedbackId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<int>(type: "int", nullable: false),
-                    Comment = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Star = table.Column<int>(type: "int", nullable: false),
-                    Image = table.Column<string>(type: "nvarchar(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_UserFeedbacks", x => x.UserFeedbackId);
-                    table.ForeignKey(
-                        name: "FK_UserFeedbacks_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Rooms",
                 columns: table => new
                 {
                     RoomId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<int>(type: "int", nullable: false),
-                    BuildingId = table.Column<int>(type: "int", nullable: false),
+                    BuildingId = table.Column<int>(type: "int", nullable: true),
                     CategoryRoomId = table.Column<int>(type: "int", nullable: false),
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -333,9 +311,11 @@ namespace BusinessObject.Migrations
                     NumberOfBedroom = table.Column<int>(type: "int", nullable: false),
                     Garret = table.Column<bool>(type: "bit", nullable: true),
                     Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Deposit = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     Image = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Note = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    IsPermission = table.Column<bool>(type: "bit", nullable: true)
+                    status = table.Column<int>(type: "int", nullable: true),
+                    IsPermission = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -525,9 +505,7 @@ namespace BusinessObject.Migrations
                     RoomId = table.Column<int>(type: "int", nullable: false),
                     ContractId = table.Column<int>(type: "int", nullable: true),
                     RenterID = table.Column<int>(type: "int", nullable: false),
-                    RentDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    MonthForRent = table.Column<int>(type: "int", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     RentalStatus = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -614,6 +592,69 @@ namespace BusinessObject.Migrations
                         column: x => x.RoomId,
                         principalTable: "Rooms",
                         principalColumn: "RoomId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "SavedPosts",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    RoomId = table.Column<int>(type: "int", nullable: true),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    ServicePostId = table.Column<int>(type: "int", nullable: true),
+                    SavedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SavedPosts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_SavedPosts_Rooms_RoomId",
+                        column: x => x.RoomId,
+                        principalTable: "Rooms",
+                        principalColumn: "RoomId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_SavedPosts_ServicePosts_ServicePostId",
+                        column: x => x.ServicePostId,
+                        principalTable: "ServicePosts",
+                        principalColumn: "ServicePostId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_SavedPosts_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserFeedbacks",
+                columns: table => new
+                {
+                    UserFeedbackId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    RoomId = table.Column<int>(type: "int", nullable: true),
+                    Comment = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Star = table.Column<double>(type: "float", nullable: false),
+                    Image = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserFeedbacks", x => x.UserFeedbackId);
+                    table.ForeignKey(
+                        name: "FK_UserFeedbacks_Rooms_RoomId",
+                        column: x => x.RoomId,
+                        principalTable: "Rooms",
+                        principalColumn: "RoomId");
+                    table.ForeignKey(
+                        name: "FK_UserFeedbacks_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "UserId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -738,6 +779,21 @@ namespace BusinessObject.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_SavedPosts_RoomId",
+                table: "SavedPosts",
+                column: "RoomId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SavedPosts_ServicePostId",
+                table: "SavedPosts",
+                column: "ServicePostId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SavedPosts_UserId",
+                table: "SavedPosts",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ServiceFeedbacks_ServicePostId",
                 table: "ServiceFeedbacks",
                 column: "ServicePostId");
@@ -761,6 +817,11 @@ namespace BusinessObject.Migrations
                 name: "IX_Transactions_UserId",
                 table: "Transactions",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserFeedbacks_RoomId",
+                table: "UserFeedbacks",
+                column: "RoomId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserFeedbacks_UserId",
@@ -810,6 +871,9 @@ namespace BusinessObject.Migrations
                 name: "RoomLicenses");
 
             migrationBuilder.DropTable(
+                name: "SavedPosts");
+
+            migrationBuilder.DropTable(
                 name: "ServiceFeedbacks");
 
             migrationBuilder.DropTable(
@@ -831,22 +895,22 @@ namespace BusinessObject.Migrations
                 name: "Contracts");
 
             migrationBuilder.DropTable(
-                name: "Rooms");
-
-            migrationBuilder.DropTable(
                 name: "ServicePosts");
 
             migrationBuilder.DropTable(
+                name: "Rooms");
+
+            migrationBuilder.DropTable(
                 name: "Transactions");
+
+            migrationBuilder.DropTable(
+                name: "CategoryServices");
 
             migrationBuilder.DropTable(
                 name: "Buildings");
 
             migrationBuilder.DropTable(
                 name: "CategoryRooms");
-
-            migrationBuilder.DropTable(
-                name: "CategoryServices");
 
             migrationBuilder.DropTable(
                 name: "Users");

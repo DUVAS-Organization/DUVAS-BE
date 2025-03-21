@@ -32,6 +32,23 @@ namespace API.Service
             mailMessage.To.Add(toEmail);
             smtpClient.Send(mailMessage);
         }
+
+
+        public void SendRentalNotificationToLandlord(string landlordEmail, int roomId, string Username)
+        {
+            var subject = "Thông báo thuê phòng";
+            var body = $@"
+    <p>Chào {landlordEmail},</p>
+    <p>Chúng tôi thông báo rằng một người dùng có tên là <strong>{Username}</strong> vừa gửi yêu cầu thuê phòng của bạn.</p>
+    <p><b>Thông tin phòng:</b> Room ID: {roomId}</p>
+    <p>Vui lòng kiểm tra và xử lý yêu cầu của họ.</p>
+    <p>Trân trọng,</p>
+    <p>DUVAS Team</p>";
+
+            // Gửi email cho chủ phòng
+            SendEmail(landlordEmail, subject, body);
+        }
+
         public bool IsEmail(string input)
         {
             var emailPattern = @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";

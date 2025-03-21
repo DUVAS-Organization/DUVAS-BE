@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DUVAS
 {
@@ -6,8 +7,8 @@ namespace DUVAS
     {
         [Key]
         public int ContractId { get; set; }
-
-        public DateTime RentalDateTimeStart { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public DateTime RentalDateTimeStart { get; set; } = DateTime.Now;
         public DateTime RentalDateTimeEnd { get; set; }
 
 
@@ -17,6 +18,7 @@ namespace DUVAS
         public int status { get; set; }
         // 1: Chưa bị hủy hay hết hạn
         // 2: Đã bị hủy hoặc hét hạn
+        // 3: pending
 
         public virtual ICollection<RentalList>? RentalLists { get; set; }
     }

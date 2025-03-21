@@ -1,6 +1,6 @@
 ﻿namespace DTO;
 
-public class VerifyDto
+public class VerifyDTO
 {
     public required string EmailOrPhone { get; set; }
 }

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace DTO
 {
-    public class ChangePasswordDto
+    public class ChangePasswordDTO
     {
         public string OldPassword { get; set; }
         public string NewPassword { get; set; }

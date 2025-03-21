@@ -35,7 +35,10 @@ namespace DataAccess
                             Location = p.Location,
                             Description = p.Description,  
                             Name = p.User.Name,
+                            Image = p.Image,
                             UserId = p.UserId,
+                            IsPermission = p.IsPermission,
+                            CategoryServiceId = p.CategoryServiceId,
                             CategoryServiceName = p.CategoryService.CategoryServiceName
 
                         })
@@ -53,6 +56,70 @@ namespace DataAccess
 
         }
 
+        public static async Task<List<ServicePostDTO>> GetListServicePostLockAsync()
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var lockedServicePosts = await context.ServicePosts
+                        .AsNoTracking()
+                        .Where(p => p.IsPermission == 0)
+                        .Select(p => new ServicePostDTO
+                        {
+                            ServicePostId = p.ServicePostId,
+                            Title = p.Title,
+                            PhoneNumber = p.PhoneNumber,
+                            Price = p.Price,
+                            Location = p.Location,
+                            Description = p.Description,
+                            Name = p.User.Name,
+                            UserId = p.UserId,
+                            IsPermission = p.IsPermission,
+                            CategoryServiceName = p.CategoryService.CategoryServiceName
+                        })
+                        .ToListAsync();
+
+                    return lockedServicePosts;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi lấy danh sách ServicePost bị khóa: {ex.Message}");
+            }
+        }
+        public static async Task<List<ServicePostDTO>> GetListServicePostActiveAsync()
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var lockedServicePosts = await context.ServicePosts
+                        .AsNoTracking()
+                        .Where(p => p.IsPermission == 0)
+                        .Select(p => new ServicePostDTO
+                        {
+                            ServicePostId = p.ServicePostId,
+                            Title = p.Title,
+                            PhoneNumber = p.PhoneNumber,
+                            Price = p.Price,
+                            Location = p.Location,
+                            Description = p.Description,
+                            Name = p.User.Name,
+                            UserId = p.UserId,
+                            IsPermission = p.IsPermission,
+                            CategoryServiceName = p.CategoryService.CategoryServiceName
+                        })
+                        .ToListAsync();
+
+                    return lockedServicePosts;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi lấy danh sách ServicePost bị khóa: {ex.Message}");
+            }
+        }
         public static async Task<ServicePost> FindServicePostByIdAsync(int servicePostId)
         {
             ServicePost servicePost = null;
@@ -148,8 +215,11 @@ namespace DataAccess
                             Price = p.Price,
                             Location = p.Location,
                             Description = p.Description,
+                            Image = p.Image,
                             Name = p.User.Name,
                             UserId = p.UserId,
+                            IsPermission = p.IsPermission,
+                            CategoryServiceId = p.CategoryServiceId,
                             CategoryServiceName = p.CategoryService.CategoryServiceName
                         })
                         .ToListAsync();
@@ -162,6 +232,49 @@ namespace DataAccess
                 throw new Exception(ex.Message);
             }
         }
+        public static async Task LockServicePostAsync(int servicepostId)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var servicepost = await context.ServicePosts.FirstOrDefaultAsync(u => u.ServicePostId == servicepostId);
+                    if (servicepost == null)
+                    {
+                        throw new KeyNotFoundException($"ServicePost với ID {servicepostId} không tồn tại.");
+                    }
 
+                    servicepost.IsPermission = 0;
+                    context.ServicePosts.Update(servicepost);
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi khóa ServicePost: {ex.Message}");
+            }
+        }
+        public static async Task UnLockServicePostAsync(int servicepostId)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var servicepost = await context.ServicePosts.FirstOrDefaultAsync(u => u.ServicePostId == servicepostId);
+                    if (servicepost == null)
+                    {
+                        throw new KeyNotFoundException($"ServicePost với ID {servicepostId} không tồn tại.");
+                    }
+
+                    servicepost.IsPermission = 1;
+                    context.ServicePosts.Update(servicepost);
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi mở khóa ServicePost: {ex.Message}");
+            }
+        }
     }
 }

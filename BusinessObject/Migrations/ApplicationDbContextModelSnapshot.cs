@@ -134,6 +134,43 @@ namespace BusinessObject.Migrations
                     b.ToTable("PriorityPackageServicePosts");
                 });
 
+            modelBuilder.Entity("DUVAS.BankAccounts", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AccountName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("AccountNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("BankCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("UserId")
+                        .IsRequired()
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("BankAccounts");
+                });
+
             modelBuilder.Entity("DUVAS.Building", b =>
                 {
                     b.Property<int>("BuildingId")
@@ -217,6 +254,7 @@ namespace BusinessObject.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("RentalDateTimeStart")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2");
 
                     b.Property<int>("status")
@@ -266,6 +304,10 @@ namespace BusinessObject.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LandlordLicenseId"));
 
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("AnhCCCDMatSau")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -280,8 +322,19 @@ namespace BusinessObject.Migrations
                     b.Property<string>("GiayPhepKinhDoanh")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Sex")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("UserId")
                         .HasColumnType("int");
+
+                    b.Property<DateTime>("dateOfBirth")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("LandlordLicenseId");
 
@@ -461,11 +514,14 @@ namespace BusinessObject.Migrations
                     b.Property<double>("Acreage")
                         .HasColumnType("float");
 
-                    b.Property<int>("BuildingId")
+                    b.Property<int?>("BuildingId")
                         .HasColumnType("int");
 
                     b.Property<int>("CategoryRoomId")
                         .HasColumnType("int");
+
+                    b.Property<decimal?>("Deposit")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -481,8 +537,8 @@ namespace BusinessObject.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool?>("IsPermission")
-                        .HasColumnType("bit");
+                    b.Property<int?>("IsPermission")
+                        .HasColumnType("int");
 
                     b.Property<string>("LocationDetail")
                         .IsRequired()
@@ -505,6 +561,12 @@ namespace BusinessObject.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("reputation")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("status")
                         .HasColumnType("int");
 
                     b.HasKey("RoomId");
@@ -537,6 +599,37 @@ namespace BusinessObject.Migrations
                     b.HasIndex("RoomId");
 
                     b.ToTable("RoomLicenses");
+                });
+
+            modelBuilder.Entity("DUVAS.SavedPost", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("RoomId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("SavedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("ServicePostId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoomId");
+
+                    b.HasIndex("ServicePostId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("SavedPosts");
                 });
 
             modelBuilder.Entity("DUVAS.ServiceFeedback", b =>
@@ -617,6 +710,13 @@ namespace BusinessObject.Migrations
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Image")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("IsPermission")
+                        .HasColumnType("int");
 
                     b.Property<string>("Location")
                         .IsRequired()
@@ -787,17 +887,25 @@ namespace BusinessObject.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Image")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Star")
+                    b.Property<int?>("RoomId")
                         .HasColumnType("int");
+
+                    b.Property<double>("Star")
+                        .HasColumnType("float");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("UserFeedbackId");
+
+                    b.HasIndex("RoomId");
 
                     b.HasIndex("UserId");
 
@@ -836,7 +944,7 @@ namespace BusinessObject.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("TransactionId")
+                    b.Property<int?>("TransactionId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -848,7 +956,8 @@ namespace BusinessObject.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("TransactionId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[TransactionId] IS NOT NULL");
 
                     b.HasIndex("UserId");
 
@@ -905,6 +1014,17 @@ namespace BusinessObject.Migrations
                     b.Navigation("CategoryPriorityPackageServicePost");
 
                     b.Navigation("ServicePost");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("DUVAS.BankAccounts", b =>
+                {
+                    b.HasOne("DUVAS.User", "User")
+                        .WithMany("BankAccounts")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });
@@ -1041,8 +1161,7 @@ namespace BusinessObject.Migrations
                     b.HasOne("DUVAS.Building", "Building")
                         .WithMany("Rooms")
                         .HasForeignKey("BuildingId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("DUVAS.CategoryRoom", "CategoryRoom")
                         .WithMany("Rooms")
@@ -1072,6 +1191,31 @@ namespace BusinessObject.Migrations
                         .IsRequired();
 
                     b.Navigation("Room");
+                });
+
+            modelBuilder.Entity("DUVAS.SavedPost", b =>
+                {
+                    b.HasOne("DUVAS.Room", "Room")
+                        .WithMany("SavedPosts")
+                        .HasForeignKey("RoomId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("DUVAS.ServicePost", "ServicePost")
+                        .WithMany("SavedPosts")
+                        .HasForeignKey("ServicePostId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("DUVAS.User", "User")
+                        .WithMany("SavedPosts")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Room");
+
+                    b.Navigation("ServicePost");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("DUVAS.ServiceFeedback", b =>
@@ -1105,9 +1249,9 @@ namespace BusinessObject.Migrations
                         .IsRequired();
 
                     b.HasOne("DUVAS.User", "User")
-                        .WithMany()
+                        .WithMany("ServicePosts")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("CategoryService");
@@ -1128,11 +1272,17 @@ namespace BusinessObject.Migrations
 
             modelBuilder.Entity("DUVAS.UserFeedback", b =>
                 {
+                    b.HasOne("DUVAS.Room", "Room")
+                        .WithMany()
+                        .HasForeignKey("RoomId");
+
                     b.HasOne("DUVAS.User", "User")
                         .WithMany("UserFeedbacks")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Room");
 
                     b.Navigation("User");
                 });
@@ -1142,8 +1292,7 @@ namespace BusinessObject.Migrations
                     b.HasOne("DUVAS.Transaction", "Transaction")
                         .WithOne()
                         .HasForeignKey("DUVAS.WithdrawRequest", "TransactionId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("DUVAS.User", "User")
                         .WithMany("WithdrawRequests")
@@ -1193,6 +1342,8 @@ namespace BusinessObject.Migrations
                     b.Navigation("RentalLists");
 
                     b.Navigation("RoomLicenses");
+
+                    b.Navigation("SavedPosts");
                 });
 
             modelBuilder.Entity("DUVAS.ServicePost", b =>
@@ -1201,11 +1352,15 @@ namespace BusinessObject.Migrations
 
                     b.Navigation("RentalServiceLists");
 
+                    b.Navigation("SavedPosts");
+
                     b.Navigation("ServiceFeedbacks");
                 });
 
             modelBuilder.Entity("DUVAS.User", b =>
                 {
+                    b.Navigation("BankAccounts");
+
                     b.Navigation("OwnerLicenses");
 
                     b.Navigation("PriorityPackageRooms");
@@ -1218,7 +1373,11 @@ namespace BusinessObject.Migrations
 
                     b.Navigation("Rooms");
 
+                    b.Navigation("SavedPosts");
+
                     b.Navigation("ServiceLicenses");
+
+                    b.Navigation("ServicePosts");
 
                     b.Navigation("Transactions");
 

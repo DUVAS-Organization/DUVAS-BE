@@ -18,8 +18,10 @@ namespace DTO
         public string Description { get; set; }
         public string? Name { get; set; }
         public int CategoryServiceId { get; set; }
+        public string Image { get; set; }
         public string CategoryServiceName { get; set; }
         public int? UserId { get; set; }
+        public int? IsPermission { get; set; }
 
     }
 }
