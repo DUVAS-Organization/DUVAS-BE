@@ -63,7 +63,7 @@ namespace DataAccess
         }
         public static async Task<User> FindUserByIdAsync(int userId)
         {
-             try
+            using (var context = new ApplicationDbContext())
             {
                 var user = await context.Users.FirstOrDefaultAsync(x => x.UserId == userId);
                 return user ?? throw new KeyNotFoundException($"User with ID {userId} not found.");
@@ -289,39 +289,10 @@ namespace DataAccess
 
         public async Task<List<BankAccounts>> GetUserBankAccountsByIdAsync(int userId)
         {
-            try
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+            if (user == null)
             {
-                using (var context = new ApplicationDbContext())
-                {
-                    var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
-                    if (user == null)
-                    {
-                        throw new KeyNotFoundException($"User với ID {userId} không tồn tại.");
-                    }
-
-                    // Cập nhật số dư của User
-                    user.Money += amount;
-                    context.Users.Update(user);
-
-                    // Tạo lịch sử giao dịch trong bảng InsiderTrading
-                    var transaction = new InsiderTrading
-                    {
-                        UserId = userId,
-                        Money = amount,
-                        Note = amount >= 0
-                            ? $"User ID {userId} vừa + {amount} vào tài khoản."
-                            : $"User ID {userId} vừa - {Math.Abs(amount)} khỏi tài khoản.",
-                        Status = 0, // 0: trạng thái mặc định
-                        CreatedDate = DateTime.UtcNow
-                    };
-
-                    await context.InsiderTradings.AddAsync(transaction);
-                    await context.SaveChangesAsync();
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Lỗi khi cập nhật số dư: {ex.Message}");
+                throw new KeyNotFoundException($"User with ID {userId} not found.");
             }
 
             var bankAccounts = await _context.BankAccounts
@@ -650,19 +621,5 @@ namespace DataAccess
                 throw new Exception($"Lỗi khi Accept UpRole Service: {ex.Message}");
             }
         }
-
-        // kiểm tra tiền xem đủ không
-        public static async Task<bool> CheckUserBalanceAsync(int userId, decimal amount)
-        {
-            using (var context = new ApplicationDbContext())
-            {
-                var user = await context.Users
-                    .Where(u => u.UserId == userId)
-                    .Select(u => u.Money)
-                    .FirstOrDefaultAsync();
-                return user >= amount;
-            }
-        }
-
     }
 }

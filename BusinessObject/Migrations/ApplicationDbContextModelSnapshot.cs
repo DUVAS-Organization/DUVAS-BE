@@ -251,6 +251,7 @@ namespace BusinessObject.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("RentalDateTimeEnd")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("RentalDateTimeStart")

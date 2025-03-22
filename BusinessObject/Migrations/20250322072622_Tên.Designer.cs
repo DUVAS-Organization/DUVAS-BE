@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BusinessObject.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250318104055_1")]
-    partial class _1
+    [Migration("20250322072622_Tên")]
+    partial class Tên
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -137,6 +137,43 @@ namespace BusinessObject.Migrations
                     b.ToTable("PriorityPackageServicePosts");
                 });
 
+            modelBuilder.Entity("DUVAS.BankAccounts", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AccountName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("AccountNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("BankCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("UserId")
+                        .IsRequired()
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("BankAccounts");
+                });
+
             modelBuilder.Entity("DUVAS.Building", b =>
                 {
                     b.Property<int>("BuildingId")
@@ -217,6 +254,7 @@ namespace BusinessObject.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("RentalDateTimeEnd")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("RentalDateTimeStart")
@@ -270,6 +308,10 @@ namespace BusinessObject.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LandlordLicenseId"));
 
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("AnhCCCDMatSau")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -284,8 +326,19 @@ namespace BusinessObject.Migrations
                     b.Property<string>("GiayPhepKinhDoanh")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Sex")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("UserId")
                         .HasColumnType("int");
+
+                    b.Property<DateTime>("dateOfBirth")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("LandlordLicenseId");
 
@@ -340,8 +393,13 @@ namespace BusinessObject.Migrations
                     b.Property<int?>("ContractId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime?>("CreatedDate")
-                        .ValueGeneratedOnAdd()
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("MonthForRent")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("RentDate")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("RentalStatus")
@@ -890,7 +948,7 @@ namespace BusinessObject.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("TransactionId")
+                    b.Property<int?>("TransactionId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -902,7 +960,8 @@ namespace BusinessObject.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("TransactionId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[TransactionId] IS NOT NULL");
 
                     b.HasIndex("UserId");
 
@@ -959,6 +1018,17 @@ namespace BusinessObject.Migrations
                     b.Navigation("CategoryPriorityPackageServicePost");
 
                     b.Navigation("ServicePost");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("DUVAS.BankAccounts", b =>
+                {
+                    b.HasOne("DUVAS.User", "User")
+                        .WithMany("BankAccounts")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });
@@ -1226,8 +1296,7 @@ namespace BusinessObject.Migrations
                     b.HasOne("DUVAS.Transaction", "Transaction")
                         .WithOne()
                         .HasForeignKey("DUVAS.WithdrawRequest", "TransactionId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("DUVAS.User", "User")
                         .WithMany("WithdrawRequests")
@@ -1294,6 +1363,8 @@ namespace BusinessObject.Migrations
 
             modelBuilder.Entity("DUVAS.User", b =>
                 {
+                    b.Navigation("BankAccounts");
+
                     b.Navigation("OwnerLicenses");
 
                     b.Navigation("PriorityPackageRooms");
