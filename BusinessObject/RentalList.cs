@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.Contracts;
-
+using System.ComponentModel.DataAnnotations.Schema;
 namespace DUVAS
 {
     public class RentalList

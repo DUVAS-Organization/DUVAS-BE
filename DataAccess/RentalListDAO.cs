@@ -165,7 +165,26 @@ namespace DataAccess
                 throw new Exception("Lỗi khi cập nhật hợp đồng cho RentalList: " + ex.Message);
             }
         }
+        public static async Task<RentalList> GetRentalListByRoomIdAsync(int roomId)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    // Use FirstOrDefaultAsync to prevent the error if there are multiple records
+                    var rentalList = await context.RentalLists
+                        .Where(r => r.RoomId == roomId)  // Filter by roomId
+                        .OrderBy(r => r.CreatedDate)     // Optional: Order by creation date or any other criteria
+                        .FirstOrDefaultAsync();          // Get the first rental or null if not found
 
+                    return rentalList;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Lỗi khi lấy RentalList theo RoomId: " + ex.Message);
+            }
+        }
 
     }
 
