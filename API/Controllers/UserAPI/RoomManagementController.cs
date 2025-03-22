@@ -65,7 +65,6 @@ namespace API.Controllers.UserAPI
 
                 // Gọi service track-room
 
-
                 return Ok("Yêu cầu thuê phòng đã được tạo thành công.");
             }
             catch (Exception ex)
@@ -173,7 +172,6 @@ namespace API.Controllers.UserAPI
             if (room != null)
             {
                 //Gọi API Gửi mail ở đây
-
             }
 
             return Ok("Yêu cầu thuê phòng đã được hủy thành công.");

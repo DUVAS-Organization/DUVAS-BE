@@ -36,6 +36,7 @@ namespace DUVAS
         public virtual DbSet<CategoryPriorityPackageServicePost> CategoryPriorityPackageServicePosts { get; set; }
         public virtual DbSet<PriorityPackageRoom> PriorityPackageRooms { get; set; }
         public virtual DbSet<PriorityPackageServicePost> PriorityPackageServicePosts { get; set; }
+
         public virtual DbSet<InsiderTrading> InsiderTradings { get; set; }
         public DbSet<SavedPost> SavedPosts { get; set; }
         public virtual DbSet<BankAccounts> BankAccounts { get; set; }

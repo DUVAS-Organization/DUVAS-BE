@@ -101,7 +101,6 @@ namespace API.Controllers.Landlord
         }
 
 
-
         // GET: api/landlord/RoomManagement/{id}
         [HttpGet("{id}")]
         public async Task<IActionResult> GetRoom(int id)

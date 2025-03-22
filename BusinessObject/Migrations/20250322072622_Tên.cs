@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace BusinessObject.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class Tên : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -107,6 +107,29 @@ namespace BusinessObject.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "BankAccounts",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    AccountNumber = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    AccountName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    BankCode = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_BankAccounts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_BankAccounts_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Buildings",
                 columns: table => new
                 {
@@ -162,6 +185,10 @@ namespace BusinessObject.Migrations
                     AnhCCCDMatTruoc = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     AnhCCCDMatSau = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CCCD = table.Column<int>(type: "int", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    dateOfBirth = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Sex = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Address = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     GiayPhepKinhDoanh = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
@@ -240,6 +267,7 @@ namespace BusinessObject.Migrations
                     Location = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Image = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsPermission = table.Column<int>(type: "int", nullable: true),
                     CategoryServiceId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -315,7 +343,8 @@ namespace BusinessObject.Migrations
                     Image = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Note = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     status = table.Column<int>(type: "int", nullable: true),
-                    IsPermission = table.Column<int>(type: "int", nullable: true)
+                    IsPermission = table.Column<int>(type: "int", nullable: true),
+                    reputation = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -441,7 +470,7 @@ namespace BusinessObject.Migrations
                     Reason = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    TransactionId = table.Column<int>(type: "int", nullable: false)
+                    TransactionId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -505,7 +534,9 @@ namespace BusinessObject.Migrations
                     RoomId = table.Column<int>(type: "int", nullable: false),
                     ContractId = table.Column<int>(type: "int", nullable: true),
                     RenterID = table.Column<int>(type: "int", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    RentDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    MonthForRent = table.Column<int>(type: "int", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     RentalStatus = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -657,6 +688,11 @@ namespace BusinessObject.Migrations
                         principalColumn: "UserId",
                         onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_BankAccounts_UserId",
+                table: "BankAccounts",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Buildings_UserId",
@@ -832,7 +868,8 @@ namespace BusinessObject.Migrations
                 name: "IX_WithdrawRequests_TransactionId",
                 table: "WithdrawRequests",
                 column: "TransactionId",
-                unique: true);
+                unique: true,
+                filter: "[TransactionId] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_WithdrawRequests_UserId",
@@ -843,6 +880,9 @@ namespace BusinessObject.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "BankAccounts");
+
             migrationBuilder.DropTable(
                 name: "InsiderTradings");
 
