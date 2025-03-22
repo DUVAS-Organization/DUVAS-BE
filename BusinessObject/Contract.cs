@@ -6,10 +6,10 @@ namespace DUVAS
     {
         [Key]
         public int ContractId { get; set; }
-
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public DateTime RentalDateTimeStart { get; set; } = DateTime.Now;
-        public DateTime RentalDateTimeEnd { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public DateTime RentalDateTimeEnd { get; set; }  = DateTime.Now;
 
 
 
@@ -18,7 +18,7 @@ namespace DUVAS
         public int status { get; set; }
         // 1: Chưa bị hủy hay hết hạn
         // 2: Đã bị hủy hoặc hét hạn
-        // 3: Pending
+        // 3: pending
 
         public virtual ICollection<RentalList>? RentalLists { get; set; }
     }

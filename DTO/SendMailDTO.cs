@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 namespace DTO
 {
     public class SendMailDTO
-    {        
-        public  int UserIdLandlord  { get; set; }
-        public  int RoomId  { get; set; }
-        public string RenterName  { get; set; }
+    {
+        public int UserIdLandlord { get; set; }
+        public int RoomId { get; set; }
+        public string RenterName {  get; set; }
     }
 }

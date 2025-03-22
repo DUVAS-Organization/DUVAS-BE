@@ -56,7 +56,7 @@ namespace API.Controllers.UserAPI
                 }
 
                 // Ghi nhận yêu cầu thuê (không thay đổi trạng thái của phòng)
-                rentalRequest.RentalStatus = 0; // Yêu cầu thuê mới
+                rentalRequest.RentalStatus = 1; // Yêu cầu thuê mới
                 rentalRequest.CreatedDate = DateTime.Now; // Ghi nhận thời điểm tạo
                 await _rentalListRepository.SaveRentalListAsync(rentalRequest);
 
@@ -64,7 +64,6 @@ namespace API.Controllers.UserAPI
                 var room = await _roomRepository.GetRoomByIdAsync(rentalRequest.RoomId);
 
                 // Gọi service track-room
-                
 
                 return Ok("Yêu cầu thuê phòng đã được tạo thành công.");
             }
@@ -116,21 +115,25 @@ namespace API.Controllers.UserAPI
         {
             var landlord = await _userRepository.GetUserByIdAsync(sendMailDTO.UserIdLandlord);
 
-            if (landlord == null) {
+            if (landlord == null)
+            {
                 return BadRequest("Thông tin người thuê hoặc chủ phòng không hợp lệ.");
             }
 
             var room = await _roomRepository.GetRoomByIdAsync(sendMailDTO.RoomId);
 
-            if (room == null) {
+            if (room == null)
+            {
                 return BadRequest("Phòng không tồn tại");
             }
 
-            if (room.UserId != sendMailDTO.UserIdLandlord) {
+            if (room.UserId != sendMailDTO.UserIdLandlord)
+            {
                 return BadRequest("Phòng không hợp lệ");
             }
 
-            if (string.IsNullOrEmpty(landlord.Gmail)) {
+            if (string.IsNullOrEmpty(landlord.Gmail))
+            {
                 return BadRequest("Mail của landlord lỗi");
             }
 
@@ -169,7 +172,6 @@ namespace API.Controllers.UserAPI
             if (room != null)
             {
                 //Gọi API Gửi mail ở đây
-                
             }
 
             return Ok("Yêu cầu thuê phòng đã được hủy thành công.");
@@ -210,6 +212,23 @@ namespace API.Controllers.UserAPI
             }
 
             return Ok(roomFeedbacks);
+        }
+        [HttpGet("rooms")]
+        public async Task<IActionResult> GetAvailableRooms()
+        {
+            try
+            {
+                var rooms = await _roomRepository.GetAllRoomsByStatusAsync(1); 
+                if (rooms == null || !rooms.Any())
+                {
+                    return NotFound("Không có phòng trống nào hiện tại.");
+                }
+                return Ok(rooms);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi hệ thống: {ex.Message}");
+            }
         }
 
     }

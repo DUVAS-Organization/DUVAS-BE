@@ -10,23 +10,23 @@ namespace API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class PriorityPackageServicePostController : ControllerBase
+    public class PriorityPackageRoomController : ControllerBase
     {
-        private readonly IPriorityPackageServicePostRepository _repository;
+        private readonly IPriorityPackageRoomRepository _repository;
 
-        public PriorityPackageServicePostController(IPriorityPackageServicePostRepository repository)
+        public PriorityPackageRoomController(IPriorityPackageRoomRepository repository)
         {
             _repository = repository;
         }
 
-        // Lấy danh sách tất cả PriorityPackageServicePost
+        // Lấy danh sách tất cả PriorityPackageRoom
         [HttpGet]
-        public async Task<ActionResult<List<PriorityPackageServicePostDTO>>> GetAll()
+        public async Task<ActionResult<List<PriorityPackageRoomDTO>>> GetAll()
         {
             try
             {
-                var ServicePosts = await _repository.GetPriorityPackageServicePostsAsync();
-                return Ok(ServicePosts);
+                var rooms = await _repository.GetPriorityPackageRoomsAsync();
+                return Ok(rooms);
             }
             catch (Exception ex)
             {
@@ -34,14 +34,14 @@ namespace API.Controllers
             }
         }
 
-        // Lấy PriorityPackageServicePost theo ID
+        // Lấy PriorityPackageRoom theo ID
         [HttpGet("{id}")]
-        public async Task<ActionResult<PriorityPackageServicePostDTO>> GetById(int id)
+        public async Task<ActionResult<PriorityPackageRoomDTO>> GetById(int id)
         {
             try
             {
-                var ServicePost = await _repository.FindPriorityPackageServicePostByIdAsync(id);
-                return Ok(ServicePost);
+                var room = await _repository.FindPriorityPackageRoomByIdAsync(id);
+                return Ok(room);
             }
             catch (Exception ex)
             {
@@ -49,14 +49,14 @@ namespace API.Controllers
             }
         }
 
-        // Thêm mới PriorityPackageServicePost
+        // Thêm mới PriorityPackageRoom
         [HttpPost]
-        public async Task<ActionResult> Create([FromBody] PriorityPackageServicePost package)
+        public async Task<ActionResult> Create([FromBody] PriorityPackageRoom package)
         {
             try
             {
-                await _repository.SavePriorityPackageServicePostAsync(package);
-                return CreatedAtAction(nameof(GetById), new { id = package.PriorityPackageServicePostId }, package);
+                await _repository.SavePriorityPackageRoomAsync(package);
+                return CreatedAtAction(nameof(GetById), new { id = package.PriorityPackageRoomId }, package);
             }
             catch (Exception ex)
             {
@@ -64,18 +64,18 @@ namespace API.Controllers
             }
         }
 
-        // Cập nhật PriorityPackageServicePost
+        // Cập nhật PriorityPackageRoom
         [HttpPut("{id}")]
-        public async Task<ActionResult> Update(int id, [FromBody] PriorityPackageServicePost package)
+        public async Task<ActionResult> Update(int id, [FromBody] PriorityPackageRoom package)
         {
-            if (id != package.PriorityPackageServicePostId)
+            if (id != package.PriorityPackageRoomId)
             {
                 return BadRequest(new { message = "ID không khớp." });
             }
 
             try
             {
-                await _repository.UpdatePriorityPackageServicePostAsync(package);
+                await _repository.UpdatePriorityPackageRoomAsync(package);
                 return NoContent();
             }
             catch (Exception ex)
@@ -84,13 +84,13 @@ namespace API.Controllers
             }
         }
 
-        // Xóa PriorityPackageServicePost
+        // Xóa PriorityPackageRoom
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(int id)
         {
             try
             {
-                await _repository.DeletePriorityPackageServicePostAsync(id);
+                await _repository.DeletePriorityPackageRoomAsync(id);
                 return NoContent();
             }
             catch (Exception ex)

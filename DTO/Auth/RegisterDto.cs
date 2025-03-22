@@ -1,6 +1,6 @@
 ﻿namespace DTO;
 
-public class RegisterDto
+public class RegisterDTO
 {
     public required string Otp { get; set; }
     public required string UserName { get; set; }

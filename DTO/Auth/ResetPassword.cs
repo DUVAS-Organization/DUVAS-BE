@@ -1,6 +1,6 @@
 ﻿namespace DTO;
 
-public class ResetPassword
+public class ResetPasswordDTO
 {
     public required string Otp { get; set; }
     public required string Password { get; set; }

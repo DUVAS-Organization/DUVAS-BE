@@ -12,6 +12,8 @@ using Microsoft.Extensions.Options;
 using API.Controllers;
 using System.Text.Json.Serialization;
 using Repository;
+using Microsoft.AspNetCore.SignalR; // Thêm using cho SignalR
+using API; // Nếu ChatHub nằm trong namespace API
 using DataAccess;
 using Microsoft.OpenApi.Models;
 
@@ -22,6 +24,7 @@ namespace API
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
             // Add STMP settings
             builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
             builder.Services.AddTransient<EmailService>();
@@ -29,6 +32,7 @@ namespace API
             builder.Services.AddSingleton<JwtService>();
             builder.Services.AddSingleton<TokenDictionaryService>();
             builder.Services.AddScoped<TokenExchangeService>();
+
             // Add jwt filter
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
@@ -40,8 +44,7 @@ namespace API
                         ValidateLifetime = true,
                         ValidIssuer = builder.Configuration["Jwt:Issuer"],
                         ValidAudience = builder.Configuration["Jwt:Audience"],
-                        IssuerSigningKey =
-                            new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"]))
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"]))
                     };
                 });
             builder.Services.AddAuthorization(options =>
@@ -51,10 +54,15 @@ namespace API
                 options.AddPolicy("Service", policy => policy.RequireRole("Service"));
                 options.AddPolicy("User", policy => policy.RequireRole("User"));
             });
+
             // Add services to the container.
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
-            //builder.Services.AddSwaggerGen();
+            builder.Services.AddSingleton<AiService>();
+            //builder.Services.AddSwaggerGen(c =>
+            //{
+            //    c.OperationFilter<FileUploadOperationFilter>();
+            //});
             builder.Services.AddSwaggerGen(options =>
             {
                 options.OperationFilter<FileUploadOperationFilter>();
@@ -82,19 +90,16 @@ namespace API
                         new string[] {}
                     }
                 });
-
             });
             // Add database context
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DBString")));
 
             // Thêm cấu hình Cloudinary 
-
             builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
             builder.Services.AddSingleton(serviceProvider =>
             {
                 var config = serviceProvider.GetRequiredService<IOptions<CloudinarySettings>>().Value;
-
                 if (string.IsNullOrEmpty(config.CloudName) || string.IsNullOrEmpty(config.ApiKey) || string.IsNullOrEmpty(config.ApiSecret))
                     throw new InvalidOperationException("Cloudinary configuration is missing or invalid.");
 
@@ -111,8 +116,9 @@ namespace API
             builder.Services.AddScoped<ICategoryRoomRepository, CategoryRoomRepository>();
             builder.Services.AddScoped<ICategoryServiceRepository, CategoryServiceRepository>();
             builder.Services.AddScoped<IContractRepository, ContractRepository>();
-            builder.Services.AddScoped<IOwnerLicenseRepository, OwnerLicenseRepository>();
+            builder.Services.AddScoped<ILandlordLicenseRepository, LandlordLicenseRepository>();
             builder.Services.AddScoped<IRentalListRepository, RentalListRepository>();
+            builder.Services.AddScoped<IRentalServiceListRepository, RentalServiceListRepository>();
             builder.Services.AddScoped<IReportRepository, ReportRepository>();
             builder.Services.AddScoped<IRoomRepository, RoomRepository>();
             builder.Services.AddScoped<IRoomLicenseRepository, RoomLicenseRepository>();
@@ -129,8 +135,6 @@ namespace API
             builder.Services.AddScoped<IPriorityPackageServicePostRepository, PriorityPackageServicePostRepository>();
             builder.Services.AddScoped<IMessageRepository, MessageRepository>();
             builder.Services.AddScoped<UserDAO>();
-
-
             builder.Services.AddScoped<CloudinaryService>();
 
             // Add CORS policy for React app
@@ -144,6 +148,8 @@ namespace API
                 });
             });
 
+            // *** Bổ sung SignalR vào đây ***
+            builder.Services.AddSignalR();
             builder.Services.AddAuthorization(options =>
             {
                 options.AddPolicy("Admin", policy => policy.RequireRole("Admin"));
@@ -151,8 +157,6 @@ namespace API
                 options.AddPolicy("Service", policy => policy.RequireRole("Service"));
                 options.AddPolicy("User", policy => policy.RequireRole("User"));
             });
-
-
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -168,6 +172,10 @@ namespace API
             app.UseAuthorization();
 
             app.MapControllers();
+            app.MapHub<ChatHub>("/chathub");
+
+            // *** Bổ sung map hub cho SignalR ***
+            app.MapHub<ChatHub>("/chathub");
 
             app.Run();
         }

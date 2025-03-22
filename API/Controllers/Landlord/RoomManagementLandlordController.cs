@@ -2,6 +2,7 @@
 using DataAccess;
 using DTO;
 using DUVAS;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Repositories.IRepository;
 using System.Collections.Generic;
@@ -17,24 +18,21 @@ namespace API.Controllers.Landlord
         private readonly IRoomRepository _roomRepository;
         private readonly UserDAO _userDAO;
         private readonly CloudinaryService _cloudinaryService;
+        private readonly AiService _aiService;
 
-        public RoomManagementLandlordController(IRoomRepository roomRepository, UserDAO userDAO, CloudinaryService cloudinaryService)
-        {
-            _roomRepository = roomRepository;
+        public RoomManagementLandlordController(IRoomRepository roomRepository, UserDAO userDAO, CloudinaryService cloudinaryService, AiService aiService)
+        {    _roomRepository = roomRepository;
             _userDAO = userDAO;
             _cloudinaryService = cloudinaryService; // Inject service upload ảnh
+            _aiService = aiService;
         }
 
 
         private int GetLandlordId()
         {
-            // Lấy UserId từ Claims nếu bạn sử dụng JWT hoặc bất kỳ xác thực nào.
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            var userIdClaim = User.FindFirst("UserId"); // Lấy claim "UserId" thay vì NameIdentifier
             var landlordId = userIdClaim != null ? int.Parse(userIdClaim.Value) : 0;
-
-            // Ghi log giá trị để kiểm tra
             Console.WriteLine($"LandlordId: {landlordId}");
-
             return landlordId;
         }
 
@@ -101,7 +99,6 @@ namespace API.Controllers.Landlord
 
             return Ok(new { message = successMessage, rooms });
         }
-    
 
 
         // GET: api/landlord/RoomManagement/{id}
@@ -125,6 +122,7 @@ namespace API.Controllers.Landlord
 
         // POST: api/landlord/RoomManagement
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> AddRoom([FromBody] RoomDTO roomDto)
         {
             if (roomDto == null)
@@ -148,11 +146,7 @@ namespace API.Controllers.Landlord
             }
 
             // Kiểm tra BuildingId có tồn tại không
-            var buildingExists = roomDto.BuildingId.HasValue
-                ? await _roomRepository.CheckBuildingExistsAsync(roomDto.BuildingId.Value)
-                : false;  // Kiểm tra BuildingId nếu có giá trị
-
-            if (!buildingExists)
+            if (roomDto.BuildingId.HasValue && !await _roomRepository.CheckBuildingExistsAsync(roomDto.BuildingId.Value))
             {
                 return BadRequest("BuildingId không tồn tại.");
             }
@@ -176,15 +170,16 @@ namespace API.Controllers.Landlord
                     NumberOfBathroom = roomDto.NumberOfBathroom,
                     NumberOfBedroom = roomDto.NumberOfBedroom,
                     Price = roomDto.Price,
-                    Image = roomDto.Image,  // Sử dụng URL ảnh trực tiếp
+                    Image = roomDto.Image,
                     Note = roomDto.Note,
-                    IsPermission = roomDto.IsPermission,
+                    IsPermission = roomDto.IsPermission ?? 1,
                     UserId = landlordId,
                     BuildingId = roomDto.BuildingId,
                     CategoryRoomId = roomDto.CategoryRoomId,
-                    status = roomDto.status ?? 1,
+                    status = roomDto.status ?? 1, //Còn trống
                     Deposit = roomDto.Deposit,  // Thêm giá trị tiền đặt cọc
-                    Garret = roomDto.Garret  // Thêm giá trị có gác mái
+                    Garret = roomDto.Garret,
+                    reputation = roomDto.reputation ?? 0, //không tích xanh
                 };
 
                 await _roomRepository.SaveRoomAsync(room);
@@ -203,6 +198,7 @@ namespace API.Controllers.Landlord
 
         // PUT: api/landlord/RoomManagement/{id}
         [HttpPut("{id}")]
+        [Authorize]
         public async Task<IActionResult> UpdateRoom(int id, [FromBody] RoomDTO roomDto)
         {
             int landlordId = GetLandlordId();
@@ -243,6 +239,7 @@ namespace API.Controllers.Landlord
                     Note = roomDto.Note,
                     IsPermission = roomDto.IsPermission.HasValue ? roomDto.IsPermission.Value : existingRoom.IsPermission,  // Nếu IsPermission không được truyền, giữ giá trị cũ
                     status = roomDto.status.HasValue ? roomDto.status.Value : existingRoom.status,  // Nếu status không được truyền, giữ giá trị cũ
+                    reputation = roomDto.reputation.HasValue ? roomDto.reputation.Value : existingRoom.reputation,  // Nếu reputation không được truyền, giữ giá trị cũ
                     UserId = landlordId,
                     BuildingId = roomDto.BuildingId,
                     CategoryRoomId = roomDto.CategoryRoomId,
@@ -324,6 +321,37 @@ namespace API.Controllers.Landlord
 
             return Ok(new { Message = "Trạng thái phòng đã được cập nhật thành công." });
         }
+        [HttpPost("generate-description")]
+        public async Task<IActionResult> GenerateRoomDescription([FromBody] RoomDTO roomDto)
+        {
+            if (roomDto == null)
+            {
+                return BadRequest("Dữ liệu phòng không được để trống.");
+            }
+
+            var roomInfo = $"Diện tích: {roomDto.Acreage} m², Nội thất: {roomDto.Furniture}, " +
+                           $"Số phòng ngủ: {roomDto.NumberOfBedroom}, Số phòng tắm: {roomDto.NumberOfBathroom}, " +
+                           $"Giá: {roomDto.Price} VND, Ghi chú: {roomDto.Note}";
+
+            Console.WriteLine($"[LOG] Dữ liệu gửi đi: {roomInfo}");
+
+            try
+            {
+                // Gọi phương thức sử dụng Mistral AI thay vì OpenAI
+                (string title, string description) = await _aiService.GenerateRoomTitleAndDescription(roomInfo);
+                Console.WriteLine($"[LOG] Nhận được kết quả từ AI: Tiêu đề - {title}, Mô tả - {description}");
+                return Ok(new { title, description });
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"[LỖI] Lỗi kết nối Mistral AI: {ex.Message}");
+                return StatusCode(500, new { message = "Lỗi kết nối Mistral AI", error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[LỖI] Lỗi khi tạo tiêu đề/mô tả: {ex.Message}");
+                return BadRequest(new { message = "Lỗi khi tạo tiêu đề và mô tả", error = ex.Message });
+            }
+        }
     }
 }
-

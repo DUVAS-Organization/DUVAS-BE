@@ -31,7 +31,7 @@ namespace DataAccess
                             RentalServiceId = p.RentalServiceId,
                             RenterServiceID = p.RenterID,
                             CreationDateTime = p.CreationDateTime,
-                            RentalDateTime = (DateTime)p.RentalDateTime,
+                            RentalDateTime = p.RentalDateTime,
                             //CategoryName = p.Category.CategoryName,
                             //CategoryId = p.CategoryId,                            
 

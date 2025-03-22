@@ -11,7 +11,7 @@ namespace DTO
     {
         [Key]
         public int UserFeedbackId { get; set; }
-        public int UserId { get; set; }       
+        public int UserId { get; set; }
         public string Comment { get; set; }
         public double Star { get; set; }
         public string Image { get; set; }

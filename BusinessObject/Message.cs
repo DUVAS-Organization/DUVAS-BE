@@ -17,7 +17,7 @@ namespace DUVAS
         public User? UserGet { get; set; }
 
         public string? Content { get; set; }
-        public string? Image {  get; set; }
+        public string? Image { get; set; }
         public DateTime DateTime { get; set; }
         public int Status { get; set; }
 

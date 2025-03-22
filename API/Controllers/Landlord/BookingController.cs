@@ -59,53 +59,59 @@ namespace API.Controllers.Landlord
         }
 
         [HttpPut("confirm-reservation/{roomId}")]
-        [Authorize(Roles="Landlord")]
+        [Authorize(Roles = "Landlord")]
         public async Task<IActionResult> ConfirmReservation(int roomId, [FromBody] ContractRequestDTO contractDto)
         {
-
-            // 🔹 Kiểm tra phòng có tồn tại không
+            // 🔹 Check if room exists
             var room = await _roomRepository.GetRoomByIdAsync(roomId);
             if (room == null)
             {
                 return NotFound("Phòng không tồn tại.");
             }
-            // Cập nhật phòng trong database
+            if (room.status != 2)
+            {
+                return BadRequest("Phòng phải có trạng thái Pending (2) để xác nhận yêu cầu thuê.");
+            }
+
+            // Update room details (Deposit, Price)
             if (contractDto.Deposit != 0)
             {
                 room.Deposit = contractDto.Deposit ?? 0;
-
             }
 
             if (contractDto.Price != 0)
             {
                 room.Price = contractDto.Price ?? 0;
-
             }
 
-
             await _roomRepository.UpdateRoomAsync(room);
+
+            // Create a new contract
             DateTime formattedDate = DateTime.ParseExact(contractDto.RentalDateTimeEnd, "yyyy-MM-dd", null);
-            // Tạo hợp đồng mới
+            DateTime formattedDatee = DateTime.ParseExact(contractDto.RentalDateTimeStart, "yyyy-MM-dd", null);
             var contract = new Contract
             {
                 RentalDateTimeEnd = formattedDate,
-                ContractFile = contractDto.ContractFile, // Lưu file hợp đồng (nếu có)
-                status = 1 // Trạng thái hợp đồng: 1 (hợp đồng có hiệu lực)
+                RentalDateTimeStart = formattedDatee,
+                ContractFile = contractDto.ContractFile, // Store contract file if available
+                status = 1 // Active contract
             };
 
             var newContractId = await _contractRepository.NewContractAsync(contract);
 
-            
-            var rental = new RentalList
+            // Cập nhật RentalList với ContractId mới
+            var rentalList = await _rentalListRepository.GetRentalListByRoomIdAsync(roomId);
+
+            if (rentalList == null)
             {
-                RoomId = room.RoomId,
-                ContractId = newContractId,
-                RenterID = 17 // Lưu file hợp đồng (nếu có)
-            };
+                return NotFound("Không tìm thấy yêu cầu thuê phòng.");
+            }
 
+            // Cập nhật ContractId vào RentalList đã tồn tại
+            rentalList.ContractId = newContractId;
 
-
-            await _rentalListRepository.SaveRentalListAsync(rental);
+            // Lưu lại RentalList đã được cập nhật
+            await _rentalListRepository.UpdateRentalListAsync(rentalList);
 
             return Ok("Hợp đồng đã được tạo và yêu cầu thuê đã được xác nhận.");
         }
@@ -139,7 +145,7 @@ namespace API.Controllers.Landlord
 
         // 4. Cancel Reservation
         [HttpPut("cancel-reservation/{rentalId}")]
-        [Authorize(Roles="Landlord")]
+        [Authorize(Roles = "Landlord")]
         public async Task<IActionResult> CancelReservation(int rentalId)
         {
             // Kiểm tra RentalList có tồn tại không

@@ -44,6 +44,9 @@ namespace DataAccess
                             CategoryRoomId = p.CategoryRoomId,
                             Image = p.Image,
                             Note = p.Note,
+                            status = p.status,
+                            reputation = p.reputation,
+                            Deposit = p.Deposit,
                             BuildingName = p.Building != null ? p.Building.BuildingName : null,
                             CategoryName = p.CategoryRoom.CategoryName,
                             IsPermission = p.IsPermission,
@@ -65,7 +68,105 @@ namespace DataAccess
             }
 
         }
+        public static async Task<List<RoomDTO>> GetListRoomLockAsync()
+        {
+            using (var context = new ApplicationDbContext())
+            {
+                return await context.Rooms
+                    .Where(p => p.IsPermission == 0)
+                    .AsNoTracking()
+                    .Select(p => new RoomDTO
+                    {
+                        RoomId = p.RoomId,
+                        BuildingId = p.BuildingId,
+                        UserId = p.UserId,
+                        UserName = p.User.UserName,
+                        Title = p.Title,
+                        Description = p.Description,
+                        LocationDetail = p.LocationDetail,
+                        Acreage = p.Acreage,
+                        Furniture = p.Furniture,
+                        NumberOfBathroom = p.NumberOfBathroom,
+                        NumberOfBedroom = p.NumberOfBedroom,
+                        Garret = p.Garret,
+                        Price = p.Price,
+                        CategoryRoomId = p.CategoryRoomId,
+                        Image = p.Image,
+                        Note = p.Note,
+                        BuildingName = p.Building != null ? p.Building.BuildingName : null,
+                        CategoryName = p.CategoryRoom.CategoryName,
+                        IsPermission = p.IsPermission
+                    })
+                    .ToListAsync();
+            }
+        }
+        public static async Task<List<RoomDTO>> GetListRoomActiveAsync()
+        {
+            using (var context = new ApplicationDbContext())
+            {
+                return await context.Rooms
+                    .Where(p => p.IsPermission == 1)
+                    .AsNoTracking()
+                    .Select(p => new RoomDTO
+                    {
+                        RoomId = p.RoomId,
+                        BuildingId = p.BuildingId,
+                        UserId = p.UserId,
+                        UserName = p.User.UserName,
+                        Title = p.Title,
+                        Description = p.Description,
+                        LocationDetail = p.LocationDetail,
+                        Acreage = p.Acreage,
+                        Furniture = p.Furniture,
+                        NumberOfBathroom = p.NumberOfBathroom,
+                        NumberOfBedroom = p.NumberOfBedroom,
+                        Garret = p.Garret,
+                        Price = p.Price,
+                        CategoryRoomId = p.CategoryRoomId,
+                        Image = p.Image,
+                        Note = p.Note,
+                        BuildingName = p.Building != null ? p.Building.BuildingName : null,
+                        CategoryName = p.CategoryRoom.CategoryName,
+                        IsPermission = p.IsPermission
+                    })
+                    .ToListAsync();
+            }
+        }
+        public static async Task<List<RoomDTO>> GetRoomReputationAsync()
+        {
+            using var context = new ApplicationDbContext();
+            var rooms = await context.Rooms
+                .Where(r => context.RoomLicenses
+                    .Any(rl => rl.RoomId == r.RoomId && !string.IsNullOrEmpty(rl.BienBanPCCC)))
+                .Select(r => new RoomDTO
+                {
+                    RoomId = r.RoomId,
+                    BuildingId = r.BuildingId,
+                    UserId = r.UserId,
+                    UserName = r.User.UserName,
+                    Title = r.Title,
+                    Description = r.Description,
+                    LocationDetail = r.LocationDetail,
+                    Acreage = r.Acreage,
+                    Furniture = r.Furniture,
+                    NumberOfBathroom = r.NumberOfBathroom,
+                    NumberOfBedroom = r.NumberOfBedroom,
+                    Garret = r.Garret,
+                    Price = r.Price,
+                    CategoryRoomId = r.CategoryRoomId,
+                    Image = r.Image,
+                    Note = r.Note,
+                    status =r.status,
+                    reputation = r.reputation,
+                    Deposit = r.Deposit,
+                    BuildingName = r.Building != null ? r.Building.BuildingName : null,
+                    CategoryName = r.CategoryRoom.CategoryName,
+                    IsPermission = r.IsPermission,
+                })
+                .ToListAsync();
 
+            return rooms;
+        }
         public static async Task<List<RoomDTO>> GetRoomsByLandlordAsync(int userId)
         {
             using (var context = new ApplicationDbContext())
@@ -91,10 +192,12 @@ namespace DataAccess
                         CategoryRoomId = p.CategoryRoomId,
                         Image = p.Image,
                         Note = p.Note,
-                        IsPermission = p.IsPermission,
                         status = p.status,
+                        reputation = p.reputation,
                         Deposit = p.Deposit,
                         BuildingName = p.Building != null ? p.Building.BuildingName : null,
+                        CategoryName = p.CategoryRoom.CategoryName,
+                        IsPermission = p.IsPermission,
                     })
                     .ToListAsync();
             }
@@ -127,8 +230,12 @@ namespace DataAccess
                         CategoryRoomId = p.CategoryRoomId,
                         Image = p.Image,
                         Note = p.Note,
-                        IsPermission = p.IsPermission,
+                        status = p.status,
+                        reputation = p.reputation,
+                        Deposit = p.Deposit,
                         BuildingName = p.Building != null ? p.Building.BuildingName : null,
+                        CategoryName = p.CategoryRoom.CategoryName,
+                        IsPermission = p.IsPermission,
                     })
                     .FirstOrDefaultAsync();
             }
@@ -174,10 +281,12 @@ namespace DataAccess
                         CategoryRoomId = p.CategoryRoomId,
                         Image = p.Image,
                         Note = p.Note,
-                        IsPermission = p.IsPermission,
                         status = p.status,
+                        reputation = p.reputation,
                         Deposit = p.Deposit,
                         BuildingName = p.Building != null ? p.Building.BuildingName : null,
+                        CategoryName = p.CategoryRoom.CategoryName,
+                        IsPermission = p.IsPermission,
                     })
                     .ToListAsync();
             }
@@ -278,7 +387,6 @@ namespace DataAccess
                         {
                             RoomId = p.RoomId,
                             BuildingId = p.BuildingId,
-                            BuildingName = p.Building.BuildingName,
                             UserId = p.UserId,
                             UserName = p.User.UserName,
                             Title = p.Title,
@@ -291,10 +399,14 @@ namespace DataAccess
                             Garret = p.Garret,
                             Price = p.Price,
                             CategoryRoomId = p.CategoryRoomId,
-                            CategoryName = p.CategoryRoom.CategoryName,
-
                             Image = p.Image,
                             Note = p.Note,
+                            status = p.status,
+                            reputation = p.reputation,
+                            Deposit = p.Deposit,
+                            BuildingName = p.Building != null ? p.Building.BuildingName : null,
+                            CategoryName = p.CategoryRoom.CategoryName,
+                            IsPermission = p.IsPermission,
                         })
                         .ToListAsync();
 
@@ -304,6 +416,221 @@ namespace DataAccess
             catch (Exception ex)
             {
                 throw new Exception(ex.Message);
+            }
+        }
+        public static async Task<List<RoomDTO>> GetAllRoomsByStatusAsync(int status)
+        {
+            using (var context = new ApplicationDbContext())
+            {
+                return await context.Rooms
+                    .Where(p => p.status == 1 && p.IsPermission == 1)
+                    .Select(p => new RoomDTO
+                    {
+                        RoomId = p.RoomId,
+                        BuildingId = p.BuildingId,
+                        UserId = p.UserId,
+                        UserName = p.User.UserName,
+                        Title = p.Title,
+                        Description = p.Description,
+                        LocationDetail = p.LocationDetail,
+                        Acreage = p.Acreage,
+                        Furniture = p.Furniture,
+                        NumberOfBathroom = p.NumberOfBathroom,
+                        NumberOfBedroom = p.NumberOfBedroom,
+                        Garret = p.Garret,
+                        Price = p.Price,
+                        CategoryRoomId = p.CategoryRoomId,
+                        Image = p.Image,
+                        Note = p.Note,
+                        status = p.status,
+                        reputation = p.reputation,
+                        Deposit = p.Deposit,
+                        BuildingName = p.Building != null ? p.Building.BuildingName : null,
+                        CategoryName = p.CategoryRoom.CategoryName,
+                        IsPermission = p.IsPermission,
+                    })
+                    .ToListAsync();
+            }
+        }
+
+        public static async Task<RoomDTO> GetRoomContractByIdAsync(int roomId)
+        {
+            using (var context = new ApplicationDbContext())
+            {
+                var room = await context.Rooms
+                    .Where(r => r.RoomId == roomId)
+                    .AsNoTracking()
+                    .Include(r => r.RentalLists) // Đảm bảo tải RentalLists
+                    .ThenInclude(rl => rl.User) // Tải thông tin Renter (User)
+                    .FirstOrDefaultAsync();
+
+                if (room == null) return null;
+
+                return new RoomDTO
+                {
+                    RoomId = room.RoomId,
+                    UserId = room.UserId,
+                    User = room.User != null ? new UserDTO
+                    {
+                        UserId = room.User.UserId,
+                        Name = room.User.Name,
+                        Gmail = room.User.Gmail,
+                        Phone = room.User.Phone
+                    } : null,
+                    Title = room.Title,
+                    Description = room.Description,
+                    LocationDetail = room.LocationDetail,
+                    Acreage = room.Acreage,
+                    Furniture = room.Furniture,
+                    NumberOfBathroom = room.NumberOfBathroom,
+                    NumberOfBedroom = room.NumberOfBedroom,
+                    Garret = room.Garret,
+                    Price = room.Price,
+                    Deposit = room.Deposit,
+                    Image = room.Image,
+                    Note = room.Note,
+                    status = room.status,
+                    IsPermission = room.IsPermission,
+                    reputation = room.reputation,
+                    RentalLists = room.status == 2 && room.RentalLists != null ? room.RentalLists
+                        .Select(rl => new RentalListDTO
+                        {
+                            RentalId = rl.RentalId,
+                            RoomId = rl.RoomId,
+                            RenterID = rl.RenterID,
+                            RenterName = rl.User != null ? rl.User.Name : "Không có",
+                            RenterEmail = rl.User != null ? rl.User.Gmail : "Không có",
+                            RenterPhone = rl.User != null ? rl.User.Phone : "Không có",
+                            MonthForRent = rl.MonthForRent,
+                            RentDate = rl.RentDate,
+                            RentalStatus = rl.RentalStatus
+                        }).ToList() : null
+                };
+            }
+        }
+        public static async Task<List<RoomDTO>> GetRoomRegisterReputationAsync()
+        {
+            using var context = new ApplicationDbContext();
+            var rooms = await context.Rooms
+                .Where(r => r.reputation == 0 && context.RoomLicenses
+                    .Any(rl => rl.RoomId == r.RoomId && !string.IsNullOrEmpty(rl.BienBanPCCC)))
+                .Select(r => new RoomDTO
+                {
+                    RoomId = r.RoomId,
+                    BuildingId = r.BuildingId,
+                    UserId = r.UserId,
+                    UserName = r.User.UserName,
+                    Title = r.Title,
+                    Description = r.Description,
+                    LocationDetail = r.LocationDetail,
+                    Acreage = r.Acreage,
+                    Furniture = r.Furniture,
+                    NumberOfBathroom = r.NumberOfBathroom,
+                    NumberOfBedroom = r.NumberOfBedroom,
+                    Garret = r.Garret,
+                    Price = r.Price,
+                    CategoryRoomId = r.CategoryRoomId,
+                    Image = r.Image,
+                    Note = r.Note,
+                    BuildingName = r.Building != null ? r.Building.BuildingName : null,
+                    CategoryName = r.CategoryRoom.CategoryName,
+                    IsPermission = r.IsPermission
+                })
+                .ToListAsync();
+
+            return rooms;
+        }
+        public static async Task LockRoomAsync(int roomId)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var room = await context.Rooms.FirstOrDefaultAsync(u => u.RoomId == roomId);
+                    if (room == null)
+                    {
+                        throw new KeyNotFoundException($"Room với ID {roomId} không tồn tại.");
+                    }
+
+                    room.IsPermission = 0;
+                    context.Rooms.Update(room);
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi khóa Room: {ex.Message}");
+            }
+        }
+        public static async Task UnLockRoomAsync(int roomId)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var room = await context.Rooms.FirstOrDefaultAsync(u => u.RoomId == roomId);
+                    if (room == null)
+                    {
+                        throw new KeyNotFoundException($"Room với ID {roomId} không tồn tại.");
+                    }
+
+                    room.IsPermission = 1;
+                    context.Rooms.Update(room);
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi mở khóa Room: {ex.Message}");
+            }
+        }
+        public static async Task AcceptReputationAsync(int roomId)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var room = await context.Rooms.FirstOrDefaultAsync(u => u.RoomId == roomId);
+                    if (room == null)
+                    {
+                        throw new KeyNotFoundException($"Room với ID {roomId} không tồn tại.");
+                    }
+
+                    room.reputation = 1;
+                    context.Rooms.Update(room);
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi Accept Reputation: {ex.Message}");
+            }
+        }
+        public static async Task CancelReputationAsync(int roomId)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var room = await context.Rooms.FirstOrDefaultAsync(u => u.RoomId == roomId);
+                    if (room == null)
+                    {
+                        throw new KeyNotFoundException($"Room với ID {roomId} không tồn tại.");
+                    }
+                    var roomLicense = await context.RoomLicenses.FirstOrDefaultAsync(rl => rl.RoomId == roomId);
+                    if (roomLicense != null)
+                    {
+                        roomLicense.BienBanPCCC = null;
+                        context.RoomLicenses.Update(roomLicense);
+                    }
+                    room.reputation = 0;
+                    context.Rooms.Update(room);
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi Cancel Reputation: {ex.Message}");
             }
         }
     }

@@ -65,7 +65,35 @@ namespace Repositories
             await context.SaveChangesAsync();
             return true;
         }
-
-
+        public async Task<List<RoomDTO>> GetAllRoomsByStatusAsync(int status)
+        {
+            using var context = new ApplicationDbContext();
+            return await RoomDAO.GetAllRoomsByStatusAsync(status);
+        }
+        public async Task<List<RoomDTO>> GetRoomReputationAsync()
+        {
+            return await RoomDAO.GetRoomReputationAsync();
+        }
+        public async Task<List<RoomDTO>> GetListRoomLockAsync()
+        {
+            return await RoomDAO.GetListRoomLockAsync();
+        }
+        public async Task<List<RoomDTO>> GetListRoomActiveAsync()
+        {
+            return await RoomDAO.GetListRoomActiveAsync();
+        }
+        public async Task LockRoomAsync(int roomId) => await RoomDAO.LockRoomAsync(roomId);
+        public async Task UnLockRoomAsync(int roomId) => await RoomDAO.UnLockRoomAsync(roomId);
+        public async Task AcceptReputationAsync(int roomId) => await RoomDAO.AcceptReputationAsync(roomId);
+        public async Task CancelReputationAsync(int roomId) => await RoomDAO.CancelReputationAsync(roomId);
+        public async Task<RoomDTO> GetRoomContractByIdAsync(int roomId)
+        {
+            return await RoomDAO.GetRoomContractByIdAsync(roomId);
+        }
+        public async Task<List<RoomDTO>> GetRoomRegisterReputationAsync()
+        {
+            return await RoomDAO.GetRoomRegisterReputationAsync();
+        }
+      
     }
 }

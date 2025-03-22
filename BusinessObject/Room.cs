@@ -30,11 +30,11 @@ namespace DUVAS
         public bool? Garret { get; set; }
 
         public decimal Price { get; set; }
-        public decimal Deposit { get; set; }
+        public decimal? Deposit { get; set; }
 
         public string Image { get; set; }
 
-        public string Note { get; set; }
+        public string? Note { get; set; }
         public int? status { get; set; }
         // 1: Đang trống
         // 2: Pending
@@ -43,11 +43,12 @@ namespace DUVAS
 
         //0: Lock
         //1: Bình thường
-        //2: Chờ tích xanh
-        //3: Có tích xanh
-        //4:
+        public int? reputation { get; set; }
+        //0: Không có tích xanh
+        //1: Có tích xanh
 
         public virtual ICollection<RoomLicense>? RoomLicenses { get; set; }
+        public virtual ICollection<SavedPost>? SavedPosts { get; set; }
         public virtual ICollection<RentalList>? RentalLists { get; set; }
         public virtual ICollection<PriorityPackageRoom>? PriorityPackageRooms { get; set; }
     }
