@@ -1,6 +1,9 @@
-﻿using DTO;
+﻿using API.Service;
+using DataAccess;
+using DTO;
 using DUVAS;
 using Microsoft.AspNetCore.Mvc;
+using NuGet.Protocol.Core.Types;
 using Repositories.IRepository;
 using System.Threading.Tasks;
 
@@ -8,17 +11,70 @@ namespace API.Controllers.UserAPI
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class LandlordLicenseController : ControllerBase
+    public class UpdateRoleController : ControllerBase
     {
         private readonly ILandlordLicenseRepository _landlordLicenseRepository;
         private readonly IServiceLicenseRepository _serviceLicenseRepository;
         private readonly IUserRepository _userRepository;
 
-        public LandlordLicenseController(ILandlordLicenseRepository landlordLicenseRepository, IUserRepository userRepository, IServiceLicenseRepository serviceLicenseRepository)
+
+        public UpdateRoleController(ILandlordLicenseRepository landlordLicenseRepository, IUserRepository userRepository, IServiceLicenseRepository serviceLicenseRepository)
         {
             _landlordLicenseRepository = landlordLicenseRepository;
             _userRepository = userRepository;
             _serviceLicenseRepository = serviceLicenseRepository;
+        }
+
+
+        [HttpPost("Create-LandlordLicence")]
+        public async Task<IActionResult> SaveLandlordLicense([FromBody] LandlordLicenseDTO dto)
+        {
+            if (dto == null)
+            {
+                return BadRequest("Invalid data.");
+            }
+
+            var landlordLicense = new LandlordLicense
+            {
+                UserId = dto.UserId,
+                AnhCCCDMatTruoc = dto.AnhCCCDMatTruoc,
+                AnhCCCDMatSau = dto.AnhCCCDMatSau,
+                CCCD = dto.CCCD,
+                Name = dto.Name,
+                dateOfBirth = dto.dateOfBirth,
+                Sex = dto.Sex,
+                Address = dto.Address,
+                GiayPhepKinhDoanh = dto.GiayPhepKinhDoanh
+            };
+
+            await _landlordLicenseRepository.SaveLandlordLicenseAsync(landlordLicense);
+            return CreatedAtAction(nameof(SaveLandlordLicense), new { id = landlordLicense.LandlordLicenseId }, landlordLicense);
+        }
+
+        [HttpPost("Create-ServiceLicence")]
+        public async Task<IActionResult> SaveServiceLicense([FromBody] ServiceLicenseDTO dto)
+        {
+            if (dto == null)
+            {
+                return BadRequest("Invalid data.");
+            }
+
+            var serviceLicense = new ServiceLicense
+            {
+                UserId = dto.UserId,
+                AnhCCCDMatTruoc = dto.AnhCCCDMatTruoc,
+                AnhCCCDMatSau = dto.AnhCCCDMatSau,
+                CCCD = dto.CCCD,
+                Name = dto.Name,
+                dateOfBirth = dto.dateOfBirth,
+                Sex = dto.Sex,
+                Address = dto.Address,
+                GiayPhepKinhDoanh = dto.GiayPhepKinhDoanh,
+                GiayPhepChuyenMon = dto.GiayPhepChuyenMon
+            };
+
+            await _serviceLicenseRepository.SaveServiceLicenseAsync(serviceLicense);
+            return CreatedAtAction(nameof(SaveServiceLicense), new { id = serviceLicense.ServiceLicenseId }, serviceLicense);
         }
 
         [HttpPut("{id}/UpdateRoleLandlord")]

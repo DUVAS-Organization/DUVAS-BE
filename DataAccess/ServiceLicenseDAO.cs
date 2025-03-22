@@ -33,6 +33,10 @@ namespace DataAccess
                             AnhCCCDMatTruoc = p.AnhCCCDMatTruoc,
                             AnhCCCDMatSau = p.AnhCCCDMatSau,
                             CCCD = p.CCCD,
+                            Name = p.Name,
+                            dateOfBirth = p.dateOfBirth,
+                            Sex = p.Sex,
+                            Address = p.Address,
                             GiayPhepKinhDoanh = p.GiayPhepKinhDoanh,
                             GiayPhepChuyenMon = p.GiayPhepChuyenMon,
                         })
