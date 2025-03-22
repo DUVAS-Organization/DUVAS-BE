@@ -11,6 +11,7 @@ namespace DTO
     {
         public int? ContractId { get; set; }
         // "yyyy-MM-dd
+        public String RentalDateTimeStart { get; set; }
         public String RentalDateTimeEnd { get; set; }
         public string ContractFile { get; set; }
         public int Status { get; set; } = 1;
