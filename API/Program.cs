@@ -135,6 +135,7 @@ namespace API
             builder.Services.AddScoped<IPriorityPackageServicePostRepository, PriorityPackageServicePostRepository>();
             builder.Services.AddScoped<IMessageRepository, MessageRepository>();
             builder.Services.AddScoped<UserDAO>();
+            builder.Services.AddHttpClient<FPTAIService>();
             builder.Services.AddScoped<CloudinaryService>();
 
             // Add CORS policy for React app
