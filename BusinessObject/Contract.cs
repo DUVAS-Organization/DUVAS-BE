@@ -9,7 +9,8 @@ namespace DUVAS
         public int ContractId { get; set; }
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public DateTime RentalDateTimeStart { get; set; } = DateTime.Now;
-        public DateTime RentalDateTimeEnd { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public DateTime RentalDateTimeEnd { get; set; }  = DateTime.Now;
 
 
 
