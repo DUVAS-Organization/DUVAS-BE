@@ -4,6 +4,7 @@ using DTO;
 using DUVAS;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using NuGet.Protocol.Core.Types;
 using Repositories;
 using Repositories.IRepository;
 using System.Security.Claims;
@@ -20,13 +21,14 @@ namespace API.Controllers.Landlord
         private readonly IRentalListRepository _rentalListRepository;
         private readonly IContractRepository _contractRepository;
         private readonly IUserRepository _userRepository;
-
-        public BookingManagementController(IRoomRepository roomRepository, IRentalListRepository rentalListRepository, IContractRepository contractRepository, IUserRepository userRepository)
+        private readonly IInsiderTradingRepository _insiderTradingRepository;
+        public BookingManagementController(IInsiderTradingRepository insiderTradingRepository, IRoomRepository roomRepository, IRentalListRepository rentalListRepository, IContractRepository contractRepository, IUserRepository userRepository)
         {
             _roomRepository = roomRepository;
             _rentalListRepository = rentalListRepository;
             _contractRepository = contractRepository;
             _userRepository = userRepository;
+            _insiderTradingRepository = insiderTradingRepository;
         }
 
         private int GetLandlordId()
@@ -230,7 +232,28 @@ namespace API.Controllers.Landlord
                 return BadRequest($"Lỗi khi cập nhật số dư: {ex.Message}");
             }
         }
+        [HttpPost("create-insider-trading")]
+        public async Task<IActionResult> CreateInsiderTrading([FromBody] InsiderTradingDTO dto, string type)
+        {
+            if (dto == null)
+            {
+                return BadRequest("Invalid data.");
+            }
 
+            var id = await _insiderTradingRepository.NewInsiderTradingAsync(dto, type);
+            return CreatedAtAction(nameof(GetInsiderTradingById), new { id }, dto);
+        }
+
+        [HttpGet("get-insider-trading-by-id{id}")]
+        public async Task<IActionResult> GetInsiderTradingById(int id)
+        {
+            var result = await _insiderTradingRepository.GetInsiderTradingByIdAsync(id);
+            if (result == null)
+            {
+                return NotFound();
+            }
+            return Ok(result);
+        }
 
     }
 }

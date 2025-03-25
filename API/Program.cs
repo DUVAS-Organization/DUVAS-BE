@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.SignalR; // Thêm using cho SignalR
 using API; // Nếu ChatHub nằm trong namespace API
 using DataAccess;
 using Microsoft.OpenApi.Models;
+using Repositories.Repositories;
 
 namespace API
 {
@@ -137,6 +138,8 @@ namespace API
             builder.Services.AddScoped<UserDAO>();
             builder.Services.AddHttpClient<FPTAIService>();
             builder.Services.AddScoped<CloudinaryService>();
+            builder.Services.AddScoped<IInsiderTradingRepository, InsiderTradingRepository>();
+            builder.Services.AddSignalR();
 
             // Add CORS policy for React app
             builder.Services.AddCors(options =>
