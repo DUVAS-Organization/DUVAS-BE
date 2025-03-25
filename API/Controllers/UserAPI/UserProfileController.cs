@@ -276,7 +276,7 @@ namespace API.Controllers.UserAPI
         }
 
         [HttpGet("BankAccount")]
-        [Authorize(Policy = "User")]
+        [Authorize]// moi sua
         public async Task<ActionResult<IEnumerable<BankAccounts>>> GetUserBankAccounts()
         {
             try
@@ -303,11 +303,11 @@ namespace API.Controllers.UserAPI
 
         //This function require an otp which is called from otp api
         [HttpPost("BankAccount")]
-        [Authorize(Policy = "User")]
+        [Authorize]
         public async Task<ActionResult<BankAccounts>> CreateUserBankAccount(BankAccountsDTO bankAccounts, string otp)
         {
-            var verifiedOtp = _otpService.CheckOtp(otp) !=null;
-            if (!verifiedOtp) 
+            var verifiedOtp = _otpService.CheckOtp(otp) != null;
+            if (!verifiedOtp)
             {
                 return NotFound("Wrong otp");
             }
@@ -324,7 +324,14 @@ namespace API.Controllers.UserAPI
                 {
                     return NotFound("User not found.");
                 }
-                
+
+                // Kiểm tra xem số tài khoản và mã ngân hàng đã tồn tại chưa
+                bool accountExists = await _userRepository.CheckBankAccountExistsAsync(bankAccounts.AccountNumber, bankAccounts.BankCode);
+                if (accountExists)
+                {
+                    return BadRequest("Bank account with the same account number and bank code already exists.");
+                }
+
                 var newBankAccount = await _userRepository.CreateNewBankAccounts(userId, bankAccounts);
                 _otpService.RemoveOtp(userInfo.Gmail);
                 return CreatedAtAction(nameof(GetUserBankAccounts), new { userId = userId }, newBankAccount);
@@ -335,7 +342,7 @@ namespace API.Controllers.UserAPI
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "An error occurred while creating the bank account.", details = ex.Message }); 
+                return StatusCode(500, new { message = "An error occurred while creating the bank account.", details = ex.Message });
             }
         }
 
@@ -390,7 +397,7 @@ namespace API.Controllers.UserAPI
 
 
         [HttpGet("otp")]
-        [Authorize(Policy = "User")]
+        [Authorize] //moi sua
         public Task<IActionResult> GetOtp()
         {
             var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId");

@@ -23,6 +23,7 @@ namespace Repositories.IRepository
         
         Task<List<BankAccounts>> GetUserBankAccounts(int userId);
         Task<BankAccounts> CreateNewBankAccounts(int userId, BankAccountsDTO bankAccount);
+        Task<bool> CheckBankAccountExistsAsync(string accountNumber, string bankCode);
         Task<Boolean> UpdateBankAccountStatus(int userId, int BankAccountId, bool active);
         Task<BankAccounts> GetUserBankAccountByIdAndUserIdAsync(int userId, int bankAccountId);
         Task<decimal> GetUserMoneyWithIdAsync(int userId);

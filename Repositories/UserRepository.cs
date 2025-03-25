@@ -23,6 +23,10 @@ namespace Repositories
         public async Task<List<UserDTO>> SearchUsersAsync(string searchTerm) => await UserDAO.SearchUsersAsync(searchTerm);
         public Task<BankAccounts> CreateNewBankAccounts(int userId, BankAccountsDTO bankAccounts) =>
             new UserDAO(new ApplicationDbContext()).CreateNewUserBankAccount(userId, bankAccounts);
+        public async Task<bool> CheckBankAccountExistsAsync(string accountNumber, string bankCode)
+        {
+            return await new UserDAO(new ApplicationDbContext()).CheckBankAccountExistsAsync(accountNumber, bankCode);
+        }
         public Task<List<BankAccounts>> GetUserBankAccounts(int userId) =>
             new UserDAO(new ApplicationDbContext()).GetUserBankAccountsByIdAsync(userId);
         public Task<Boolean> UpdateBankAccountStatus(int userId, int bankAccountId, bool active) => new UserDAO(new ApplicationDbContext()).UpdateBankAccountStatus(userId, bankAccountId, active);

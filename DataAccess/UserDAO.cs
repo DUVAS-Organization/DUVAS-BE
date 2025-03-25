@@ -482,6 +482,21 @@ namespace DataAccess
             return newBankAccount;
         }
 
+        public async Task<bool> CheckBankAccountExistsAsync(string accountNumber, string bankCode)
+        {
+            try
+            {
+                // Kiểm tra xem có bất kỳ bản ghi nào có cùng AccountNumber và BankCode hay không
+                return await _context.BankAccounts
+                    .AnyAsync(b => b.AccountNumber == accountNumber && b.BankCode == bankCode);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error checking bank account existence: {ex.Message}");
+                throw;
+            }
+        }
+        
         public async Task<bool> UpdateBankAccountStatus(int userId, int bankAccountId, bool active)
         {
             try

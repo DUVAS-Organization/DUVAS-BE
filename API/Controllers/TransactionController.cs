@@ -18,7 +18,7 @@ namespace API.Controllers
         }
 
         [HttpPost()]
-        [Authorize(Policy = "User")]
+        [Authorize] //moi sua
         public async Task<IActionResult> CreateTransaction([FromBody] DepositRequest depositRequest)
         {
             var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId");
@@ -47,7 +47,7 @@ namespace API.Controllers
         }
 
         [HttpGet("GetTransactions")]
-        [Authorize(Policy = "User")]
+        [Authorize] // moi sua
         public async Task<IActionResult> GetTransactions()
         {
             var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId");
