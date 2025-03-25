@@ -181,6 +181,13 @@ namespace API.Controllers.Landlord
                     Deposit = roomDto.Deposit,  // Thêm giá trị tiền đặt cọc
                     Garret = roomDto.Garret,
                     reputation = roomDto.reputation ?? 0, //không tích xanh
+                    Dien = roomDto.Dien,
+                    Nuoc = roomDto.Nuoc,
+                    Internet = roomDto.Internet,
+                    Rac = roomDto.Rac,
+                    GuiXe = roomDto.GuiXe,
+                    QuanLy = roomDto.QuanLy,
+                    ChiPhiKhac = roomDto.ChiPhiKhac,
                 };
 
                 await _roomRepository.SaveRoomAsync(room);
@@ -245,7 +252,14 @@ namespace API.Controllers.Landlord
                     BuildingId = roomDto.BuildingId,
                     CategoryRoomId = roomDto.CategoryRoomId,
                     Deposit = roomDto.Deposit,
-                    Garret = roomDto.Garret
+                    Garret = roomDto.Garret,
+                     Dien = roomDto.Dien,
+                    Nuoc = roomDto.Nuoc,
+                    Internet = roomDto.Internet,
+                    Rac = roomDto.Rac,
+                    GuiXe = roomDto.GuiXe,
+                    QuanLy = roomDto.QuanLy,
+                    ChiPhiKhac = roomDto.ChiPhiKhac,
                 };
 
                 await _roomRepository.UpdateRoomAsync(room);

@@ -21,9 +21,7 @@ namespace Repositories
         public async Task<List<MessageDTO>> GetMessagesByUserIdAsync(int userSendId, int userGetId) => await _dao.GetMessagesByUserIdAsync(userSendId, userGetId);
         public async Task UpdateMessageStatusAsync(int messageId, int status) => await _dao.UpdateMessageStatusAsync(messageId, status);
         public async Task DeleteMessageAsync(int messageId) => await _dao.DeleteMessageAsync(messageId);
-        public async Task<List<ConversationDTO>> GetConversationsByUserIdAsync(int userId)
-        {
-            return await _dao.GetConversationsByUserIdAsync(userId);
-        }
+        public async Task<List<ConversationDTO>> GetConversationsByUserIdAsync(int userId) => await _dao.GetConversationsByUserIdAsync(userId);
+        public async Task<int> GetUnreadCountAsync(int userId) => await _dao.GetUnreadCountAsync(userId);
     }
 }

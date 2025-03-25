@@ -13,6 +13,7 @@ namespace Repositories.IRepository
         Task UpdateMessageStatusAsync(int messageId, int status);
         Task DeleteMessageAsync(int messageId);
         Task<List<ConversationDTO>> GetConversationsByUserIdAsync(int userId);
+        Task<int> GetUnreadCountAsync(int userId);
 
     }
 }

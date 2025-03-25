@@ -194,5 +194,74 @@ namespace API.Controllers.Admin
 
             return NoContent();
         }
+        [HttpPut("acceptUpRoleLandLord/{id}")]
+        public async Task<IActionResult> AcceptUpRoleLandLordAsync(int id)
+        {
+            var user = await _userRepository.GetUserByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound("User không tồn tại.");
+            }
+
+            try
+            {
+                await _userRepository.AcceptUpRoleLandLordAsync(id);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi xác nhận UpRole LandLord: {ex.Message}");
+            }
+
+            return NoContent();
+        }
+        [HttpGet("upRole-Service")]
+        public async Task<ActionResult<IEnumerable<UserDTO>>> GetListUpRoleService()
+        {
+            try
+            {
+                var uproleService = await _userRepository.GetListUpRoleService();
+                return Ok(uproleService);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi lấy danh sách người dùng uprole-Service: {ex.Message}");
+            }
+        }
+        [HttpPut("acceptUpRoleService/{id}")]
+        public async Task<IActionResult> AcceptUpRoleServiceAsync(int id)
+        {
+            var user = await _userRepository.GetUserByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound("User không tồn tại.");
+            }
+
+            try
+            {
+                await _userRepository.AcceptUpRoleServiceAsync(id);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi xác nhận UpRole LandLord: {ex.Message}");
+            }
+
+            return NoContent();
+        }
+
+       
+        [HttpGet("upRole-LandLord")]
+        public async Task<ActionResult<IEnumerable<UserDTO>>> GetListUpRoleLandLord()
+        {
+            try
+            {
+                var uproleLandLord = await _userRepository.GetListUpRoleLandLord();
+                return Ok(uproleLandLord);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi lấy danh sách người dùng uprole-LandLord: {ex.Message}");
+            }
+        }
+
     }
 }

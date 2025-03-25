@@ -37,6 +37,13 @@ namespace DTO
         public int? IsPermission { get; set; }
 
         public decimal? Deposit { get; set; }
+        public decimal? Dien { get; set; }
+        public decimal? Nuoc { get; set; }
+        public decimal? Internet { get; set; }
+        public decimal? Rac { get; set; }
+        public decimal? GuiXe { get; set; }
+        public decimal? QuanLy { get; set; }
+        public decimal? ChiPhiKhac { get; set; }
         public int? status { get; set; }
         public int? reputation { get; set; }
         public List<RentalListDTO> RentalLists { get; set; }

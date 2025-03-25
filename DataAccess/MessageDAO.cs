@@ -16,7 +16,11 @@ namespace DataAccess
         {
             _context = context;
         }
-
+        public async Task<int> GetUnreadCountAsync(int userId)
+        {
+            return await _context.Messages
+                .CountAsync(m => m.UserGetID == userId && m.Status == 0);
+        }
         public async Task<List<MessageDTO>> GetMessagesByUserIdAsync(int userSendId, int userGetId)
         {
             try
@@ -29,7 +33,7 @@ namespace DataAccess
                     {
                         MessageId = m.MessageId,
                         UserSendID = m.UserSendID,
-                        UserGetID = m.UserGetID.ToString(),
+                        UserGetID = m.UserGetID,
                         Content = m.Content,
                         Image = m.Image,
                         DateTime = m.DateTime,
@@ -54,7 +58,7 @@ namespace DataAccess
                     {
                         MessageId = m.MessageId,
                         UserSendID = m.UserSendID,
-                        UserGetID = m.UserGetID.ToString(),
+                        UserGetID = m.UserGetID,
                         Content = m.Content,
                         Image = m.Image,
                         DateTime = m.DateTime,

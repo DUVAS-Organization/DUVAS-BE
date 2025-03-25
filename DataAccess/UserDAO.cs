@@ -253,18 +253,18 @@ namespace DataAccess
                     context.Users.Update(user);
 
                     // Tạo lịch sử giao dịch trong bảng InsiderTrading
-                    var transaction = new InsiderTrading
-                    {
-                        UserId = userId,
-                        Money = amount,
-                        Note = amount >= 0
-                            ? $"User ID {userId} vừa + {amount} vào tài khoản."
-                            : $"User ID {userId} vừa - {Math.Abs(amount)} khỏi tài khoản.",
-                        Status = 0, // 0: trạng thái mặc định
-                        CreatedDate = DateTime.Now
-                    };
+                    //var transaction = new InsiderTrading
+                    //{
+                    //    UserId = userId,
+                    //    Money = amount,
+                    //    Note = amount >= 0
+                    //        ? $"User ID {userId} vừa + {amount} vào tài khoản."
+                    //        : $"User ID {userId} vừa - {Math.Abs(amount)} khỏi tài khoản.",
+                    //    Status = 0, // 0: trạng thái mặc định
+                    //    CreatedDate = DateTime.Now
+                    //};
 
-                    await context.InsiderTradings.AddAsync(transaction);
+                    //await context.InsiderTradings.AddAsync(transaction);
                     await context.SaveChangesAsync();
                 }
             }

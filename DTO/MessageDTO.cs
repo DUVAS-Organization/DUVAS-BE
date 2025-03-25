@@ -13,7 +13,7 @@ namespace DTO
         public int MessageId { get; set; }
         public int UserSendID { get; set; }
 
-        public string UserGetID { get; set; }
+        public int UserGetID { get; set; }
 
         public string Content { get; set; }
         public string Image { get; set; }
