@@ -1,6 +1,7 @@
 ﻿using DataAccess;
 using DTO;
 using DUVAS;
+using Microsoft.EntityFrameworkCore;
 using Repositories.IRepository;
 using System;
 using System.Collections.Generic;
@@ -24,5 +25,11 @@ namespace Repositories
         public async Task<List<ServicePostDTO>> GetListServicePostLockAsync() => await ServicePostDAO.GetListServicePostLockAsync();
 
         public async Task<List<ServicePostDTO>> GetListServicePostActiveAsync() => await ServicePostDAO.GetListServicePostActiveAsync();
-       }
+        public async Task<List<ServicePostDTO>> GetServicePostsByUserIdAsync(int userId)
+        {
+            return await ServicePostDAO.GetServicePostsByUserIdAsync(userId);
+        }
+
+
+    }
 }
