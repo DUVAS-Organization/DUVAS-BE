@@ -248,7 +248,7 @@ namespace API.Controllers.Admin
             return NoContent();
         }
 
-       
+
         [HttpGet("upRole-LandLord")]
         public async Task<ActionResult<IEnumerable<UserDTO>>> GetListUpRoleLandLord()
         {
@@ -263,5 +263,45 @@ namespace API.Controllers.Admin
             }
         }
 
+        [HttpPut("cancelUpRoleLandLord/{id}")]
+        public async Task<IActionResult> CancelUpRoleLandLordAsync(int id)
+        {
+            var user = await _userRepository.GetUserByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound("User không tồn tại.");
+            }
+
+            try
+            {
+                await _userRepository.CancelUpRoleLandLordAsync(id);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi hủy UpRole LandLord: {ex.Message}");
+            }
+
+            return NoContent();
+        }
+        [HttpPut("cancelUpRoleService/{id}")]
+        public async Task<IActionResult> CancelUpRoleServiceAsync(int id)
+        {
+            var user = await _userRepository.GetUserByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound("User không tồn tại.");
+            }
+
+            try
+            {
+                await _userRepository.CancelUpRoleServiceAsync(id);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi xác nhận UpRole LandLord: {ex.Message}");
+            }
+
+            return NoContent();
+        }
     }
 }

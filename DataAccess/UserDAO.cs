@@ -347,7 +347,20 @@ namespace DataAccess
 
             return newBankAccount;
         }
-
+        public async Task<bool> CheckBankAccountExistsAsync(string accountNumber, string bankCode)
+        {
+            try
+            {
+                // Kiểm tra xem có bất kỳ bản ghi nào có cùng AccountNumber và BankCode hay không
+                return await _context.BankAccounts
+                    .AnyAsync(b => b.AccountNumber == accountNumber && b.BankCode == bankCode);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error checking bank account existence: {ex.Message}");
+                throw;
+            }
+        }
         public async Task<bool> UpdateBankAccountStatus(int userId, int bankAccountId, bool active)
         {
             try
@@ -619,6 +632,60 @@ namespace DataAccess
             catch (Exception ex)
             {
                 throw new Exception($"Lỗi khi Accept UpRole Service: {ex.Message}");
+            }
+        }
+        public static async Task CancelUpRoleLandLordAsync(int userId)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+                    if (user == null)
+                    {
+                        throw new KeyNotFoundException($"User với ID {userId} không tồn tại.");
+                    }
+                    var userLicense = await context.LandlordLicenses.FirstOrDefaultAsync(ll => ll.UserId == userId);
+                    if (userLicense != null)
+                    {
+                        context.LandlordLicenses.Remove(userLicense);
+                    }
+
+                    user.RoleLandlord = 0;
+                    context.Users.Update(user);
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi Cancel UpRole LandLord: {ex.Message}");
+            }
+        }
+        public static async Task CancelUpRoleServiceAsync(int userId)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+                    if (user == null)
+                    {
+                        throw new KeyNotFoundException($"User với ID {userId} không tồn tại.");
+                    }
+                    var userLicense = await context.ServiceLicenses.FirstOrDefaultAsync(sl => sl.UserId == userId);
+                    if (userLicense != null)
+                    {
+                        context.ServiceLicenses.Remove(userLicense);
+                    }
+
+                    user.RoleLandlord = 0;
+                    context.Users.Update(user);
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi Cancel UpRole Service: {ex.Message}");
             }
         }
     }

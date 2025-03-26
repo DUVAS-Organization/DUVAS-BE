@@ -12,7 +12,7 @@ namespace DTO
         [Key]
         public int RoomId { get; set; }
         public int? UserId { get; set; }
-        public UserDTO User { get; set; }
+        public UserDTO? User { get; set; }
         public string? Name { get; set; }
 
         public string? UserName { get; set; }
@@ -46,7 +46,7 @@ namespace DTO
         public decimal? ChiPhiKhac { get; set; }
         public int? status { get; set; }
         public int? reputation { get; set; }
-        public List<RentalListDTO> RentalLists { get; set; }
+        public List<RentalListDTO>? RentalLists { get; set; }
 
         //public Building? Building { get; set; }
         //public bool IsPermission { get; set; }

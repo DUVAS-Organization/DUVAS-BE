@@ -35,5 +35,8 @@ namespace Repositories.IRepository
         Task<List<UserDTO>> GetListUpRoleService();
         Task AcceptUpRoleLandLordAsync(int userId);
         Task AcceptUpRoleServiceAsync(int userId);
+        Task<bool> CheckBankAccountExistsAsync(string accountNumber, string bankCode);
+        Task CancelUpRoleLandLordAsync(int userId);
+        Task CancelUpRoleServiceAsync(int userId);
     }
 }

@@ -73,6 +73,7 @@ namespace DataAccess
             return await _context.Transactions
                 .Where(t => t.UserId == userId)
                 .Include(t => t.User) // Include the associated User for each transaction
+                .OrderByDescending(d => d.CreatedAt) // Order Descending By CreatedAt
                 .ToListAsync();
         }
 

@@ -291,7 +291,7 @@ namespace API.Controllers.UserAPI
             }
         }
         [HttpGet("BankAccount")]
-        [Authorize]
+        [Authorize]// moi sua
         public async Task<ActionResult<IEnumerable<BankAccounts>>> GetUserBankAccounts()
         {
             try
@@ -338,6 +338,13 @@ namespace API.Controllers.UserAPI
                 if (userInfo == null)
                 {
                     return NotFound("User not found.");
+                }
+
+                // Kiểm tra xem số tài khoản và mã ngân hàng đã tồn tại chưa
+                bool accountExists = await _userRepository.CheckBankAccountExistsAsync(bankAccounts.AccountNumber, bankAccounts.BankCode);
+                if (accountExists)
+                {
+                    return BadRequest("Bank account with the same account number and bank code already exists.");
                 }
 
                 var newBankAccount = await _userRepository.CreateNewBankAccounts(userId, bankAccounts);
@@ -405,7 +412,7 @@ namespace API.Controllers.UserAPI
 
 
         [HttpGet("otp")]
-        [Authorize]
+        [Authorize] //moi sua
         public Task<IActionResult> GetOtp()
         {
             var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId");

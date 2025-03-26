@@ -3,6 +3,8 @@ using DUVAS;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Repositories.IRepository;
+using BusinessObject.Enums;
+
 
 namespace API.Controllers;
 
@@ -31,24 +33,38 @@ public class WithDrawController : ControllerBase
         {
             return BadRequest("UserId claim not found.");
         }
-        int.TryParse(userIdClaim.Value, out int userId);
-        decimal money = _userRepository.GetUserMoneyWithIdAsync(userId).Result;
+        if (!int.TryParse(userIdClaim.Value, out int userId))
+        {
+            return BadRequest("Invalid UserId.");
+        }
+
+        decimal money = await _userRepository.GetUserMoneyWithIdAsync(userId);
         if (money < withdrawRequestDto.Amount)
         {
             return BadRequest("Your balance is not enough.");
         }
-        Guid newUuid = Guid.NewGuid();
-        string uuid = newUuid.ToString();
-        uuid = uuid.Replace("-", "");
-        var transaction = await _transactionRepository.AddTransaction(-withdrawRequestDto.Amount, uuid, userId);
-        var bankAccount = _userRepository.GetUserBankAccountByIdAndUserIdAsync(userId, withdrawRequestDto.BankAccountId).Result;
+
+        var bankAccount = await _userRepository.GetUserBankAccountByIdAndUserIdAsync(userId, withdrawRequestDto.BankAccountId);
         if (bankAccount == null)
         {
-            return StatusCode(500, "Server error.");
+            return BadRequest("Bank account not found.");
         }
+
+        // Kiểm tra trạng thái của tài khoản ngân hàng
+        if (bankAccount.Status != BankAccountStatus.Active)
+        {
+            return BadRequest("Bank account is not active.");
+        }
+
+        Guid newUuid = Guid.NewGuid();
+        string uuid = newUuid.ToString().Replace("-", "");
+
+        var transaction = await _transactionRepository.AddTransaction(-withdrawRequestDto.Amount, uuid, userId);
         await _withdrawRequestRepository.AddAsync(userId, -withdrawRequestDto.Amount, transaction.Id, bankAccount.BankCode, bankAccount.AccountNumber);
-        return Ok(new { message = "Withdraw request create successful." });
+
+        return Ok(new { message = "Withdraw request created successfully." });
     }
+
     [HttpGet("payment-qr")]
     [Authorize(Policy = "Admin")]
     public async Task<IActionResult> GetWithdrawPaymentLink([FromQuery] int id)
@@ -69,7 +85,7 @@ public class WithDrawController : ControllerBase
     }
 
     [HttpGet("user")]
-    [Authorize]
+    [Authorize] // moi sua
     public async Task<ActionResult<IEnumerable<WithdrawRequest>>> GetUserWithdrawRequests()
     {
         var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId");
