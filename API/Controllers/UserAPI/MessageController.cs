@@ -5,6 +5,7 @@ using Repositories.IRepository;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
+using API.Hubs;
 
 namespace API.Controllers.UserAPI
 {
@@ -29,18 +30,11 @@ namespace API.Controllers.UserAPI
 
             await _messageRepository.AddMessageAsync(message);
 
-            // Notify receiver
+            // Gửi tin nhắn qua SignalR đến người gửi và người nhận
             await _hubContext.Clients.Group($"user-{message.UserGetID}")
                 .SendAsync("ReceiveMessage", message);
-
-            // Update unread count
-            var unreadCount = await _messageRepository.GetUnreadCountAsync(message.UserGetID);
-            await _hubContext.Clients.Group($"user-{message.UserGetID}")
-                .SendAsync("UpdateUnreadCount", unreadCount);
-
-            // Update conversation lists
-            await UpdateConversationList(message.UserSendID);
-            await UpdateConversationList(message.UserGetID);
+            await _hubContext.Clients.Group($"user-{message.UserSendID}")
+                .SendAsync("ReceiveMessage", message);
 
             return Ok(message);
         }
@@ -58,7 +52,6 @@ namespace API.Controllers.UserAPI
             var messages = await _messageRepository.GetMessagesByUserIdAsync(userSendId, userGetId);
             return Ok(messages);
         }
-
 
         [HttpPut("{messageId}/status/{status}")]
         public async Task<IActionResult> UpdateMessageStatus(int messageId, int status)
@@ -84,7 +77,6 @@ namespace API.Controllers.UserAPI
             await _messageRepository.DeleteMessageAsync(messageId);
             return Ok();
         }
-
 
         [HttpGet("conversations/{userId}")]
         public async Task<IActionResult> GetConversationsByUserId(int userId)

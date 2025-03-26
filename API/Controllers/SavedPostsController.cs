@@ -3,6 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.SignalR;
+using DUVAS;
+using API.Controllers;
+using API.Hubs;
 
 namespace DUVAS.Controllers
 {
@@ -11,10 +15,12 @@ namespace DUVAS.Controllers
     public class SavedPostsController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IHubContext<SavedPostHub> _hubContext; // Thêm IHubContext để gửi thông báo
 
-        public SavedPostsController(ApplicationDbContext context)
+        public SavedPostsController(ApplicationDbContext context, IHubContext<SavedPostHub> hubContext)
         {
             _context = context;
+            _hubContext = hubContext;
         }
 
         // 🔹 Lấy danh sách bài đã lưu của một user (bao gồm cả Room và ServicePost)
@@ -24,7 +30,7 @@ namespace DUVAS.Controllers
             try
             {
                 var savedPosts = await _context.SavedPosts
-                    .Where(sp => sp.UserId == userId) // Chỉ lấy bài đăng của user
+                    .Where(sp => sp.UserId == userId)
                     .Select(sp => new
                     {
                         sp.RoomId,
@@ -84,6 +90,18 @@ namespace DUVAS.Controllers
                 {
                     _context.SavedPosts.Remove(existingPost);
                     await _context.SaveChangesAsync();
+
+                    // Gửi thông báo qua SignalR
+                    await _hubContext.Clients.Group(request.UserId.ToString())
+                        .SendAsync("savedPostRemoved", new
+                        {
+                            data = new
+                            {
+                                userId = request.UserId,
+                                roomId = request.RoomId
+                            }
+                        });
+
                     return Ok(new { message = "Đã bỏ lưu bài đăng.", status = "removed" });
                 }
                 else
@@ -92,12 +110,38 @@ namespace DUVAS.Controllers
                     {
                         RoomId = request.RoomId,
                         UserId = request.UserId,
-                        // Nếu cần, bạn có thể gán thêm ServicePostId = 0 (hoặc null) cho rõ ràng
                         SavedAt = DateTime.Now
                     };
 
                     _context.SavedPosts.Add(newSavedPost);
                     await _context.SaveChangesAsync();
+
+                    // Lấy thông tin Room để gửi kèm
+                    var room = await _context.Rooms
+                        .Where(r => r.UserId == request.RoomId)
+                        .Select(r => new
+                        {
+                            r.Title,
+                            r.Price,
+                            r.Acreage,
+                            r.LocationDetail,
+                            r.Image
+                        })
+                        .FirstOrDefaultAsync();
+
+                    // Gửi thông báo qua SignalR
+                    await _hubContext.Clients.Group(request.UserId.ToString())
+                        .SendAsync("savedPostAdded", new
+                        {
+                            data = new
+                            {
+                                userId = request.UserId,
+                                roomId = request.RoomId,
+                                savedAt = newSavedPost.SavedAt,
+                                room
+                            }
+                        });
+
                     return Ok(new { message = "Đã lưu bài đăng thành công.", status = "saved" });
                 }
             }
@@ -111,6 +155,18 @@ namespace DUVAS.Controllers
                 {
                     _context.SavedPosts.Remove(existingPost);
                     await _context.SaveChangesAsync();
+
+                    // Gửi thông báo qua SignalR
+                    await _hubContext.Clients.Group(request.UserId.ToString())
+                        .SendAsync("savedPostRemoved", new
+                        {
+                            data = new
+                            {
+                                userId = request.UserId,
+                                servicePostId = request.ServicePostId
+                            }
+                        });
+
                     return Ok(new { message = "Đã bỏ lưu bài đăng.", status = "removed" });
                 }
                 else
@@ -124,6 +180,34 @@ namespace DUVAS.Controllers
 
                     _context.SavedPosts.Add(newSavedPost);
                     await _context.SaveChangesAsync();
+
+                    // Lấy thông tin ServicePost để gửi kèm
+                    var servicePost = await _context.ServicePosts
+                        .Where(sp => sp.UserId == request.ServicePostId)
+                        .Select(sp => new
+                        {
+                            sp.Title,
+                            sp.Price,
+                            sp.PhoneNumber,
+                            sp.Location,
+                            sp.Description,
+                            sp.Image
+                        })
+                        .FirstOrDefaultAsync();
+
+                    // Gửi thông báo qua SignalR
+                    await _hubContext.Clients.Group(request.UserId.ToString())
+                        .SendAsync("savedPostAdded", new
+                        {
+                            data = new
+                            {
+                                userId = request.UserId,
+                                servicePostId = request.ServicePostId,
+                                savedAt = newSavedPost.SavedAt,
+                                servicePost
+                            }
+                        });
+
                     return Ok(new { message = "Đã lưu bài đăng thành công.", status = "saved" });
                 }
             }

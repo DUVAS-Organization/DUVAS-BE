@@ -1,41 +1,31 @@
-﻿using Microsoft.AspNetCore.SignalR;
-using System.Collections.Concurrent;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
+using System.Threading.Tasks;
 
 namespace API.Hubs
 {
+    [Authorize]
     public class ChatHub : Hub
     {
-        private static readonly ConcurrentDictionary<int, string> _userConnections = new();
-
         public async Task RegisterUser(int userId)
         {
-            // Remove previous connection if exists
-            if (_userConnections.TryGetValue(userId, out var oldConnectionId))
+            // Lấy userId từ token JWT
+            var tokenUserId = int.Parse(Context.User?.FindFirst("UserId")?.Value ?? "0");
+            if (tokenUserId != userId)
             {
-                _userConnections.TryRemove(userId, out _);
-                await Groups.RemoveFromGroupAsync(oldConnectionId, $"user-{userId}");
+                throw new HubException("Unauthorized user.");
             }
 
-            // Add new connection
-            _userConnections[userId] = Context.ConnectionId;
+            // Thêm người dùng vào nhóm dựa trên userId
             await Groups.AddToGroupAsync(Context.ConnectionId, $"user-{userId}");
-
-            // Notify others this user is online
             await Clients.Others.SendAsync("UserOnline", userId);
         }
 
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
-            var userId = _userConnections.FirstOrDefault(x => x.Value == Context.ConnectionId).Key;
-            if (userId != 0)
-            {
-                _userConnections.TryRemove(userId, out _);
-                await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"user-{userId}");
-
-                // Notify others this user is offline
-                await Clients.Others.SendAsync("UserOffline", userId);
-            }
-
+            var userId = int.Parse(Context.User?.FindFirst("UserId")?.Value ?? "0");
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"user-{userId}");
+            await Clients.Others.SendAsync("UserOffline", userId);
             await base.OnDisconnectedAsync(exception);
         }
     }

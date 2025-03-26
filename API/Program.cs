@@ -12,12 +12,12 @@ using Microsoft.Extensions.Options;
 using API.Controllers;
 using System.Text.Json.Serialization;
 using Repository;
-using Microsoft.AspNetCore.SignalR; // Thêm using cho SignalR
-using API; // Nếu ChatHub nằm trong namespace API
+using Microsoft.AspNetCore.SignalR;
+using API;
 using DataAccess;
 using Microsoft.OpenApi.Models;
 using Repositories.Repositories;
-
+using API.Hubs;
 namespace API
 {
     public class Program
@@ -34,7 +34,7 @@ namespace API
             builder.Services.AddSingleton<TokenDictionaryService>();
             builder.Services.AddScoped<TokenExchangeService>();
 
-            // Add jwt filter
+            // Add JWT authentication
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
                 {
@@ -47,7 +47,26 @@ namespace API
                         ValidAudience = builder.Configuration["Jwt:Audience"],
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"]))
                     };
+
+                    // Cấu hình SignalR để sử dụng JWT
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnMessageReceived = context =>
+                        {
+                            var accessToken = context.Request.Query["access_token"];
+                            var path = context.HttpContext.Request.Path;
+
+                            if (!string.IsNullOrEmpty(accessToken) &&
+                                (path.StartsWithSegments("/savedPostHub") || path.StartsWithSegments("/chathub")))
+                            {
+                                context.Token = accessToken;
+                            }
+                            return Task.CompletedTask;
+                        }
+                    };
                 });
+
+            // Add authorization policies
             builder.Services.AddAuthorization(options =>
             {
                 options.AddPolicy("Admin", policy => policy.RequireRole("Admin"));
@@ -56,14 +75,10 @@ namespace API
                 options.AddPolicy("User", policy => policy.RequireRole("User"));
             });
 
-            // Add services to the container.
+            // Add services to the container
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSingleton<AiService>();
-            //builder.Services.AddSwaggerGen(c =>
-            //{
-            //    c.OperationFilter<FileUploadOperationFilter>();
-            //});
             builder.Services.AddSwaggerGen(options =>
             {
                 options.OperationFilter<FileUploadOperationFilter>();
@@ -92,6 +107,7 @@ namespace API
                     }
                 });
             });
+
             // Add database context
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DBString")));
@@ -107,12 +123,13 @@ namespace API
                 var account = new Account(config.CloudName, config.ApiKey, config.ApiSecret);
                 return new Cloudinary(account);
             });
+
             builder.Services.AddControllers().AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
             });
 
-            //// Add repositories
+            // Add repositories
             builder.Services.AddScoped<IBuildingRepository, BuildingRepository>();
             builder.Services.AddScoped<ICategoryRoomRepository, CategoryRoomRepository>();
             builder.Services.AddScoped<ICategoryServiceRepository, CategoryServiceRepository>();
@@ -139,6 +156,8 @@ namespace API
             builder.Services.AddHttpClient<FPTAIService>();
             builder.Services.AddScoped<CloudinaryService>();
             builder.Services.AddScoped<IInsiderTradingRepository, InsiderTradingRepository>();
+
+            // Add SignalR (chỉ gọi một lần)
             builder.Services.AddSignalR();
 
             // Add CORS policy for React app
@@ -148,22 +167,14 @@ namespace API
                 {
                     policy.WithOrigins("http://localhost:3000")
                           .AllowAnyMethod()
-                          .AllowAnyHeader();
+                          .AllowAnyHeader()
+                          .AllowCredentials(); // Quan trọng cho SignalR
                 });
             });
 
-            // *** Bổ sung SignalR vào đây ***
-            builder.Services.AddSignalR();
-            builder.Services.AddAuthorization(options =>
-            {
-                options.AddPolicy("Admin", policy => policy.RequireRole("Admin"));
-                options.AddPolicy("Landlord", policy => policy.RequireRole("Landlord"));
-                options.AddPolicy("Service", policy => policy.RequireRole("Service"));
-                options.AddPolicy("User", policy => policy.RequireRole("User"));
-            });
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
+            // Configure the HTTP request pipeline
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
@@ -171,15 +182,20 @@ namespace API
             }
 
             app.UseHttpsRedirection();
+
+            // Sử dụng CORS trước các middleware khác
             app.UseCors("AllowReactApp");
             app.UseRouting();
+            app.UseAuthentication(); // Thêm UseAuthentication trước UseAuthorization
             app.UseAuthorization();
 
-            app.MapControllers();
+            
+
+            // Map SignalR Hubs
+            app.MapHub<SavedPostHub>("/savedPostHub");
             app.MapHub<ChatHub>("/chathub");
 
-            // *** Bổ sung map hub cho SignalR ***
-            app.MapHub<ChatHub>("/chathub");
+            app.MapControllers();
 
             app.Run();
         }
