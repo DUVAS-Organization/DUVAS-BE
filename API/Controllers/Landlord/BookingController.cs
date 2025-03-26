@@ -96,7 +96,7 @@ namespace API.Controllers.Landlord
                 RentalDateTimeEnd = formattedDate,
                 RentalDateTimeStart = formattedDatee,
                 ContractFile = contractDto.ContractFile, // Store contract file if available
-                status = 1 // Active contract
+                status = 4 // Active contract
             };
 
             var newContractId = await _contractRepository.NewContractAsync(contract);
@@ -254,6 +254,44 @@ namespace API.Controllers.Landlord
             }
             return Ok(result);
         }
+        [HttpPost("create-insider-trading-2")]
+        public async Task<IActionResult> CreateInsiderTrading2([FromBody] InsiderTradingDTO insiderTradingDTO, [FromQuery] string type)
+        {
+            try
+            {
+                await InsiderTradingDAO.SaveInsiderTradingAsync(insiderTradingDTO, type);
+                return Ok(new { Message = "Insider trading record created successfully" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "Error creating insider trading record", Error = ex.Message });
+            }
+        }
 
+        [HttpPost("create-book-insider-trading")]
+        public async Task<IActionResult> CreateFixedInsiderTrading([FromBody] InsiderTradingRequest request)
+        {
+            try
+            {
+                var insiderTradingDTO = new InsiderTradingDTO
+                {
+                    Remitter = request.Remnitter,
+                    Receiver = request.Receiver,
+                    Money = request.Money,
+                    Note = $"User {request.Remnitter} thanh toán {request.Money} tiền phòng đến User {request.Receiver}",
+                    Status = 2, // Giá trị cố định
+                    Type = "aaa", // Giá trị cố định
+                    CreatedDate = DateTime.Now,
+                    HoldUntil = 3 // 3 ngày từ hiện tại
+                };
+
+                await InsiderTradingDAO.SaveInsiderTradingAsync(insiderTradingDTO, "aaa");
+                return Ok(new { Message = "Insider trading record created successfully with fixed values" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "Error creating insider trading record", Error = ex.Message });
+            }
+        }
     }
 }

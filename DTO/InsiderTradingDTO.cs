@@ -23,7 +23,7 @@ namespace DTO
         public string Note { get; set; }
 
         public int Status { get; set; }
-        // 1: 
+        // 1:   
         // 2: 
         public string? Type { get; set; }
 
@@ -31,5 +31,12 @@ namespace DTO
 
         public int HoldUntil { get; set; }
 
+    }
+
+    public class InsiderTradingRequest
+    {
+        public int Remnitter { get; set; }
+        public int Receiver { get; set; }
+        public decimal Money { get; set; }
     }
 }
