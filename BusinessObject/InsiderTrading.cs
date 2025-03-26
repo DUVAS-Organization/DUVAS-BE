@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using BusinessObject;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.Contracts;
 
 namespace DUVAS
@@ -18,19 +19,21 @@ namespace DUVAS
 
         public string Note { get; set; }
 
+        public int? RoomId { get; set; }
+        public Room? Room { get; set; }
+
+        public int? PriorityPackageRoomId { get; set; }
+        public PriorityPackageRoom? PriorityPackageRoom { get; set; }
+
         public int Status { get; set; }
         // 1: Completed
         // 2: Pending
         // 3: Cancelled
         public string? Type { get; set; }
-        // MuaGoi+
-        // MuaGoi-
-        // ThanhToanHangThang+
-        // ThanhToanHangThang-
-        // ThuePhongLanDau+
-        // ThuePhongLanDau-
-        // RutTien
-
+        // MuaGoi
+        // ThanhToanHangThang
+        // ThuePhongLanDau
+        // 
 
         public DateTime CreatedDate { get; set; }
 

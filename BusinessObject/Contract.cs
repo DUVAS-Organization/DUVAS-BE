@@ -18,8 +18,9 @@ namespace DUVAS
 
         public int status { get; set; }
         // 1: Chưa bị hủy hay hết hạn
-        // 2: Đã bị hủy hoặc hét hạn
-        // 3: pending
+        // 2: Đã bị hủy
+        // 3: Het han
+        // 4: pending
 
         public virtual ICollection<RentalList>? RentalLists { get; set; }
     }

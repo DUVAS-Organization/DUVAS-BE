@@ -25,6 +25,5 @@ namespace Repositories
         public async Task UpdateContractAsync(Contract b) => await ContractDAO.UpdateContractAsync(b);
         public async Task UpdateContractStatusAsync(int contractId, int status)
             => await ContractDAO.UpdateContractStatusAsync(contractId, status);
-
     }
 }

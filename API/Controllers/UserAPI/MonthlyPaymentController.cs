@@ -52,7 +52,7 @@ namespace API.Controllers.UserAPI
             var currentYear = DateTime.UtcNow.Year;
             var paid = await InsiderTradingDAO.GetInsiderTradingsAsync();
 
-            bool hasPaid = paid.Any(t => t.Remitter == UserId && t.Type == "aaaa" &&
+            bool hasPaid = paid.Any(t => t.Remitter == UserId && t.Type == "ThanhToanHangThang" &&
                                          t.CreatedDate.Month == currentMonth &&
                                          t.CreatedDate.Year == currentYear);
 
