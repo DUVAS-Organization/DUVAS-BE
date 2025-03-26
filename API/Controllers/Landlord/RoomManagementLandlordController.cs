@@ -258,8 +258,10 @@ namespace API.Controllers.Landlord
 
 
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteRoom(int id)
+        // PATCH: api/landlord/RoomManagement/{id}/lock
+        [HttpPatch("{id}/lock")]
+        [Authorize]
+        public async Task<IActionResult> LockRoom(int id)
         {
             int landlordId = GetLandlordId();
 
@@ -269,16 +271,117 @@ namespace API.Controllers.Landlord
                 return Unauthorized("Bạn không phải Role Landlord nên không được sử dụng chức năng này.");
             }
 
-            var room = await _roomRepository.GetRoomByIdForLandlordAsync(id, landlordId); // Lấy đối tượng Room
+            // Lấy entity Room thật sự (không dùng DTO)
+            var room = await _roomRepository.GetRoomEntityByIdForLandlordAsync(id, landlordId);
             if (room == null)
             {
-                return NotFound("Room not found or access denied.");
+                return NotFound("Không tìm thấy phòng hoặc bạn không có quyền thao tác.");
             }
 
-            // Truyền đối tượng Room vào phương thức xóa
-            await _roomRepository.DeleteRoomAsync(new Room { RoomId = id });
-            return NoContent();
+            try
+            {
+                room.IsPermission = 0; // ⚠️ Lock phòng lại
+                await _roomRepository.UpdateRoomAsync(room);
+
+                return Ok(new { message = "Phòng đã được khóa thành công (IsPermission = 0)." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Lỗi khi khóa phòng.", error = ex.Message });
+            }
         }
+        // GET: api/landlord/RoomManagement/{id}/is-locked
+        [HttpGet("{id}/is-locked")]
+        [Authorize]
+        public async Task<IActionResult> IsRoomLocked(int id)
+        {
+            int landlordId = GetLandlordId();
+
+            // Kiểm tra quyền Landlord
+            if (!await IsLandlord(landlordId))
+            {
+                return Unauthorized("Bạn không phải Role Landlord nên không được sử dụng chức năng này.");
+            }
+
+            var room = await _roomRepository.GetRoomEntityByIdForLandlordAsync(id, landlordId);
+            if (room == null)
+            {
+                return NotFound("Không tìm thấy phòng hoặc bạn không có quyền truy cập.");
+            }
+
+            bool isLocked = room.IsPermission == 0;
+
+            return Ok(new
+            {
+                RoomId = room.RoomId,
+                IsLocked = isLocked,
+                Message = isLocked ? "Phòng hiện đang bị khóa." : "Phòng đang hoạt động bình thường."
+            });
+        }
+        // PATCH: api/landlord/RoomManagement/{id}/unlock
+        [HttpPatch("{id}/unlock")]
+        [Authorize]
+        public async Task<IActionResult> UnlockRoom(int id)
+        {
+            int landlordId = GetLandlordId();
+
+            // Kiểm tra quyền Landlord
+            if (!await IsLandlord(landlordId))
+            {
+                return Unauthorized("Bạn không phải Role Landlord nên không được sử dụng chức năng này.");
+            }
+
+            var room = await _roomRepository.GetRoomEntityByIdForLandlordAsync(id, landlordId);
+            if (room == null)
+            {
+                return NotFound("Không tìm thấy phòng hoặc bạn không có quyền thao tác.");
+            }
+
+            try
+            {
+                room.IsPermission = 1; // ✅ Mở khóa phòng
+                await _roomRepository.UpdateRoomAsync(room);
+
+                return Ok(new { message = "Phòng đã được mở khóa thành công (IsPermission = 1)." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Lỗi khi mở khóa phòng.", error = ex.Message });
+            }
+        }
+        // GET: api/landlord/RoomManagement/locked-rooms
+        [HttpGet("locked-rooms")]
+        [Authorize]
+        public async Task<IActionResult> GetLockedRooms()
+        {
+            int landlordId = GetLandlordId();
+
+            // Kiểm tra quyền Landlord
+            if (!await IsLandlord(landlordId))
+            {
+                return Unauthorized("Bạn không có quyền truy cập chức năng này.");
+            }
+
+            var rooms = await _roomRepository.GetRoomsByLandlordAsync(landlordId);
+
+            var lockedRooms = rooms
+                .Where(r => r.IsPermission.HasValue && r.IsPermission == 0)
+                .ToList();
+
+            if (!lockedRooms.Any())
+            {
+                return NotFound("Hiện không có phòng nào đang bị khóa.");
+            }
+
+            return Ok(new
+            {
+                message = "Danh sách các phòng đang bị khóa.",
+                rooms = lockedRooms
+            });
+        }
+
+
+
 
         // GET: api/landlord/RoomManagement/{id}/Reviews
         [HttpGet("{id}/Reviews")]

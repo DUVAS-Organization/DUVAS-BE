@@ -34,6 +34,8 @@ namespace Repositories.IRepository
         Task UnLockRoomAsync(int roomId);
         Task AcceptReputationAsync(int roomId);
         Task CancelReputationAsync(int roomId);
+        Task<Room?> GetRoomEntityByIdForLandlordAsync(int roomId, int landlordId);
+
 
     }
 }
