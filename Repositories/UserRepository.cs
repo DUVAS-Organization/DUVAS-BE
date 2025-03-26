@@ -40,5 +40,11 @@ namespace Repositories
         public async Task<List<UserDTO>> GetListUpRoleService() => await UserDAO.GetListUpRoleService();
         public async Task AcceptUpRoleLandLordAsync(int userId) => await UserDAO.AcceptUpRoleLandLordAsync(userId);
         public async Task AcceptUpRoleServiceAsync(int userId) => await UserDAO.AcceptUpRoleServiceAsync(userId);
+        public async Task<bool> CheckBankAccountExistsAsync(string accountNumber, string bankCode)
+        {
+            return await new UserDAO(new ApplicationDbContext()).CheckBankAccountExistsAsync(accountNumber, bankCode);
+        }
+        public async Task CancelUpRoleLandLordAsync(int userId) => await UserDAO.CancelUpRoleLandLordAsync(userId);
+        public async Task CancelUpRoleServiceAsync(int userId) => await UserDAO.CancelUpRoleServiceAsync(userId);
     }
 }

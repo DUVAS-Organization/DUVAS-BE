@@ -13,6 +13,5 @@ namespace Repositories
         public async Task<List<Transaction>> GetTransactionsByUserId(int userId) => await new TransactionDAO(new ApplicationDbContext()).GetTransactionsByUserId(userId);
         public Task<bool> DoesTransactionProcessedAsync(int cassoId) => new TransactionDAO(new ApplicationDbContext()).DoesTransactionProcessedAsync(cassoId);
         public Task<bool> IsTransactionPaidAsync(string description) => new TransactionDAO(new ApplicationDbContext()).IsTransactionPaidAsync(description);
-
     }
 }

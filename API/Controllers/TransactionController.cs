@@ -47,7 +47,7 @@ namespace API.Controllers
         }
 
         [HttpGet("GetTransactions")]
-        [Authorize]
+        [Authorize] // moi sua
         public async Task<IActionResult> GetTransactions()
         {
             var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId");

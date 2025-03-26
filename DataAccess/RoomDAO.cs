@@ -669,8 +669,9 @@ namespace DataAccess
                     var roomLicense = await context.RoomLicenses.FirstOrDefaultAsync(rl => rl.RoomId == roomId);
                     if (roomLicense != null)
                     {
-                        roomLicense.BienBanPCCC = null;
-                        context.RoomLicenses.Update(roomLicense);
+                        context.RoomLicenses.Remove(roomLicense);
+                        //roomLicense.BienBanPCCC = null;
+                        //context.RoomLicenses.Update(roomLicense);
                     }
                     room.reputation = 0;
                     context.Rooms.Update(room);

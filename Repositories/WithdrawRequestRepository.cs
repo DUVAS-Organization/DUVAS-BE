@@ -15,7 +15,6 @@ public class WithdrawRequestRepository : IWithdrawRequestRepository
     public Task<List<WithdrawRequest>> GetAllAsync() => new WithdrawRequestDAO(new ApplicationDbContext()).GetAllAsync();
 
     public Task<List<WithdrawRequest>> SearchWithdrawRequestsAsync(string searchTerm) => new WithdrawRequestDAO(new ApplicationDbContext()).SearchWithdrawRequestsAsync(searchTerm);
-
     public Task<List<WithdrawRequest>> GetAllByUserIdAsync(int userId) => new WithdrawRequestDAO(new ApplicationDbContext()).GetAllByUserIdAsync(userId);
     public Task<WithdrawRequest?> GetByIdAsync(int withdrawRequestId) => new WithdrawRequestDAO(new ApplicationDbContext()).GetByIdAsync(withdrawRequestId);
     public Task WebHookConfirm(int transactionId) => new WithdrawRequestDAO(new ApplicationDbContext()).WebHookConfirm(transactionId);
