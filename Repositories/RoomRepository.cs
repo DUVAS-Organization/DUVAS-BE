@@ -98,6 +98,18 @@ namespace Repositories
         {
             return await RoomDAO.GetRoomEntityByIdForLandlordAsync(roomId, landlordId);
         }
+        public async Task<bool> CheckRoomIsDuplicatedAsync(int userId, string title, string locationDetail, string description)
+        {
+            return await RoomDAO.CheckRoomIsDuplicatedAsync(userId, title, locationDetail, description);
+        }
+        public async Task<bool> CheckDescriptionExistsAsync(string description)
+        {
+            return await RoomDAO.CheckDescriptionExistsAsync(description);
+        }
+        public async Task<bool> CheckLocationExistsAsync(string locationDetail)
+        {
+            return await RoomDAO.CheckLocationExistsAsync(locationDetail);
+        }
 
 
     }

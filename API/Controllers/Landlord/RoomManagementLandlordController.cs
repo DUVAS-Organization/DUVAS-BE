@@ -120,6 +120,7 @@ namespace API.Controllers.Landlord
             return Ok(room);
         }
 
+
         // POST: api/landlord/RoomManagement
         [HttpPost]
         [Authorize]
@@ -132,30 +133,80 @@ namespace API.Controllers.Landlord
 
             int landlordId = GetLandlordId();
 
-            // Kiểm tra quyền Landlord
             if (!await IsLandlord(landlordId))
             {
                 return Unauthorized("Bạn không phải Role Landlord nên không được sử dụng chức năng này.");
             }
 
-            // Kiểm tra UserId có tồn tại không
             var userExists = await _roomRepository.CheckUserExistsAsync(landlordId);
             if (!userExists)
             {
                 return BadRequest("UserId không tồn tại.");
             }
 
-            // Kiểm tra BuildingId có tồn tại không
             if (roomDto.BuildingId.HasValue && !await _roomRepository.CheckBuildingExistsAsync(roomDto.BuildingId.Value))
             {
                 return BadRequest("BuildingId không tồn tại.");
             }
 
-            // Kiểm tra CategoryRoomId có tồn tại không
             var categoryExists = await _roomRepository.CheckCategoryExistsAsync(roomDto.CategoryRoomId);
             if (!categoryExists)
             {
                 return BadRequest("CategoryRoomId không tồn tại.");
+            }
+
+            // ✅ Kiểm tra trùng lặp theo Title + LocationDetail + UserId
+            bool isDuplicate = await _roomRepository.CheckRoomIsDuplicatedAsync(
+                landlordId,
+                roomDto.Title.Trim(),
+                roomDto.LocationDetail.Trim(),
+                roomDto.Description.Trim() // Kiểm tra cả mô tả
+            );
+
+            if (isDuplicate)
+            {
+                return Conflict(new
+                {
+                    message = "Phòng với tiêu đề, địa chỉ và mô tả này đã được đăng. Vui lòng kiểm tra lại để tránh trùng lặp."
+                });
+            }
+
+
+            // ✅ Kiểm tra Description đã từng được dùng bởi user khác (spam xuyên tài khoản)
+            bool isDescUsedGlobally = await _roomRepository.CheckDescriptionExistsAsync(roomDto.Description.Trim());
+            if (isDescUsedGlobally)
+            {
+                return Conflict(new
+                {
+                    message = "Mô tả phòng đã từng được sử dụng trên hệ thống. Vui lòng điều chỉnh lại nội dung."
+                });
+            }
+            // ✅ Check locationDetail trùng toàn hệ thống
+bool isLocationUsedGlobally = await _roomRepository.CheckLocationExistsAsync(roomDto.LocationDetail.Trim());
+if (isLocationUsedGlobally)
+{
+    return Conflict(new
+    {
+        message = "Địa chỉ phòng đã từng được sử dụng trên hệ thống. Vui lòng kiểm tra lại."
+    });
+}
+
+
+            // ✅ Sử dụng AI để phát hiện nội dung mô tả phòng có bị spam hoặc lặp
+            try
+            {
+                var (generatedTitle, generatedDescription) = await _aiService.GenerateRoomTitleAndDescription(
+                    $"Tiêu đề: {roomDto.Title}, Mô tả: {roomDto.Description}, Diện tích: {roomDto.Acreage}, Giá: {roomDto.Price}, Nội thất: {roomDto.Furniture}"
+                );
+
+                if (generatedDescription != null && generatedDescription.Equals(roomDto.Description))
+                {
+                    return BadRequest("Mô tả phòng có dấu hiệu spam hoặc trùng với mô tả đã được tạo tự động. Vui lòng chỉnh sửa lại mô tả.");
+                }
+            }
+            catch (Exception aiEx)
+            {
+                Console.WriteLine($"[AI CHECK] Lỗi khi kiểm tra AI: {aiEx.Message}");
             }
 
             try
@@ -176,22 +227,31 @@ namespace API.Controllers.Landlord
                     UserId = landlordId,
                     BuildingId = roomDto.BuildingId,
                     CategoryRoomId = roomDto.CategoryRoomId,
-                    status = roomDto.status ?? 1, //Còn trống
-                    Deposit = roomDto.Deposit,  // Thêm giá trị tiền đặt cọc
+                    status = roomDto.status ?? 1,
+                    Deposit = roomDto.Deposit,
                     Garret = roomDto.Garret,
-                    reputation = roomDto.reputation ?? 0, //không tích xanh
+                    reputation = roomDto.reputation ?? 0
                 };
 
                 await _roomRepository.SaveRoomAsync(room);
 
-                return CreatedAtAction(nameof(GetRoom), new { id = room.RoomId }, new { message = "Bạn đã thêm thành công phòng mới", room });
+                return CreatedAtAction(nameof(GetRoom), new { id = room.RoomId }, new
+                {
+                    message = "Bạn đã thêm thành công phòng mới",
+                    room
+                });
             }
             catch (Exception ex)
             {
-                // Xử lý lỗi và trả về thông báo lỗi
-                return BadRequest(new { message = "Lỗi khi thêm phòng", error = ex.Message });
+                return BadRequest(new
+                {
+                    message = "Lỗi khi thêm phòng",
+                    error = ex.Message
+                });
             }
         }
+
+
 
 
 

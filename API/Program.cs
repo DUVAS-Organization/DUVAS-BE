@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.SignalR; // Thêm using cho SignalR
 using API; // Nếu ChatHub nằm trong namespace API
 using DataAccess;
 using Microsoft.OpenApi.Models;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace API
 {
@@ -134,6 +135,8 @@ namespace API
             builder.Services.AddScoped<IPriorityPackageRoomRepository, PriorityPackageRoomRepository>();
             builder.Services.AddScoped<IPriorityPackageServicePostRepository, PriorityPackageServicePostRepository>();
             builder.Services.AddScoped<IMessageRepository, MessageRepository>();
+            builder.Services.AddScoped<IRoomRepository, RoomRepository>();
+
             builder.Services.AddScoped<UserDAO>();
             builder.Services.AddScoped<CloudinaryService>();
 

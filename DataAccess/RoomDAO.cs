@@ -648,6 +648,45 @@ namespace DataAccess
                 throw new Exception($"Lỗi khi lấy Room entity: {ex.Message}");
             }
         }
+        public static async Task<bool> CheckRoomIsDuplicatedAsync(int userId, string title, string locationDetail, string description)
+        {
+            try
+            {
+                using var context = new ApplicationDbContext();
+                return await context.Rooms
+                    .AnyAsync(r => r.UserId == userId
+                                && r.Title.ToLower() == title.ToLower()
+                                && r.LocationDetail.ToLower() == locationDetail.ToLower()
+                                && r.Description.ToLower() == description.ToLower()); // Kiểm tra Description
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi kiểm tra phòng trùng lặp: {ex.Message}");
+            }
+        }
+
+
+        public static async Task<bool> CheckDescriptionExistsAsync(string description)
+        {
+            using var context = new ApplicationDbContext();
+            return await context.Rooms.AnyAsync(r => r.Description.ToLower() == description.ToLower());
+        }
+        public static async Task<bool> CheckLocationExistsAsync(string locationDetail)
+        {
+            try
+            {
+                using var context = new ApplicationDbContext();
+                return await context.Rooms
+                    .AnyAsync(r => r.LocationDetail.ToLower() == locationDetail.ToLower());
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi kiểm tra LocationDetail trùng: {ex.Message}");
+            }
+        }
+
+
+
 
     }
 }
