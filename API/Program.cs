@@ -18,6 +18,9 @@ using DataAccess;
 using Microsoft.OpenApi.Models;
 using Repositories.Repositories;
 using API.Hubs;
+using API.Services;
+using Utilities;
+
 namespace API
 {
     public class Program
@@ -159,6 +162,9 @@ namespace API
 
             // Add SignalR (chỉ gọi một lần)
             builder.Services.AddSignalR();
+            builder.Services.AddHostedService<CheckExpiredContractsService>();
+            builder.Services.AddScoped<IAuthorizationContractRepository, AuthorizationContractRepository>();
+            builder.Services.AddScoped<PdfService>();
 
             // Add CORS policy for React app
             builder.Services.AddCors(options =>

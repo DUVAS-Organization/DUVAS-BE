@@ -1,0 +1,22 @@
+﻿using DUVAS;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace BusinessObject
+{
+    public class AuthorizationContract
+    {
+        public int Id { get; set; }
+        public string ContractNumber { get; set; } // Số hợp đồng
+        public string Date { get; set; } // Ngày lập hợp đồng
+        public int PartyAId { get; set; } // ID của Bên A
+        public User? PartyA { get; set; }
+        public int PartyBId { get; set; } // ID của Bên B
+        public User? PartyB { get; set; }
+        public string PdfUrl { get; set; } // URL của file PDF trên Cloudinary
+        public int CreatedById { get; set; } // ID của người tạo
+        public DateTime CreatedAt { get; set; } // Thời gian tạo
+    }
+}

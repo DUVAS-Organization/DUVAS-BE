@@ -94,6 +94,9 @@ namespace Repositories
         {
             return await RoomDAO.GetRoomRegisterReputationAsync();
         }
-      
+        public async Task<Room?> GetRoomEntityByIdForLandlordAsync(int roomId, int landlordId)
+        {
+            return await RoomDAO.GetRoomEntityByIdForLandlordAsync(roomId, landlordId);
+        }
     }
 }

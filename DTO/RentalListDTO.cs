@@ -28,6 +28,7 @@ namespace DTO
         public DateTime CreatedDate { get; set; }
 
         public int RentalStatus { get; set; }
+        public int? ContractStatus { get; set; }
 
     }
 }

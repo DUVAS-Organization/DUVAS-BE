@@ -60,6 +60,105 @@ namespace API.Controllers.Landlord
             return Ok(rooms);
         }
 
+        [HttpGet("rentalList-of-landlord")]
+        public async Task<IActionResult> GetRentalListOfLandlord(int landlordId)
+        {
+
+
+            var rooms = await _roomRepository.GetRoomsByLandlordAsync(landlordId);
+            var rentalLists = await _rentalListRepository.GetRentalListsAsync();
+
+            var roomIds = rooms.Select(r => r.RoomId).ToList();
+            var filteredRentals = rentalLists
+                .Where(r => roomIds.Contains(r.RoomId))
+                .ToList();
+            // Tạo danh sách kết quả với thông tin contract status
+            var rentalsWithContractStatus = new List<object>();
+            foreach (var rental in filteredRentals)
+            {
+                int? contractStatus = null;
+                if (rental.ContractId.HasValue)
+                {
+                    var contract = await _contractRepository.GetContractByIdAsync(rental.ContractId.Value);
+                    if (contract != null)
+                    {
+                        contractStatus = contract.status;
+                    }
+                }
+
+                rentalsWithContractStatus.Add(new
+                {
+                    rental.RentalId,
+                    rental.RoomId,
+                    rental.RenterID,
+                    rental.RentalStatus,
+                    rental.CreatedDate,
+                    rental.MonthForRent,
+                    rental.RentDate,
+                    rental.RenterName,
+                    rental.RenterEmail,
+                    rental.RenterPhone,
+                    ContractId = rental.ContractId,
+                    ContractStatus = contractStatus,
+                });
+            }
+            return Ok(filteredRentals);
+        }
+
+        [HttpGet("rentalList-of-user")]
+        public async Task<IActionResult> GetRentalListOfUser(int userId)
+        {
+            // Lấy tất cả rental của user
+            var rentals = await _rentalListRepository.GetRentalsByUserIdAsync(userId);
+
+            if (rentals == null || !rentals.Any())
+            {
+                return NotFound("Không tìm thấy RentalList nào cho người dùng này.");
+            }
+
+            // Tạo danh sách kết quả với thông tin đầy đủ
+            var rentalsWithDetails = new List<object>();
+            foreach (var rental in rentals)
+            {
+                // Lấy thông tin Room
+                var room = await _roomRepository.GetRoomByIdAsync(rental.RoomId);
+                if (room == null)
+                {
+                    continue; // Bỏ qua nếu không tìm thấy phòng
+                }
+
+                // Lấy thông tin Contract (nếu có)
+                int? contractStatus = null;
+                if (rental.ContractId.HasValue)
+                {
+                    var contract = await _contractRepository.GetContractByIdAsync(rental.ContractId.Value);
+                    if (contract != null)
+                    {
+                        contractStatus = contract.status;
+                    }
+                }
+
+                rentalsWithDetails.Add(new
+                {
+                    rental.RentalId,
+                    rental.RoomId,
+                    rental.RenterID,
+                    rental.RentalStatus,
+                    rental.CreatedDate,
+                    rental.MonthForRent,
+                    rental.RentDate,
+                    rental.RenterName,
+                    rental.RenterEmail,
+                    rental.RenterPhone,
+                    ContractId = rental.ContractId,
+                    ContractStatus = contractStatus,
+                    RoomStatus = room.status // Thêm status của Room
+                });
+            }
+
+            return Ok(new { rentalList = rentalsWithDetails });
+        }
+
         [HttpPut("confirm-reservation/{roomId}")]
         [Authorize(Roles = "Landlord")]
         public async Task<IActionResult> ConfirmReservation(int roomId, [FromBody] ContractRequestDTO contractDto)
@@ -70,10 +169,10 @@ namespace API.Controllers.Landlord
             {
                 return NotFound("Phòng không tồn tại.");
             }
-            if (room.status != 2)
-            {
-                return BadRequest("Phòng phải có trạng thái Pending (2) để xác nhận yêu cầu thuê.");
-            }
+            //if (room.status != 2)
+            //{
+            //    return BadRequest("Phòng phải có trạng thái Pending (2) để xác nhận yêu cầu thuê.");
+            //}
 
             // Update room details (Deposit, Price)
             if (contractDto.Deposit != 0)
@@ -114,7 +213,9 @@ namespace API.Controllers.Landlord
 
             // Lưu lại RentalList đã được cập nhật
             await _rentalListRepository.UpdateRentalListAsync(rentalList);
-
+            // **🔥 Cập nhật trạng thái phòng thành Pending (2)**
+            room.status = 2;
+            await _roomRepository.UpdateRoomAsync(room);
             return Ok("Hợp đồng đã được tạo và yêu cầu thuê đã được xác nhận.");
         }
 
@@ -164,10 +265,10 @@ namespace API.Controllers.Landlord
                 return NotFound("Phòng không tồn tại.");
             }
 
-            if (room.status != 2)
-            {
-                return BadRequest("Chỉ có thể hủy yêu cầu thuê khi phòng đang ở trạng thái Pending.");
-            }
+            //if (room.status != 2)
+            //{
+            //    return BadRequest("Chỉ có thể hủy yêu cầu thuê khi phòng đang ở trạng thái Pending.");
+            //}
 
             // Nếu có hợp đồng, cập nhật trạng thái hợp đồng là bị hủy
             if (rentalList.ContractId.HasValue)
@@ -279,7 +380,7 @@ namespace API.Controllers.Landlord
                     Receiver = request.Receiver,
                     Money = request.Money,
                     Note = $"User {request.Remnitter} thanh toán {request.Money} tiền phòng đến User {request.Receiver}",
-                    Status = 2, // Giá trị cố định
+                    Status = 1, // Giá trị cố định
                     Type = "aaa", // Giá trị cố định
                     CreatedDate = DateTime.Now,
                     HoldUntil = 3 // 3 ngày từ hiện tại

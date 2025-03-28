@@ -683,5 +683,21 @@ namespace DataAccess
                 throw new Exception($"Lỗi khi Cancel Reputation: {ex.Message}");
             }
         }
+        public static async Task<Room?> GetRoomEntityByIdForLandlordAsync(int roomId, int landlordId)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    return await context.Rooms
+                        .FirstOrDefaultAsync(r => r.RoomId == roomId && r.UserId == landlordId);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi lấy Room entity: {ex.Message}");
+            }
+        }
+
     }
 }

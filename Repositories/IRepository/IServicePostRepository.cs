@@ -20,5 +20,6 @@ namespace Repositories.IRepository
         Task UnLockServicePostAsync(int servicepostId);
         Task<List<ServicePostDTO>> GetListServicePostLockAsync();
         Task<List<ServicePostDTO>> GetListServicePostActiveAsync();
+        Task<List<ServicePostDTO>> GetServicePostsByUserIdAsync(int userId);
     }
 }
