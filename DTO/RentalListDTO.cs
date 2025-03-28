@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DUVAS;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -13,10 +14,10 @@ namespace DTO
         public int RentalId { get; set; }
 
         public int RoomId { get; set; }
-        //public Room? Room { get; set; }
+        public Room? Room { get; set; }
 
         public int? ContractId { get; set; }
-        //public Contract? Contract { get; set; }
+        public Contract? Contract { get; set; }
 
         public int RenterID { get; set; }
         public string RenterName { get; set; }

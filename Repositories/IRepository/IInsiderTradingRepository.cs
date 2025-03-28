@@ -15,5 +15,6 @@ namespace Repositories.IRepository
         Task DeleteInsiderTradingAsync(int id);
         Task UpdateInsiderTradingAsync(InsiderTradingDTO b);
         Task<List<InsiderTradingDTO>> GetInsiderTradingsAsync();
+        Task UpdateInsiderTradingStatusAsync(int id, int status);
     }
 }

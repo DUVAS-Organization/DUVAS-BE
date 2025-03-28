@@ -1,12 +1,13 @@
 ﻿using BusinessObject;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.Contracts;
 
 namespace DUVAS
 {
     public class InsiderTrading
     {
-        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int InsiderTradingId { get; set; }
 
         public int Remitter { get; set; }

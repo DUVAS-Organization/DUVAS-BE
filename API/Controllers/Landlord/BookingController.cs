@@ -2,6 +2,7 @@
 using DataAccess;
 using DTO;
 using DUVAS;
+using Hangfire;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NuGet.Protocol.Core.Types;
@@ -120,22 +121,20 @@ namespace API.Controllers.Landlord
             var rentalsWithDetails = new List<object>();
             foreach (var rental in rentals)
             {
-                // Lấy thông tin Room
+                // Lấy thông tin Room (bắt buộc)
                 var room = await _roomRepository.GetRoomByIdAsync(rental.RoomId);
                 if (room == null)
                 {
+                    // Ghi log để debug
+                    Console.WriteLine($"Room with RoomId {rental.RoomId} not found for RentalId {rental.RentalId}. Skipping...");
                     continue; // Bỏ qua nếu không tìm thấy phòng
                 }
 
                 // Lấy thông tin Contract (nếu có)
-                int? contractStatus = null;
+                Contract contract = null;
                 if (rental.ContractId.HasValue)
                 {
-                    var contract = await _contractRepository.GetContractByIdAsync(rental.ContractId.Value);
-                    if (contract != null)
-                    {
-                        contractStatus = contract.status;
-                    }
+                    contract = await _contractRepository.GetContractByIdAsync(rental.ContractId.Value);
                 }
 
                 rentalsWithDetails.Add(new
@@ -151,8 +150,28 @@ namespace API.Controllers.Landlord
                     rental.RenterEmail,
                     rental.RenterPhone,
                     ContractId = rental.ContractId,
-                    ContractStatus = contractStatus,
-                    RoomStatus = room.status // Thêm status của Room
+                    ContractStatus = contract?.status,
+                    RoomStatus = room.status,
+                    // Thêm thông tin chi tiết của Room
+                    RoomDetails = new
+                    {
+                        room.RoomId,
+                        room.Title,
+                        room.Price,
+                        room.LocationDetail,
+                        room.Image,
+                        room.status,
+                        LandlordId = room.UserId,
+                    },
+                    // Thêm thông tin chi tiết của Contract (nếu có)
+                    ContractDetails = contract != null ? new
+                    {
+                        contract.ContractId,
+                        contract.RentalDateTimeStart,
+                        contract.RentalDateTimeEnd,
+                        contract.ContractFile,
+                        contract.status
+                    } : null
                 });
             }
 
@@ -392,6 +411,89 @@ namespace API.Controllers.Landlord
             catch (Exception ex)
             {
                 return StatusCode(500, new { Message = "Error creating insider trading record", Error = ex.Message });
+            }
+        }
+       [HttpPost("first-month-insider-trading")]
+        public async Task<IActionResult> FirstMonthInsiderTrading([FromBody] InsiderTradingRequest request)
+        {
+            try
+            {
+                var insiderTradingDTO = new InsiderTradingDTO
+                {
+                    Remitter = request.Remnitter,
+                    Receiver = request.Receiver,
+                    Money = request.Money,
+                    Note = $"User {request.Remnitter} thanh toán {request.Money} tiền phòng đến User {request.Receiver}",
+
+                    Status = 2, // Giá trị cố định
+                    Type = "ThanhToanLanDau", // Giá trị cố định
+                    CreatedDate = DateTime.Now,
+                    HoldUntil = 3 // 3 ngày từ hiện tại
+                };
+
+                int insiderTradingId = await InsiderTradingDAO.SaveInsiderTradingAsync(insiderTradingDTO, "ThanhToanLanDau");
+                return Ok(new { Message = "Insider trading record created successfully with fixed values" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "Error creating insider trading record", Error = ex.Message });
+            }
+        }
+
+        [HttpPost("schedule-action")]
+        public async Task<IActionResult> ScheduleAction([FromBody] DateTime ActionDate, int landlordId, decimal money, int insiderTradingId)
+        {
+            if (ActionDate == null || ActionDate == default)
+            {
+                return BadRequest("Invalid request data.");
+            }
+
+            // Schedule job to run after 3 days
+            BackgroundJob.Schedule(() => ExecuteScheduledAction(ActionDate, landlordId, money, insiderTradingId), TimeSpan.FromDays(3));
+
+            return Ok(new { Message = "Action scheduled successfully" });
+        }
+
+        [HttpPost("cancel-scheduled-action")]
+        public async Task<IActionResult> CancelScheduledAction([FromBody] DateTime actionDate)
+        {
+            // Logic to mark this action as canceled in memory/cache
+            CacheHelper.SetCanceledAction(actionDate);
+
+            return Ok(new { Message = "Scheduled action canceled successfully." });
+        }
+
+        [NonAction]
+        public async Task ExecuteScheduledAction(DateTime actionDate, int landlordId, decimal money, int insiderTradingId)
+        {
+            if (CacheHelper.IsActionCanceled(actionDate))
+            {
+                return;
+            }
+
+            await _insiderTradingRepository.UpdateInsiderTradingStatusAsync(insiderTradingId, 1);
+            await _userRepository.UpdateUserMoneyAsync(landlordId, money);
+            Console.WriteLine($"Executing scheduled action for {actionDate}...");
+        }
+
+    }
+    public static class CacheHelper
+    {
+        private static readonly HashSet<DateTime> CanceledActions = new();
+
+        public static void SetCanceledAction(DateTime actionDate)
+        {
+            lock (CanceledActions)
+            {
+                CanceledActions.Add(actionDate);
+            }
+        }
+
+        public static bool IsActionCanceled(DateTime actionDate)
+        {
+            lock (CanceledActions)
+            {
+                return CanceledActions.Contains(actionDate);
             }
         }
     }

@@ -4,7 +4,6 @@ using DUVAS;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Repositories.IRepository;
 using Repositories;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using CloudinaryDotNet;
@@ -21,6 +20,8 @@ using API.Hubs;
 using API.Services;
 using Utilities;
 using Microsoft.Extensions.DependencyInjection;
+using Hangfire; // Thêm namespace cho Hangfire
+using Hangfire.SqlServer; // Thêm namespace cho Hangfire.SqlServer
 
 namespace API
 {
@@ -161,11 +162,28 @@ namespace API
             builder.Services.AddScoped<CloudinaryService>();
             builder.Services.AddScoped<IInsiderTradingRepository, InsiderTradingRepository>();
 
-            // Add SignalR (chỉ gọi một lần)
+            // Add SignalR
             builder.Services.AddSignalR();
             builder.Services.AddHostedService<CheckExpiredContractsService>();
             builder.Services.AddScoped<IAuthorizationContractRepository, AuthorizationContractRepository>();
             builder.Services.AddScoped<PdfService>();
+
+            // Add Hangfire
+            builder.Services.AddHangfire(configuration => configuration
+                .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+                .UseSimpleAssemblyNameTypeSerializer()
+                .UseRecommendedSerializerSettings()
+                .UseSqlServerStorage(builder.Configuration.GetConnectionString("DBString"), new SqlServerStorageOptions
+                {
+                    CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+                    SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+                    QueuePollInterval = TimeSpan.Zero,
+                    UseRecommendedIsolationLevel = true,
+                    DisableGlobalLocks = true
+                }));
+
+            // Thêm Hangfire server
+            builder.Services.AddHangfireServer();
 
             // Add CORS policy for React app
             builder.Services.AddCors(options =>
@@ -196,7 +214,8 @@ namespace API
             app.UseAuthentication(); // Thêm UseAuthentication trước UseAuthorization
             app.UseAuthorization();
 
-            
+            // Thêm middleware Hangfire
+            app.UseHangfireDashboard(); // (Tùy chọn) Dashboard tại /hangfire
 
             // Map SignalR Hubs
             app.MapHub<SavedPostHub>("/savedPostHub");

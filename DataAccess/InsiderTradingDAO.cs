@@ -31,6 +31,8 @@ namespace DataAccess
                             Receiver = p.Receiver,
                             Money = p.Money,
                             Note = p.Note,
+                            RoomId = p.RoomId,
+                            PriorityPackageRoomId = p.PriorityPackageRoomId,
                             Status = p.Status,
                             Type = p.Type,
                             CreatedDate = p.CreatedDate,
@@ -60,6 +62,8 @@ namespace DataAccess
                         Receiver = insiderTrading.Receiver,
                         Money = insiderTrading.Money,
                         Note = insiderTrading.Note,
+                        RoomId = insiderTrading.RoomId,
+                        PriorityPackageRoomId = insiderTrading.PriorityPackageRoomId,
                         Status = insiderTrading.Status,
                         Type = insiderTrading.Type,
                         CreatedDate = insiderTrading.CreatedDate,
@@ -73,7 +77,7 @@ namespace DataAccess
             }
         }
 
-        public static async Task SaveInsiderTradingAsync(InsiderTradingDTO insiderTradingDTO, string type)
+        public static async Task<int> SaveInsiderTradingAsync(InsiderTradingDTO insiderTradingDTO, string type)
         {
             try
             {
@@ -81,11 +85,13 @@ namespace DataAccess
                 {
                     var insiderTrading = new InsiderTrading
                     {
-                        InsiderTradingId = insiderTradingDTO.InsiderTradingId,
+                        //InsiderTradingId = insiderTradingDTO.InsiderTradingId,
                         Remitter = insiderTradingDTO.Remitter,
                         Receiver = insiderTradingDTO.Receiver,
                         Money = insiderTradingDTO.Money,
                         Note = $"User ID {insiderTradingDTO.Remitter} vừa chuyển {insiderTradingDTO.Money} đến User ID {insiderTradingDTO.Receiver}.",
+                        RoomId = insiderTradingDTO.RoomId,
+                        PriorityPackageRoomId = insiderTradingDTO.PriorityPackageRoomId,
                         Status = insiderTradingDTO.Status,
                         Type = type,
                         CreatedDate = insiderTradingDTO.CreatedDate,
@@ -93,6 +99,7 @@ namespace DataAccess
                     };
                     await context.InsiderTradings.AddAsync(insiderTrading);
                     await context.SaveChangesAsync();
+                    return insiderTrading.InsiderTradingId;
                 }
             }
             catch (Exception ex)
@@ -114,6 +121,8 @@ namespace DataAccess
                         Receiver = insiderTradingDTO.Receiver,
                         Money = insiderTradingDTO.Money,
                         Note = insiderTradingDTO.Note,
+                        RoomId = insiderTradingDTO.RoomId,
+                        PriorityPackageRoomId = insiderTradingDTO.PriorityPackageRoomId,
                         Status = insiderTradingDTO.Status,
                         Type = insiderTradingDTO.Type,
                         CreatedDate = insiderTradingDTO.CreatedDate,
@@ -148,5 +157,25 @@ namespace DataAccess
                 throw new Exception(ex.Message);
             }
         }
+        public static async Task UpdateInsiderTradingStatusAsync(int id, int status)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var insiderTrading = await context.InsiderTradings.SingleOrDefaultAsync(x => x.InsiderTradingId == id);
+                    if (insiderTrading != null)
+                    {
+                        insiderTrading.Status = status;
+                        await context.SaveChangesAsync();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
     }
 }

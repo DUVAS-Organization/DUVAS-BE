@@ -27,7 +27,7 @@ namespace DTO
         public int? PriorityPackageRoomId { get; set; }
 
         public int Status { get; set; }
-        // 1:   
+        // 1:
         // 2: 
         public string? Type { get; set; }
 
