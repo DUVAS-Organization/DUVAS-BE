@@ -20,6 +20,7 @@ using Repositories.Repositories;
 using API.Hubs;
 using API.Services;
 using Utilities;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace API
 {
