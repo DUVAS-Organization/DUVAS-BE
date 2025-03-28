@@ -26,6 +26,7 @@ namespace Repositories
 
             public async Task SaveInsiderTradingAsync(InsiderTradingDTO b, string type) => await InsiderTradingDAO.SaveInsiderTradingAsync(b, type);
             public async Task UpdateInsiderTradingAsync(InsiderTradingDTO b) => await InsiderTradingDAO.UpdateInsiderTradingAsync(b);
+            public async Task UpdateInsiderTradingStatusAsync(int id, int status) => await InsiderTradingDAO.UpdateInsiderTradingStatusAsync(id, status);
         }
     }
 }

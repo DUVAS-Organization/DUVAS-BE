@@ -22,6 +22,47 @@ namespace BusinessObject.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("BusinessObject.AuthorizationContract", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ContractNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreatedById")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Date")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("PartyAId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PartyBId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PdfUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PartyAId");
+
+                    b.HasIndex("PartyBId");
+
+                    b.ToTable("AuthorizationContracts");
+                });
+
             modelBuilder.Entity("BusinessObject.CategoryPriorityPackageRoom", b =>
                 {
                     b.Property<int>("CategoryPriorityPackageRoomId")
@@ -287,6 +328,9 @@ namespace BusinessObject.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("PriorityPackageRoomId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Receiver")
                         .HasColumnType("int");
 
@@ -299,6 +343,9 @@ namespace BusinessObject.Migrations
                     b.Property<int?>("RemittersUserId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("RoomId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
@@ -307,9 +354,13 @@ namespace BusinessObject.Migrations
 
                     b.HasKey("InsiderTradingId");
 
+                    b.HasIndex("PriorityPackageRoomId");
+
                     b.HasIndex("ReceiversUserId");
 
                     b.HasIndex("RemittersUserId");
+
+                    b.HasIndex("RoomId");
 
                     b.ToTable("InsiderTradings");
                 });
@@ -1010,6 +1061,25 @@ namespace BusinessObject.Migrations
                     b.ToTable("WithdrawRequests");
                 });
 
+            modelBuilder.Entity("BusinessObject.AuthorizationContract", b =>
+                {
+                    b.HasOne("DUVAS.User", "PartyA")
+                        .WithMany()
+                        .HasForeignKey("PartyAId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("DUVAS.User", "PartyB")
+                        .WithMany()
+                        .HasForeignKey("PartyBId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("PartyA");
+
+                    b.Navigation("PartyB");
+                });
+
             modelBuilder.Entity("BusinessObject.PriorityPackageRoom", b =>
                 {
                     b.HasOne("BusinessObject.CategoryPriorityPackageRoom", "CategoryPriorityPackageRoom")
@@ -1088,6 +1158,10 @@ namespace BusinessObject.Migrations
 
             modelBuilder.Entity("DUVAS.InsiderTrading", b =>
                 {
+                    b.HasOne("BusinessObject.PriorityPackageRoom", "PriorityPackageRoom")
+                        .WithMany()
+                        .HasForeignKey("PriorityPackageRoomId");
+
                     b.HasOne("DUVAS.User", "Receivers")
                         .WithMany()
                         .HasForeignKey("ReceiversUserId");
@@ -1096,9 +1170,17 @@ namespace BusinessObject.Migrations
                         .WithMany()
                         .HasForeignKey("RemittersUserId");
 
+                    b.HasOne("DUVAS.Room", "Room")
+                        .WithMany()
+                        .HasForeignKey("RoomId");
+
+                    b.Navigation("PriorityPackageRoom");
+
                     b.Navigation("Receivers");
 
                     b.Navigation("Remitters");
+
+                    b.Navigation("Room");
                 });
 
             modelBuilder.Entity("DUVAS.LandlordLicense", b =>
