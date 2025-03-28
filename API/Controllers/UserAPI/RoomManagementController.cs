@@ -140,9 +140,9 @@ namespace API.Controllers.UserAPI
 
             _emailService.SendRentalNotificationToLandlord(landlord.Gmail!, sendMailDTO.RoomId, sendMailDTO.RenterName);
 
-            // **🔥 Cập nhật trạng thái phòng thành Pending (2)**
-            room.status = 2;
-            await _roomRepository.UpdateRoomAsync(room);
+            //// **🔥 Cập nhật trạng thái phòng thành Pending (2)**
+            //room.status = 2;
+            //await _roomRepository.UpdateRoomAsync(room);
 
 
             return Ok("Gửi mail thành công.");

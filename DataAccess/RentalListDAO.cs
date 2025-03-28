@@ -35,7 +35,11 @@ namespace DataAccess
                             RentDate = p.RentDate,
                             MonthForRent = p.MonthForRent,
                             CreatedDate = p.CreatedDate,
+                            RenterName = p.User.Name,
+                            RenterEmail = p.User.Gmail,
+                            RenterPhone = p.User.Phone,
                             RentalStatus = p.RentalStatus,
+                            ContractStatus = p.Contract.status,
                             //CategoryName = p.Category.CategoryName,
                             //CategoryId = p.CategoryId,                            
 
@@ -91,7 +95,10 @@ namespace DataAccess
                             RentDate = r.RentDate,
                             MonthForRent = r.MonthForRent,
                             CreatedDate = r.CreatedDate,
-                            RentalStatus = r.RentalStatus, 
+                            RentalStatus = r.RentalStatus,
+                            RenterName = r.User.Name,
+                            RenterEmail = r.User.Gmail,
+                            RenterPhone = r.User.Phone,
                             // Thêm các thuộc tính khác nếu cần
                         })
                         .ToListAsync();

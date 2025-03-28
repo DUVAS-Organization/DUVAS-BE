@@ -51,4 +51,14 @@ namespace DTO
         //public Building? Building { get; set; }
         //public bool IsPermission { get; set; }
     }
+    public class MonthlyPaymontRequestDTO
+    {
+        public int? Dien { get; set; }
+        public int? Nuoc { get; set; }
+        public int? Internet { get; set; }
+        public int? Rac { get; set; }
+        public int? GuiXe { get; set; }
+        public int? QuanLy { get; set; }
+        public int? ChiPhiKhac { get; set; }
+    }
 }

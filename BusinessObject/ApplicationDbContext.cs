@@ -39,6 +39,7 @@ namespace DUVAS
         public virtual DbSet<InsiderTrading> InsiderTradings { get; set; }
         public DbSet<SavedPost> SavedPosts { get; set; }
         public virtual DbSet<BankAccounts> BankAccounts { get; set; }
+        public virtual DbSet<AuthorizationContract> AuthorizationContracts { get; set; }
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
        : base(options)
         {
@@ -262,7 +263,17 @@ namespace DUVAS
                .HasForeignKey(sp => sp.ServicePostId)
                .OnDelete(DeleteBehavior.Restrict); // Xóa ServicePost thì xóa luôn SavedPost
 
+            modelBuilder.Entity<AuthorizationContract>()
+               .HasOne(a => a.PartyA)
+               .WithMany()
+               .HasForeignKey(a => a.PartyAId)
+               .OnDelete(DeleteBehavior.NoAction);
 
+            modelBuilder.Entity<AuthorizationContract>()
+                .HasOne(a => a.PartyB)
+                .WithMany()
+                .HasForeignKey(a => a.PartyBId)
+                .OnDelete(DeleteBehavior.NoAction); // Đổi từ Cascade thành NoAction
 
         }
 

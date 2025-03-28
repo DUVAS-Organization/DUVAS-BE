@@ -22,6 +22,10 @@ namespace DTO
 
         public string Note { get; set; }
 
+        public int? RoomId { get; set; }
+
+        public int? PriorityPackageRoomId { get; set; }
+
         public int Status { get; set; }
         // 1:   
         // 2: 

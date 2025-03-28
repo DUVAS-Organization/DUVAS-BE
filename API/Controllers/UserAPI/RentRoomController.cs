@@ -164,6 +164,8 @@ namespace API.Controllers.UserAPI
                 int contractId = (int)rentals.ContractId;
                 await _contractRepository.UpdateContractStatusAsync(contractId, 2);
                 await _rentalListRepository.UpdateRentalListStatusAsync(rentId, 2);
+                var rooms = await _roomRepository.GetRoomByIdAsync(rentals.RoomId);
+                await _roomRepository.UpdateRoomStatusAsync(rentals.RoomId, rooms.UserId, 1);
             }
             return Ok("Contract and associated rental lists updated successfully.");
         }

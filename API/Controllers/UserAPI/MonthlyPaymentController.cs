@@ -1,16 +1,17 @@
-﻿using API.Controllers.Landlord;
-using API.Service;
-using DataAccess;
+﻿using API.Service;
 using DTO;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Repositories.IRepository;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace API.Controllers.UserAPI
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize] // Yêu cầu người dùng phải đăng nhập để truy cập các API trong controller này
     public class MonthlyPaymentController : ControllerBase
     {
         private readonly IRoomRepository _roomRepository;
@@ -20,8 +21,14 @@ namespace API.Controllers.UserAPI
         private readonly IInsiderTradingRepository _insiderTradingRepository;
         private readonly EmailService _emailService;
 
-
-        public MonthlyPaymentController(EmailService emailService, IInsiderTradingRepository insiderTradingRepository, IRoomRepository roomRepository, IRentalListRepository rentalListRepository, IContractRepository contractRepository, IUserRepository userRepository)
+        // Constructor: Khởi tạo các dependency cần thiết thông qua Dependency Injection
+        public MonthlyPaymentController(
+            EmailService emailService,
+            IInsiderTradingRepository insiderTradingRepository,
+            IRoomRepository roomRepository,
+            IRentalListRepository rentalListRepository,
+            IContractRepository contractRepository,
+            IUserRepository userRepository)
         {
             _roomRepository = roomRepository;
             _rentalListRepository = rentalListRepository;
@@ -31,136 +38,303 @@ namespace API.Controllers.UserAPI
             _emailService = emailService;
         }
 
-
-        [HttpPost("create-insider-trading")]
-        public async Task<IActionResult> CreateInsiderTrading([FromBody] InsiderTradingDTO dto, string type)
+        // API 1a: Lấy danh sách các phòng đang được thuê của Landlord
+        [HttpGet("landlord/rented-rooms")]
+        [Authorize] // Chỉ Landlord được truy cập
+        public async Task<IActionResult> GetRentedRoomsForLandlord()
         {
-            if (dto == null)
+            try
             {
-                return BadRequest("Invalid data.");
-            }
+                // Lấy UserId từ token của người dùng hiện tại (Landlord)
+                int landlordId = int.Parse(User.FindFirst("UserId")?.Value ?? throw new Exception("Không tìm thấy UserId trong token"));
 
-            var id = await _insiderTradingRepository.NewInsiderTradingAsync(dto, type);
-            return CreatedAtAction(nameof(BookingManagementController.GetInsiderTradingById), new { id }, dto);
-        }
+                // Lấy danh sách phòng của Landlord có status = 3 (đang được thuê)
+                var rooms = await _roomRepository.GetRoomsByLandlordAsync(landlordId);
+                var rentedRooms = rooms.Where(r => r.status == 3).ToList();
 
-        [HttpPost("check-user-monthly-payment")]
-        [Authorize]
-        public async Task<IActionResult> CheckUserBalance([FromBody] int UserId)
-        {
-            var currentMonth = DateTime.UtcNow.Month;
-            var currentYear = DateTime.UtcNow.Year;
-            var paid = await InsiderTradingDAO.GetInsiderTradingsAsync();
+                var currentDate = DateTime.Now; // Lấy ngày hiện tại
+                var insiderTradings = await _insiderTradingRepository.GetInsiderTradingsAsync(); // Lấy tất cả giao dịch
 
-            bool hasPaid = paid.Any(t => t.Remitter == UserId && t.Type == "ThanhToanHangThang" &&
-                                         t.CreatedDate.Month == currentMonth &&
-                                         t.CreatedDate.Year == currentYear);
-
-            if (hasPaid)
-            {
-                return Ok(new { Message = "Người dùng đã thanh toán tháng này." });
-            }
-
-            var rentals = await RentalListDAO.GetRentalsByUserIdAsync(UserId);
-            if (rentals == null || !rentals.Any())
-            {
-                return NotFound("Người dùng không có RentalList.");
-            }
-
-            foreach (var rental in rentals)
-            {
-                if (rental.ContractId.HasValue)
+                var result = new List<object>();
+                foreach (var room in rentedRooms)
                 {
-                    var contract = await _contractRepository.GetContractByIdAsync(rental.ContractId.Value);
-                    if (contract != null && contract.status == 1)
+                    // Lấy thông tin rental list của phòng
+                    var rentalList = await _rentalListRepository.GetRentalListByRoomIdAsync(room.RoomId);
+                    // Lấy hợp đồng liên quan nếu có
+                    var contract = rentalList?.ContractId.HasValue == true
+                        ? await _contractRepository.GetContractByIdAsync(rentalList.ContractId.Value)
+                        : null;
+
+                    if (contract == null) continue; // Bỏ qua nếu không có hợp đồng
+
+                    // Tính ngày đến hạn thanh toán của tháng hiện tại
+                    var paymentDueDate = new DateTime(currentDate.Year, currentDate.Month, contract.RentalDateTimeStart.Day);
+                    if (currentDate < paymentDueDate) paymentDueDate = paymentDueDate.AddMonths(-1);
+
+                    // Kiểm tra xem phòng đã được thanh toán tháng này chưa
+                    var isPaid = insiderTradings.Any(it =>
+                        it.RoomId == room.RoomId &&
+                        it.CreatedDate.Year == paymentDueDate.Year &&
+                        it.CreatedDate.Month == paymentDueDate.Month &&
+                        it.Type == "MonthlyPayment" &&
+                        it.Status == 1);
+
+                    // Thêm thông tin phòng vào kết quả trả về
+                    result.Add(new
                     {
-                        var daysRemaining = (contract.RentalDateTimeEnd - DateTime.UtcNow).TotalDays;
-                        if (daysRemaining <= 7 && daysRemaining > 0)
-                        {
-                            var user = await _userRepository.GetUserByIdAsync(UserId);
-                            var room = await _roomRepository.GetRoomByIdAsync(rental.RoomId);
-
-                            var khac = (room.Dien ?? 0) + (room.Nuoc ?? 0) + (room.Internet ?? 0) +
-                                       (room.Rac ?? 0) + (room.GuiXe ?? 0) + (room.QuanLy ?? 0) + (room.ChiPhiKhac ?? 0);
-                            Decimal Deposit = room.Deposit ?? 0;
-                            var sendMailDTO = new SendMailMonthlyPaymentDTO
-                            {
-                                userEmail = user.Gmail,
-                                userName = user.Name,
-                                roomName = room.Title,
-                                address = room.LocationDetail,
-                                price = room.Price,
-                                deposit = Deposit,
-                                ngayBatDau = contract.RentalDateTimeStart,
-                                ngayKetThuc = contract.RentalDateTimeEnd,
-                                khac = khac
-                            };
-
-
-                            // 🔹 Gửi email thông báo thanh toán
-                            _emailService.SendMonthlyPaymentToUser(
-                                sendMailDTO.userEmail,
-                                sendMailDTO.userName,
-                                sendMailDTO.roomName,
-                                sendMailDTO.address,
-                                sendMailDTO.price,
-                                sendMailDTO.deposit,
-                                sendMailDTO.khac,
-                                sendMailDTO.ngayBatDau,
-                                sendMailDTO.ngayKetThuc
-                            );
-
-                            return Ok(new
-                            {
-                                Message = "Hợp đồng sắp hết hạn, email đã được gửi.",
-                                RentalId = rental.RentalId,
-                                ContractId = rental.ContractId,
-                                RoomId = rental.RoomId,
-                                RentalDateTimeStart = contract.RentalDateTimeStart,
-                                RentalDateTimeEnd = contract.RentalDateTimeEnd,
-                                Status = contract.status,
-                                DaysRemaining = (int)daysRemaining,
-                                UserEmail = sendMailDTO.userEmail,
-                                UserName = sendMailDTO.userName,
-                                RoomName = sendMailDTO.roomName,
-                                Address = sendMailDTO.address,
-                                Price = sendMailDTO.price,
-                                Deposit = sendMailDTO.deposit,
-                                AdditionalInfo = sendMailDTO.khac,
-                                StartDate = sendMailDTO.ngayBatDau,
-                                EndDate = sendMailDTO.ngayKetThuc
-                            });
-                        }
-                    }
+                        RoomId = room.RoomId,
+                        Title = room.Title,
+                        IsPaidThisMonth = isPaid,
+                        PaymentDueDate = paymentDueDate.ToString("dd/MM/yyyy"),
+                        RenterId = rentalList?.RenterID
+                    });
                 }
+
+                return Ok(result); // Trả về danh sách phòng dưới dạng JSON
             }
-
-            return NotFound("Không có hợp đồng nào sắp hết hạn trong 7 ngày.");
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi: {ex.Message}"); // Trả về lỗi nếu có exception
+            }
         }
 
-
-
-
-
-        [HttpPost("send-mail-monthly-payment")]
-        //[Authorize]
-        public async Task<IActionResult> sendMail([FromBody] SendMailMonthlyPaymentDTO sendMailDTO)
+        // API 1b: Lấy danh sách các phòng đang thuê của Renter
+        [HttpGet("renter/rented-rooms")]
+        [Authorize] // Chỉ Renter được truy cập
+        public async Task<IActionResult> GetRentedRoomsForRenter()
         {
-            var landlord = await _userRepository.GetUserByIdAsync(sendMailDTO.userID);
+            try
+            {
+                // Lấy UserId từ token của người dùng hiện tại (Renter)
+                int renterId = int.Parse(User.FindFirst("UserId")?.Value ?? throw new Exception("Không tìm thấy UserId trong token"));
 
-            _emailService.SendMonthlyPaymentToUser(
-                sendMailDTO.userEmail,
-                sendMailDTO.userName,
-                sendMailDTO.roomName,
-                sendMailDTO.address,
-                sendMailDTO.price,
-                sendMailDTO.deposit,
-                sendMailDTO.khac,
-                sendMailDTO.ngayBatDau,
-                sendMailDTO.ngayKetThuc);
-            //_emailService.SendRentalNotificationToLandlord(landlord.Gmail!, sendMailDTO.RoomId, sendMailDTO.RenterName);
+                // Lấy danh sách rental list mà người dùng là Renter
+                var rentalLists = await _rentalListRepository.GetRentalsByUserIdAsync(renterId);
+                // Lọc các rental list có ContractId không null
+                var validRentalLists = rentalLists.Where(rl => rl.ContractId.HasValue).ToList();
 
-            return Ok("Gửi mail thành công.");
+                var currentDate = DateTime.Now; // Lấy ngày hiện tại
+                var insiderTradings = await _insiderTradingRepository.GetInsiderTradingsAsync(); // Lấy tất cả giao dịch
+
+                var result = new List<object>();
+                foreach (var rentalList in validRentalLists)
+                {
+                    // Lấy hợp đồng liên quan
+                    var contract = await _contractRepository.GetContractByIdAsync(rentalList.ContractId.Value);
+                    // Chỉ lấy hợp đồng có status = 1 (đã xác nhận)
+                    if (contract == null || contract.status != 1) continue;
+
+                    // Lấy thông tin phòng
+                    var room = await _roomRepository.GetRoomByIdAsync(rentalList.RoomId);
+                    if (room == null) continue;
+
+                    // Tính ngày đến hạn thanh toán của tháng hiện tại
+                    var paymentDueDate = new DateTime(currentDate.Year, currentDate.Month, contract.RentalDateTimeStart.Day);
+                    if (currentDate < paymentDueDate) paymentDueDate = paymentDueDate.AddMonths(-1);
+
+                    // Kiểm tra xem phòng đã được thanh toán tháng này chưa
+                    var isPaid = insiderTradings.Any(it =>
+                        it.RoomId == room.RoomId &&
+                        it.CreatedDate.Year == paymentDueDate.Year &&
+                        it.CreatedDate.Month == paymentDueDate.Month &&
+                        it.Type == "MonthlyPayment" &&
+                        it.Status == 1);
+
+                    // Thêm thông tin phòng vào kết quả trả về
+                    result.Add(new
+                    {
+                        RoomId = room.RoomId,
+                        Title = room.Title,
+                        IsPaidThisMonth = isPaid,
+                        PaymentDueDate = paymentDueDate.ToString("dd/MM/yyyy"),
+                        LandlordId = room.UserId
+                    });
+                }
+
+                return Ok(result); // Trả về danh sách phòng dưới dạng JSON
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi: {ex.Message}"); // Trả về lỗi nếu có exception
+            }
         }
+
+        // API 2: Lấy chi tiết thông tin của một phòng cụ thể
+        [HttpGet("room-details/{roomId}")]
+        public async Task<IActionResult> GetRoomDetails(int roomId)
+        {
+            try
+            {
+                // Lấy UserId từ token của người dùng hiện tại
+                int userId = int.Parse(User.FindFirst("UserId")?.Value ?? throw new Exception("Không tìm thấy UserId trong token"));
+
+                // Tìm phòng theo RoomId
+                var room = await _roomRepository.GetRoomByIdAsync(roomId);
+                if (room == null) return NotFound("Phòng không tồn tại");
+
+                // Lấy thông tin rental list của phòng
+                var rentalList = await _rentalListRepository.GetRentalListByRoomIdAsync(roomId);
+                // Kiểm tra quyền truy cập: Chỉ landlord hoặc renter của phòng được xem
+                if (room.UserId != userId && rentalList?.RenterID != userId)
+                    return Unauthorized("Bạn không có quyền xem chi tiết phòng này");
+
+                // Lấy hợp đồng liên quan nếu có
+                var contract = rentalList?.ContractId.HasValue == true
+                    ? await _contractRepository.GetContractByIdAsync(rentalList.ContractId.Value)
+                    : null;
+
+                var currentDate = DateTime.Now; // Lấy ngày hiện tại
+                // Tính ngày đến hạn thanh toán của tháng hiện tại
+                var paymentDueDate = contract != null
+                    ? new DateTime(currentDate.Year, currentDate.Month, contract.RentalDateTimeStart.Day)
+                    : DateTime.MinValue;
+                if (currentDate < paymentDueDate) paymentDueDate = paymentDueDate.AddMonths(-1);
+
+                // Lấy danh sách giao dịch và kiểm tra trạng thái thanh toán tháng này
+                var insiderTradings = await _insiderTradingRepository.GetInsiderTradingsAsync();
+                var isPaid = insiderTradings.Any(it =>
+                    it.RoomId == roomId &&
+                    it.CreatedDate.Year == paymentDueDate.Year &&
+                    it.CreatedDate.Month == paymentDueDate.Month &&
+                    it.Type == "MonthlyPayment" &&
+                    it.Status == 1);
+
+                // Tính chi phí khác (điện, nước, internet, rác, gửi xe, quản lý, chi phí khác)
+                var khac = (room.Dien ?? 0) + (room.Nuoc ?? 0) + (room.Internet ?? 0) +
+                          (room.Rac ?? 0) + (room.GuiXe ?? 0) + (room.QuanLy ?? 0) + (room.ChiPhiKhac ?? 0);
+
+                // Trả về thông tin chi tiết của phòng
+                return Ok(new
+                {
+                    RoomId = room.RoomId,
+                    Title = room.Title,
+                    LocationDetail = room.LocationDetail,
+                    Price = room.Price,
+                    Deposit = room.Deposit ?? 0,
+                    AdditionalCosts = khac,
+                    IsPaidThisMonth = isPaid,
+                    PaymentDueDate = paymentDueDate.ToString("dd/MM/yyyy"),//ngày đến hạn thanh toán
+                    ContractStart = contract?.RentalDateTimeStart.ToString("dd/MM/yyyy"),
+                    ContractEnd = contract?.RentalDateTimeEnd.ToString("dd/MM/yyyy"),
+                    RenterId = rentalList?.RenterID,
+                    LandlordId = room.UserId
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi: {ex.Message}"); // Trả về lỗi nếu có exception
+            }
+        }
+
+        // API 3: Tạo yêu cầu thanh toán tiền phòng hàng tháng
+        [HttpPost("request-payment/{roomId}")]
+        public async Task<IActionResult> RequestMonthlyPayment(int roomId, [FromBody] MonthlyPaymontRequestDTO requestDTO)
+        {
+            try
+            {
+                // Lấy UserId từ token của người dùng hiện tại
+                int userId = int.Parse(User.FindFirst("UserId")?.Value ?? throw new Exception("Không tìm thấy UserId trong token"));
+
+                // Tìm phòng theo RoomId
+                var room = await _roomRepository.GetRoomByIdAsync(roomId);
+                if (room == null) return NotFound("Phòng không tồn tại");
+
+                // Kiểm tra quyền: Chỉ landlord (chủ nhà) được tạo yêu cầu thanh toán
+                if (room.UserId != userId) return Unauthorized("Chỉ chủ nhà mới có thể tạo yêu cầu thanh toán");
+
+                // Lấy thông tin rental list của phòng
+                var rentalList = await _rentalListRepository.GetRentalListByRoomIdAsync(roomId);
+                if (rentalList == null || !rentalList.ContractId.HasValue)
+                    return BadRequest("Phòng chưa có hợp đồng thuê");
+
+                // Lấy hợp đồng liên quan
+                var contract = await _contractRepository.GetContractByIdAsync(rentalList.ContractId.Value);
+                if (contract == null) return BadRequest("Không tìm thấy hợp đồng");
+
+                // Lấy thông tin người thuê (renter)
+                var renter = await _userRepository.GetUserByIdAsync(rentalList.RenterID);
+                if (renter == null) return BadRequest("Không tìm thấy người thuê");
+
+                var currentDate = DateTime.Now; // Lấy ngày hiện tại
+                // Tính ngày đến hạn thanh toán của tháng hiện tại
+                var paymentDueDate = new DateTime(currentDate.Year, currentDate.Month, contract.RentalDateTimeStart.Day);
+                if (currentDate < paymentDueDate) paymentDueDate = paymentDueDate.AddMonths(-1);
+
+                // Kiểm tra xem phòng đã được thanh toán tháng này chưa
+                var insiderTradings = await _insiderTradingRepository.GetInsiderTradingsAsync();
+                if (insiderTradings.Any(it =>
+                    it.RoomId == roomId &&
+                    it.CreatedDate.Year == paymentDueDate.Year &&
+                    it.CreatedDate.Month == paymentDueDate.Month &&
+                    it.Type == "MonthlyPayment" &&
+                    it.Status == 1))
+                {
+                    return BadRequest("Phòng đã được thanh toán tháng này");
+                }
+
+                // Tính chi phí khác dựa trên dữ liệu sử dụng từ requestDTO
+                var khac = ((room.Dien ?? 0) * (requestDTO.Dien ?? 0)) +
+                           ((room.Nuoc ?? 0) * (requestDTO.Nuoc ?? 0)) +
+                           ((room.Internet ?? 0) * (requestDTO.Internet ?? 0)) +
+                           ((room.Rac ?? 0) * (requestDTO.Rac ?? 0)) +
+                           ((room.GuiXe ?? 0) * (requestDTO.GuiXe ?? 0)) +
+                           ((room.QuanLy ?? 0) * (requestDTO.QuanLy ?? 0)) +
+                           ((room.ChiPhiKhac ?? 0) * (requestDTO.ChiPhiKhac ?? 0));
+                decimal deposit = 0; // Không sử dụng deposit trong thanh toán tháng
+
+                // Tạo DTO để gửi email thông báo
+                var sendMailDTO = new SendMailMonthlyPaymentDTO
+                {
+                    userEmail = renter.Gmail,
+                    userName = renter.Name,
+                    roomName = room.Title,
+                    address = room.LocationDetail,
+                    price = room.Price,
+                    deposit = deposit,
+                    ngayBatDau = contract.RentalDateTimeStart,
+                    ngayKetThuc = contract.RentalDateTimeEnd,
+                    khac = khac
+                };
+
+                // Tạo yêu cầu thanh toán trong InsiderTrading
+                var paymentRequest = new InsiderTradingDTO
+                {
+                    Remitter = rentalList.RenterID, // Người gửi (renter)
+                    Receiver = room.UserId, // Người nhận (landlord)
+                    Money = room.Price + khac, // Tổng tiền cần thanh toán
+                    Note = $"Yêu cầu thanh toán tiền phòng tháng {paymentDueDate:MM/yyyy}",
+                    RoomId = roomId,
+                    Status = 0, // Chưa thanh toán
+                    Type = "MonthlyPayment",
+                    CreatedDate = DateTime.Now,
+                    HoldUntil = 0 // Hạn chót là 5 ngày sau ngày đến hạn
+                };
+
+                // Lưu yêu cầu thanh toán vào database
+                await _insiderTradingRepository.SaveInsiderTradingAsync(paymentRequest, "MonthlyPayment");
+
+                // Gửi email thông báo cho renter
+                _emailService.SendMonthlyPaymentToUser(
+                    sendMailDTO.userEmail,
+                    sendMailDTO.userName,
+                    sendMailDTO.roomName,
+                    sendMailDTO.address,
+                    sendMailDTO.price,
+                    sendMailDTO.deposit,
+                    sendMailDTO.khac,
+                    sendMailDTO.ngayBatDau,
+                    sendMailDTO.ngayKetThuc
+                );
+
+                // Trả về thông báo thành công
+                return Ok(new { Message = "Yêu cầu thanh toán đã được tạo và email đã được gửi" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi: {ex.Message}"); // Trả về lỗi nếu có exception
+            }
+        }
+
+
     }
 }

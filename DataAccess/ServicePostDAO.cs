@@ -232,6 +232,41 @@ namespace DataAccess
                 throw new Exception(ex.Message);
             }
         }
+        public static async Task<List<ServicePostDTO>> GetServicePostsByUserIdAsync(int userId)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var servicePosts = await context.ServicePosts
+                        .AsNoTracking()
+                        .Where(p => p.UserId == userId)
+                        .Select(p => new ServicePostDTO
+                        {
+                            ServicePostId = p.ServicePostId,
+                            Title = p.Title,
+                            PhoneNumber = p.PhoneNumber,
+                            Price = p.Price,
+                            Location = p.Location,
+                            Description = p.Description,
+                            Name = p.User.Name,
+                            Image = p.Image,
+                            UserId = p.UserId,
+                            IsPermission = p.IsPermission,
+                            CategoryServiceId = p.CategoryServiceId,
+                            CategoryServiceName = p.CategoryService.CategoryServiceName
+                        })
+                        .ToListAsync();
+
+                    return servicePosts;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi lấy danh sách dịch vụ của userId {userId}: {ex.Message}");
+            }
+        }
+
         public static async Task LockServicePostAsync(int servicepostId)
         {
             try
