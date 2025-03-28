@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using DTO;
 using DUVAS;
+using Repositories;
 
 namespace API.Controllers.UserAPI
 {
@@ -14,12 +15,18 @@ namespace API.Controllers.UserAPI
         private readonly IRentalListRepository _rentalListRepository;
         private readonly IContractRepository _contractRepository;
         private readonly IRoomRepository _roomRepository;
+        private readonly IUserRepository _userRepository;
 
-        public RentRoomController(IRentalListRepository rentalListRepository, IContractRepository contractRepository, IRoomRepository roomRepository)
+        public RentRoomController(IRentalListRepository rentalListRepository,
+            IContractRepository contractRepository,
+            IRoomRepository roomRepository,
+            IUserRepository userRepository
+            )
         {
             _rentalListRepository = rentalListRepository;
             _contractRepository = contractRepository;
             _roomRepository = roomRepository;
+            _userRepository = userRepository;
         }
 
         // API lấy danh sách RentalList có ContractID tồn tại và Contract có Status = 3
@@ -168,6 +175,26 @@ namespace API.Controllers.UserAPI
                 await _roomRepository.UpdateRoomStatusAsync(rentals.RoomId, rooms.UserId, 1);
             }
             return Ok("Contract and associated rental lists updated successfully.");
+        }
+        [HttpGet("check-phone/{userId}")]
+        public async Task<IActionResult> CheckUserPhone(int userId)
+        {
+            // Lấy thông tin user theo userId
+            var user = await _userRepository.GetUserByIdAsync(userId);
+            if (user == null)
+            {
+                return NotFound("User không tồn tại.");
+            }
+
+            // Kiểm tra số điện thoại: không null, không rỗng và có độ dài tối thiểu (ví dụ: 10 ký tự)
+            bool hasValidPhone = !string.IsNullOrEmpty(user.Phone) && user.Phone.Trim().Length >= 10;
+
+            return Ok(new
+            {
+                UserId = user.UserId,
+                HasValidPhone = hasValidPhone,
+                Message = hasValidPhone ? "User có số điện thoại hợp lệ." : "User chưa có số điện thoại hợp lệ."
+            });
         }
     }
 }
