@@ -137,15 +137,28 @@ namespace API.Controllers.UserAPI
                 return BadRequest("Mail của landlord lỗi");
             }
 
-            _emailService.SendRentalNotificationToLandlord(landlord.Gmail!, sendMailDTO.RoomId, sendMailDTO.RenterName);
+            // Send updated rental notification with detailed room info
+            _emailService.SendRentalNotificationToLandlord(
+                landlord.Gmail!,
+                room.Title,
+                room.LocationDetail,
+                room.Price,
+                room.Deposit ?? 0,
+                room.Acreage,
+                room.Furniture,
+                room.NumberOfBathroom,
+                room.NumberOfBedroom,
+            
+                sendMailDTO.RenterName
+            );
 
             // **🔥 Cập nhật trạng thái phòng thành Pending (2)**
             room.status = 2;
             await _roomRepository.UpdateRoomAsync(room);
 
-
             return Ok("Gửi mail thành công.");
         }
+
 
 
         /// <summary>
