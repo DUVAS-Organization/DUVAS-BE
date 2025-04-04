@@ -52,7 +52,7 @@ namespace GITHUB_ACTIONS.Controllers
             var contract = new AuthorizationContract
             {
                 ContractNumber = details.ContractNumber,
-                Date = details.Date,
+                //Date = details.Date,
                 PartyAId = details.PartyAId,
                 PartyBId = details.PartyBId,
                 PdfUrl = pdfUrl,
@@ -95,7 +95,7 @@ namespace GITHUB_ACTIONS.Controllers
             {
                 Id = contract.Id,
                 ContractNumber = contract.ContractNumber,
-                Date = contract.Date,
+                //Date = contract.Date,
                 PartyAId = contract.PartyAId,
                 PartyBId = contract.PartyBId,
                 PdfUrl = contract.PdfUrl,

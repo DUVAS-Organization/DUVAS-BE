@@ -112,16 +112,7 @@ namespace API
                     }
                 });
             });
-            // Thêm dịch vụ CORS
-            builder.Services.AddCors(options =>
-            {
-                options.AddPolicy("AllowAzureApp", policy =>
-                {
-                    policy.WithOrigins("https://blue-field-0c1caa000.6.azurestaticapps.net")
-                          .AllowAnyMethod() // Cho phép GET, POST, v.v.
-                          .AllowAnyHeader(); // Cho phép các header như Content-Type
-                });
-            });
+
             // Add database context
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DBString")));
@@ -199,7 +190,7 @@ namespace API
             {
                 options.AddPolicy("AllowReactApp", policy =>
                 {
-                    policy.WithOrigins("http://localhost:3000")
+                    policy.WithOrigins("https://blue-field-0c1caa000.6.azurestaticapps.net")
                           .AllowAnyMethod()
                           .AllowAnyHeader()
                           .AllowCredentials(); // Quan trọng cho SignalR

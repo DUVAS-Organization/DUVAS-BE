@@ -23,7 +23,7 @@ namespace DataAccess
                         {
                             Id = p.Id,
                             ContractNumber = p.ContractNumber,
-                            Date = p.Date,
+                            //Date = p.Date,
                             PartyAId = p.PartyAId,
                             PartyBId = p.PartyBId,
                             PdfUrl = p.PdfUrl,
@@ -54,7 +54,7 @@ namespace DataAccess
                         {
                             Id = p.Id,
                             ContractNumber = p.ContractNumber,
-                            Date = p.Date,
+                            //Date = p.Date,
                             PartyAId = p.PartyAId,
                             PartyBId = p.PartyBId,
                             PdfUrl = p.PdfUrl,

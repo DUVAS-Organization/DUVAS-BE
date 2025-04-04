@@ -163,7 +163,8 @@ namespace API.Controllers
                 return StatusCode(500, new {Message= "Server Error."});
             }
             String codeExchange = _tokenDictionaryService.GenerateCode(user.Gmail);
-            return Redirect("http://localhost:3000/Logins?token=" + codeExchange);
+            //return Redirect("http://localhost:3000/Logins?token=" + codeExchange);
+            return Redirect("https://blue-field-0c1caa000.6.azurestaticapps.net/Logins?token=" + codeExchange);
 
         }
 

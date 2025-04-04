@@ -12,7 +12,7 @@ namespace DTO
         [Key]
         public int Id { get; set; }
         public string ContractNumber { get; set; }
-        public string Date { get; set; }
+        //public DateTime Date { get; set; }
         public int PartyAId { get; set; }
         public int PartyBId { get; set; }
         public string PdfUrl { get; set; }

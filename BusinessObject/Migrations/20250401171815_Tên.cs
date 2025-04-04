@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace BusinessObject.Migrations
 {
     /// <inheritdoc />
-    public partial class _1 : Migration
+    public partial class Tên : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -113,7 +113,6 @@ namespace BusinessObject.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     ContractNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Date = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     PartyAId = table.Column<int>(type: "int", nullable: false),
                     PartyBId = table.Column<int>(type: "int", nullable: false),
                     PdfUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),

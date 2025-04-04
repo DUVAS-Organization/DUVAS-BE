@@ -40,10 +40,6 @@ namespace BusinessObject.Migrations
                     b.Property<int>("CreatedById")
                         .HasColumnType("int");
 
-                    b.Property<string>("Date")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("PartyAId")
                         .HasColumnType("int");
 
