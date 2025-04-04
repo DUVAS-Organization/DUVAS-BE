@@ -86,5 +86,29 @@ namespace Repositories
         public async Task UnLockRoomAsync(int roomId) => await RoomDAO.UnLockRoomAsync(roomId);
         public async Task AcceptReputationAsync(int roomId) => await RoomDAO.AcceptReputationAsync(roomId);
         public async Task CancelReputationAsync(int roomId) => await RoomDAO.CancelReputationAsync(roomId);
+        public async Task<RoomDTO> GetRoomContractByIdAsync(int roomId)
+        {
+            return await RoomDAO.GetRoomContractByIdAsync(roomId);
+        }
+        public async Task<List<RoomDTO>> GetRoomRegisterReputationAsync()
+        {
+            return await RoomDAO.GetRoomRegisterReputationAsync();
+        }
+        public async Task<Room?> GetRoomEntityByIdForLandlordAsync(int roomId, int landlordId)
+        {
+            return await RoomDAO.GetRoomEntityByIdForLandlordAsync(roomId, landlordId);
+        }
+        public async Task<bool> CheckRoomIsDuplicatedAsync(int userId, string title, string locationDetail, string description)
+        {
+            return await RoomDAO.CheckRoomIsDuplicatedAsync(userId, title, locationDetail, description);
+        }
+        public async Task<bool> CheckDescriptionExistsAsync(string description)
+        {
+            return await RoomDAO.CheckDescriptionExistsAsync(description);
+        }
+        public async Task<bool> CheckLocationExistsAsync(string locationDetail)
+        {
+            return await RoomDAO.CheckLocationExistsAsync(locationDetail);
+        }
     }
 }

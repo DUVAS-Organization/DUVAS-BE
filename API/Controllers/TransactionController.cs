@@ -18,7 +18,7 @@ namespace API.Controllers
         }
 
         [HttpPost()]
-        [Authorize(Policy = "User")]
+        [Authorize]
         public async Task<IActionResult> CreateTransaction([FromBody] DepositRequest depositRequest)
         {
             var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId");
@@ -37,6 +37,27 @@ namespace API.Controllers
             await _transactionRepository.AddTransaction(depositRequest.Amount, uuid, userId);
             string QRCodeImage = "https://img.vietqr.io/image/" + _configuration["CassoSettings:BankId"] + "-" + _configuration["CassoSettings:AccountNo"] + "-print.jpg?amount=" + depositRequest.Amount + "&addInfo=" + uuid + "&accountName=" + _configuration["CassoSettings:AccountName"];
             return Ok(new { QRCode = QRCodeImage });
+        }
+
+        [HttpGet()]
+        public async Task<IActionResult> CheckTransactionStatus(string description)
+        {
+            bool isPaid = await _transactionRepository.IsTransactionPaidAsync(description);
+            return Ok(new { isPaid });
+        }
+
+        [HttpGet("GetTransactions")]
+        [Authorize] // moi sua
+        public async Task<IActionResult> GetTransactions()
+        {
+            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId");
+            if (userIdClaim == null)
+            {
+                return BadRequest("UserId claim not found.");
+            }
+            int.TryParse(userIdClaim.Value, out int userId);
+            var transactions = _transactionRepository.GetTransactionsByUserId(userId);
+            return Ok(new { transactions });
         }
     }
 }

@@ -1,7 +1,10 @@
 ﻿using DTO;
+using DUVAS;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Repositories.IRepository;
+using BusinessObject.Enums;
+
 
 namespace API.Controllers;
 
@@ -22,7 +25,7 @@ public class WithDrawController : ControllerBase
         _userRepository = userRepository;
     }
     [HttpPost("")]
-    [Authorize(Policy = "User")]
+    [Authorize]
     public async Task<IActionResult> CreateWithDrawRequest([FromBody] WithdrawRequestDTO withdrawRequestDto)
     {
         var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId");
@@ -30,26 +33,38 @@ public class WithDrawController : ControllerBase
         {
             return BadRequest("UserId claim not found.");
         }
-        int.TryParse(userIdClaim.Value, out int userId);
-        Console.WriteLine("user id: " + userId);
-        var user = _userRepository.GetUserByIdAsync(userId);
-        if (user == null)
+        if (!int.TryParse(userIdClaim.Value, out int userId))
         {
-            return StatusCode(500, "Server error.");
+            return BadRequest("Invalid UserId.");
         }
-        Console.WriteLine("user money: " + user.Result.Money);
-        Console.WriteLine("user email: " + user.Result.Gmail);
-        if (user.Result.Money < withdrawRequestDto.Amount)
+
+        decimal money = await _userRepository.GetUserMoneyWithIdAsync(userId);
+        if (money < withdrawRequestDto.Amount)
         {
             return BadRequest("Your balance is not enough.");
         }
+
+        var bankAccount = await _userRepository.GetUserBankAccountByIdAndUserIdAsync(userId, withdrawRequestDto.BankAccountId);
+        if (bankAccount == null)
+        {
+            return BadRequest("Bank account not found.");
+        }
+
+        // Kiểm tra trạng thái của tài khoản ngân hàng
+        if (bankAccount.Status != BankAccountStatus.Active)
+        {
+            return BadRequest("Bank account is not active.");
+        }
+
         Guid newUuid = Guid.NewGuid();
-        string uuid = newUuid.ToString();
-        uuid = uuid.Replace("-", "");
+        string uuid = newUuid.ToString().Replace("-", "");
+
         var transaction = await _transactionRepository.AddTransaction(-withdrawRequestDto.Amount, uuid, userId);
-        await _withdrawRequestRepository.AddAsync(userId, withdrawRequestDto.Amount, transaction.Id, withdrawRequestDto.BankCode, withdrawRequestDto.AccountNumber);
-        return Ok(new {message = "Withdraw request successful."});
+        await _withdrawRequestRepository.AddAsync(userId, -withdrawRequestDto.Amount, transaction.Id, bankAccount.BankCode, bankAccount.AccountNumber);
+
+        return Ok(new { message = "Withdraw request created successfully." });
     }
+
     [HttpGet("payment-qr")]
     [Authorize(Policy = "Admin")]
     public async Task<IActionResult> GetWithdrawPaymentLink([FromQuery] int id)
@@ -67,5 +82,19 @@ public class WithDrawController : ControllerBase
         var qrCodeImage = "https://img.vietqr.io/image/" + withDrawReq.BankCode + "-" + withDrawReq.AccountNumber + "-print.jpg?amount=" +
                           (-withDrawReq.Transaction.Amount) + "&addInfo=" + withDrawReq.Transaction.Description + "&accountName=" + _configuration["CassoSettings:AccountName"];
         return Ok(new { QRCode = qrCodeImage });
+    }
+
+    [HttpGet("user")]
+    [Authorize] // moi sua
+    public async Task<ActionResult<IEnumerable<WithdrawRequest>>> GetUserWithdrawRequests()
+    {
+        var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId");
+        if (userIdClaim == null)
+        {
+            return BadRequest("UserId claim not found.");
+        }
+        int.TryParse(userIdClaim.Value, out int userId);
+        var withDrawReq = await _withdrawRequestRepository.GetAllByUserIdAsync(userId);
+        return Ok(withDrawReq);
     }
 }

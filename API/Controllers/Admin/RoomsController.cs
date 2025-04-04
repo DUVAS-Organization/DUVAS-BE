@@ -246,10 +246,10 @@ namespace API.Controllers.Admin
 
             return NoContent();
         }
-        [HttpGet("reputation")]
-        public async Task<IActionResult> GetRoomReputation()
+        [HttpGet("register-reputation")]
+        public async Task<IActionResult> GetRoomRegisterReputationAsync()
         {
-            var rooms = await _roomRepository.GetRoomReputationAsync();
+            var rooms = await _roomRepository.GetRoomRegisterReputationAsync();
             if (rooms == null || rooms.Count == 0)
             {
                 return NotFound("Không có phòng nào đăng ký uy tín.");
@@ -257,5 +257,18 @@ namespace API.Controllers.Admin
 
             return Ok(rooms);
         }
+        [HttpGet("{id}/contract")]
+        public async Task<IActionResult> GetRoomContract(int id)
+        {
+
+            var roomContract = await _roomRepository.GetRoomContractByIdAsync(id);
+            if (roomContract == null)
+            {
+                return NotFound("Thông tin hợp đồng phòng không được tìm thấy.");
+            }
+
+            return Ok(roomContract);
+        }
+
     }
 }

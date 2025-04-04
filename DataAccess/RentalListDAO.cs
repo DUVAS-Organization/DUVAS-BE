@@ -31,7 +31,15 @@ namespace DataAccess
                             RentalId = p.RentalId,
                             ContractId = p.ContractId,
                             RenterID = p.RenterID,
-
+                            RoomId = p.RoomId,
+                            RentDate = p.RentDate,
+                            MonthForRent = p.MonthForRent,
+                            CreatedDate = p.CreatedDate,
+                            RenterName = p.User.Name,
+                            RenterEmail = p.User.Gmail,
+                            RenterPhone = p.User.Phone,
+                            RentalStatus = p.RentalStatus,
+                            ContractStatus = p.Contract.status,
                             //CategoryName = p.Category.CategoryName,
                             //CategoryId = p.CategoryId,                            
 
@@ -49,7 +57,26 @@ namespace DataAccess
             }
 
         }
-
+        // Cập nhật trạng thái hợp đồng (Xác nhận hoặc Hủy hợp đồng)
+        public static async Task UpdateRentalListStatusAsync(int rentalListID, int status)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var contract = await context.RentalLists.SingleOrDefaultAsync(c => c.RentalId == rentalListID);
+                    if (contract != null)
+                    {
+                        contract.RentalStatus = status; // 1: Đã xác nhận, 2: Đã hủy
+                        await context.SaveChangesAsync();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Lỗi khi cập nhật trạng thái hợp đồng: " + ex.Message);
+            }
+        }
         public static async Task<List<RentalListDTO>> GetRentalsByUserIdAsync(int userId)
         {
             try
@@ -64,6 +91,14 @@ namespace DataAccess
                             RentalId = r.RentalId,
                             ContractId = r.ContractId,
                             RenterID = r.RenterID,
+                            RoomId = r.RoomId,
+                            RentDate = r.RentDate,
+                            MonthForRent = r.MonthForRent,
+                            CreatedDate = r.CreatedDate,
+                            RentalStatus = r.RentalStatus,
+                            RenterName = r.User.Name,
+                            RenterEmail = r.User.Gmail,
+                            RenterPhone = r.User.Phone,
                             // Thêm các thuộc tính khác nếu cần
                         })
                         .ToListAsync();
@@ -165,7 +200,26 @@ namespace DataAccess
                 throw new Exception("Lỗi khi cập nhật hợp đồng cho RentalList: " + ex.Message);
             }
         }
+        public static async Task<RentalList> GetRentalListByRoomIdAsync(int roomId)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    // Use FirstOrDefaultAsync to prevent the error if there are multiple records
+                    var rentalList = await context.RentalLists
+                        .Where(r => r.RoomId == roomId)  // Filter by roomId
+                        .OrderBy(r => r.CreatedDate)     // Optional: Order by creation date or any other criteria
+                        .FirstOrDefaultAsync();          // Get the first rental or null if not found
 
+                    return rentalList;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Lỗi khi lấy RentalList theo RoomId: " + ex.Message);
+            }
+        }
 
     }
 

@@ -2,8 +2,10 @@
 using DataAccess;
 using DTO;
 using DUVAS;
+using Hangfire;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using NuGet.Protocol.Core.Types;
 using Repositories;
 using Repositories.IRepository;
 using System.Security.Claims;
@@ -20,13 +22,14 @@ namespace API.Controllers.Landlord
         private readonly IRentalListRepository _rentalListRepository;
         private readonly IContractRepository _contractRepository;
         private readonly IUserRepository _userRepository;
-
-        public BookingManagementController(IRoomRepository roomRepository, IRentalListRepository rentalListRepository, IContractRepository contractRepository, IUserRepository userRepository)
+        private readonly IInsiderTradingRepository _insiderTradingRepository;
+        public BookingManagementController(IInsiderTradingRepository insiderTradingRepository, IRoomRepository roomRepository, IRentalListRepository rentalListRepository, IContractRepository contractRepository, IUserRepository userRepository)
         {
             _roomRepository = roomRepository;
             _rentalListRepository = rentalListRepository;
             _contractRepository = contractRepository;
             _userRepository = userRepository;
+            _insiderTradingRepository = insiderTradingRepository;
         }
 
         private int GetLandlordId()
@@ -58,55 +61,180 @@ namespace API.Controllers.Landlord
             return Ok(rooms);
         }
 
+        [HttpGet("rentalList-of-landlord")]
+        public async Task<IActionResult> GetRentalListOfLandlord(int landlordId)
+        {
+
+
+            var rooms = await _roomRepository.GetRoomsByLandlordAsync(landlordId);
+            var rentalLists = await _rentalListRepository.GetRentalListsAsync();
+
+            var roomIds = rooms.Select(r => r.RoomId).ToList();
+            var filteredRentals = rentalLists
+                .Where(r => roomIds.Contains(r.RoomId))
+                .ToList();
+            // Tạo danh sách kết quả với thông tin contract status
+            var rentalsWithContractStatus = new List<object>();
+            foreach (var rental in filteredRentals)
+            {
+                int? contractStatus = null;
+                if (rental.ContractId.HasValue)
+                {
+                    var contract = await _contractRepository.GetContractByIdAsync(rental.ContractId.Value);
+                    if (contract != null)
+                    {
+                        contractStatus = contract.status;
+                    }
+                }
+
+                rentalsWithContractStatus.Add(new
+                {
+                    rental.RentalId,
+                    rental.RoomId,
+                    rental.RenterID,
+                    rental.RentalStatus,
+                    rental.CreatedDate,
+                    rental.MonthForRent,
+                    rental.RentDate,
+                    rental.RenterName,
+                    rental.RenterEmail,
+                    rental.RenterPhone,
+                    ContractId = rental.ContractId,
+                    ContractStatus = contractStatus,
+                });
+            }
+            return Ok(filteredRentals);
+        }
+
+        [HttpGet("rentalList-of-user")]
+        public async Task<IActionResult> GetRentalListOfUser(int userId)
+        {
+            // Lấy tất cả rental của user
+            var rentals = await _rentalListRepository.GetRentalsByUserIdAsync(userId);
+
+            if (rentals == null || !rentals.Any())
+            {
+                return NotFound("Không tìm thấy RentalList nào cho người dùng này.");
+            }
+
+            // Tạo danh sách kết quả với thông tin đầy đủ
+            var rentalsWithDetails = new List<object>();
+            foreach (var rental in rentals)
+            {
+                // Lấy thông tin Room (bắt buộc)
+                var room = await _roomRepository.GetRoomByIdAsync(rental.RoomId);
+                if (room == null)
+                {
+                    // Ghi log để debug
+                    Console.WriteLine($"Room with RoomId {rental.RoomId} not found for RentalId {rental.RentalId}. Skipping...");
+                    continue; // Bỏ qua nếu không tìm thấy phòng
+                }
+
+                // Lấy thông tin Contract (nếu có)
+                Contract contract = null;
+                if (rental.ContractId.HasValue)
+                {
+                    contract = await _contractRepository.GetContractByIdAsync(rental.ContractId.Value);
+                }
+
+                rentalsWithDetails.Add(new
+                {
+                    rental.RentalId,
+                    rental.RoomId,
+                    rental.RenterID,
+                    rental.RentalStatus,
+                    rental.CreatedDate,
+                    rental.MonthForRent,
+                    rental.RentDate,
+                    rental.RenterName,
+                    rental.RenterEmail,
+                    rental.RenterPhone,
+                    ContractId = rental.ContractId,
+                    ContractStatus = contract?.status,
+                    RoomStatus = room.status,
+                    // Thêm thông tin chi tiết của Room
+                    RoomDetails = new
+                    {
+                        room.RoomId,
+                        room.Title,
+                        room.Price,
+                        room.LocationDetail,
+                        room.Image,
+                        room.status,
+                        LandlordId = room.UserId,
+                    },
+                    // Thêm thông tin chi tiết của Contract (nếu có)
+                    ContractDetails = contract != null ? new
+                    {
+                        contract.ContractId,
+                        contract.RentalDateTimeStart,
+                        contract.RentalDateTimeEnd,
+                        contract.ContractFile,
+                        contract.status
+                    } : null
+                });
+            }
+
+            return Ok(new { rentalList = rentalsWithDetails });
+        }
+
         [HttpPut("confirm-reservation/{roomId}")]
         [Authorize(Roles = "Landlord")]
         public async Task<IActionResult> ConfirmReservation(int roomId, [FromBody] ContractRequestDTO contractDto)
         {
-
-            // 🔹 Kiểm tra phòng có tồn tại không
+            // 🔹 Check if room exists
             var room = await _roomRepository.GetRoomByIdAsync(roomId);
             if (room == null)
             {
                 return NotFound("Phòng không tồn tại.");
             }
-            // Cập nhật phòng trong database
+            //if (room.status != 2)
+            //{
+            //    return BadRequest("Phòng phải có trạng thái Pending (2) để xác nhận yêu cầu thuê.");
+            //}
+
+            // Update room details (Deposit, Price)
             if (contractDto.Deposit != 0)
             {
                 room.Deposit = contractDto.Deposit ?? 0;
-
             }
 
             if (contractDto.Price != 0)
             {
                 room.Price = contractDto.Price ?? 0;
-
             }
 
-
             await _roomRepository.UpdateRoomAsync(room);
+
+            // Create a new contract
             DateTime formattedDate = DateTime.ParseExact(contractDto.RentalDateTimeEnd, "yyyy-MM-dd", null);
-            // Tạo hợp đồng mới
+            DateTime formattedDatee = DateTime.ParseExact(contractDto.RentalDateTimeStart, "yyyy-MM-dd", null);
             var contract = new Contract
             {
                 RentalDateTimeEnd = formattedDate,
-                ContractFile = contractDto.ContractFile, // Lưu file hợp đồng (nếu có)
-                status = 1 // Trạng thái hợp đồng: 1 (hợp đồng có hiệu lực)
+                RentalDateTimeStart = formattedDatee,
+                ContractFile = contractDto.ContractFile, // Store contract file if available
+                status = 4 // Active contract
             };
 
             var newContractId = await _contractRepository.NewContractAsync(contract);
 
+            // Cập nhật RentalList với ContractId mới
+            var rentalList = await _rentalListRepository.GetRentalListByRoomIdAsync(roomId);
 
-            var rental = new RentalList
+            if (rentalList == null)
             {
-                RoomId = room.RoomId,
-                ContractId = newContractId,
-                RenterID = 17 // Lưu file hợp đồng (nếu có)
-            };
+                return NotFound("Không tìm thấy yêu cầu thuê phòng.");
+            }
 
+            // Cập nhật ContractId vào RentalList đã tồn tại
+            rentalList.ContractId = newContractId;
 
-
-            await _rentalListRepository.SaveRentalListAsync(rental);
-
+            // Lưu lại RentalList đã được cập nhật
+            await _rentalListRepository.UpdateRentalListAsync(rentalList);
+            // **🔥 Cập nhật trạng thái phòng thành Pending (2)**
+            room.status = 2;
+            await _roomRepository.UpdateRoomAsync(room);
             return Ok("Hợp đồng đã được tạo và yêu cầu thuê đã được xác nhận.");
         }
 
@@ -156,10 +284,10 @@ namespace API.Controllers.Landlord
                 return NotFound("Phòng không tồn tại.");
             }
 
-            if (room.status != 2)
-            {
-                return BadRequest("Chỉ có thể hủy yêu cầu thuê khi phòng đang ở trạng thái Pending.");
-            }
+            //if (room.status != 2)
+            //{
+            //    return BadRequest("Chỉ có thể hủy yêu cầu thuê khi phòng đang ở trạng thái Pending.");
+            //}
 
             // Nếu có hợp đồng, cập nhật trạng thái hợp đồng là bị hủy
             if (rentalList.ContractId.HasValue)
@@ -224,7 +352,149 @@ namespace API.Controllers.Landlord
                 return BadRequest($"Lỗi khi cập nhật số dư: {ex.Message}");
             }
         }
+        [HttpPost("create-insider-trading")]
+        public async Task<IActionResult> CreateInsiderTrading([FromBody] InsiderTradingDTO dto, string type)
+        {
+            if (dto == null)
+            {
+                return BadRequest("Invalid data.");
+            }
 
+            var id = await _insiderTradingRepository.NewInsiderTradingAsync(dto, type);
+            return CreatedAtAction(nameof(GetInsiderTradingById), new { id }, dto);
+        }
 
+        [HttpGet("get-insider-trading-by-id{id}")]
+        public async Task<IActionResult> GetInsiderTradingById(int id)
+        {
+            var result = await _insiderTradingRepository.GetInsiderTradingByIdAsync(id);
+            if (result == null)
+            {
+                return NotFound();
+            }
+            return Ok(result);
+        }
+        [HttpPost("create-insider-trading-2")]
+        public async Task<IActionResult> CreateInsiderTrading2([FromBody] InsiderTradingDTO insiderTradingDTO, [FromQuery] string type)
+        {
+            try
+            {
+                await InsiderTradingDAO.SaveInsiderTradingAsync(insiderTradingDTO, type);
+                return Ok(new { Message = "Insider trading record created successfully" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "Error creating insider trading record", Error = ex.Message });
+            }
+        }
+
+        [HttpPost("create-book-insider-trading")]
+        public async Task<IActionResult> CreateFixedInsiderTrading([FromBody] InsiderTradingRequest request)
+        {
+            try
+            {
+                var insiderTradingDTO = new InsiderTradingDTO
+                {
+                    Remitter = request.Remnitter,
+                    Receiver = request.Receiver,
+                    Money = request.Money,
+                    Note = $"User {request.Remnitter} thanh toán {request.Money} tiền phòng đến User {request.Receiver}",
+                    Status = 1, // Giá trị cố định
+                    Type = "aaa", // Giá trị cố định
+                    CreatedDate = DateTime.Now,
+                    HoldUntil = 3 // 3 ngày từ hiện tại
+                };
+
+                await InsiderTradingDAO.SaveInsiderTradingAsync(insiderTradingDTO, "aaa");
+                return Ok(new { Message = "Insider trading record created successfully with fixed values" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "Error creating insider trading record", Error = ex.Message });
+            }
+        }
+       [HttpPost("first-month-insider-trading")]
+        public async Task<IActionResult> FirstMonthInsiderTrading([FromBody] InsiderTradingRequest request)
+        {
+            try
+            {
+                var insiderTradingDTO = new InsiderTradingDTO
+                {
+                    Remitter = request.Remnitter,
+                    Receiver = request.Receiver,
+                    Money = request.Money,
+                    Note = $"User {request.Remnitter} thanh toán {request.Money} tiền phòng đến User {request.Receiver}",
+
+                    Status = 2, // Giá trị cố định
+                    Type = "ThanhToanLanDau", // Giá trị cố định
+                    CreatedDate = DateTime.Now,
+                    HoldUntil = 3 // 3 ngày từ hiện tại
+                };
+
+                int insiderTradingId = await InsiderTradingDAO.SaveInsiderTradingAsync(insiderTradingDTO, "ThanhToanLanDau");
+                return Ok(new { Message = "Insider trading record created successfully with fixed values" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "Error creating insider trading record", Error = ex.Message });
+            }
+        }
+
+        [HttpPost("schedule-action")]
+        public async Task<IActionResult> ScheduleAction([FromBody] DateTime ActionDate, int landlordId, decimal money, int insiderTradingId)
+        {
+            if (ActionDate == null || ActionDate == default)
+            {
+                return BadRequest("Invalid request data.");
+            }
+
+            // Schedule job to run after 3 days
+            BackgroundJob.Schedule(() => ExecuteScheduledAction(ActionDate, landlordId, money, insiderTradingId), TimeSpan.FromDays(3));
+
+            return Ok(new { Message = "Action scheduled successfully" });
+        }
+
+        [HttpPost("cancel-scheduled-action")]
+        public async Task<IActionResult> CancelScheduledAction([FromBody] DateTime actionDate)
+        {
+            // Logic to mark this action as canceled in memory/cache
+            CacheHelper.SetCanceledAction(actionDate);
+
+            return Ok(new { Message = "Scheduled action canceled successfully." });
+        }
+
+        [NonAction]
+        public async Task ExecuteScheduledAction(DateTime actionDate, int landlordId, decimal money, int insiderTradingId)
+        {
+            if (CacheHelper.IsActionCanceled(actionDate))
+            {
+                return;
+            }
+
+            await _insiderTradingRepository.UpdateInsiderTradingStatusAsync(insiderTradingId, 1);
+            await _userRepository.UpdateUserMoneyAsync(landlordId, money);
+            Console.WriteLine($"Executing scheduled action for {actionDate}...");
+        }
+
+    }
+    public static class CacheHelper
+    {
+        private static readonly HashSet<DateTime> CanceledActions = new();
+
+        public static void SetCanceledAction(DateTime actionDate)
+        {
+            lock (CanceledActions)
+            {
+                CanceledActions.Add(actionDate);
+            }
+        }
+
+        public static bool IsActionCanceled(DateTime actionDate)
+        {
+            lock (CanceledActions)
+            {
+                return CanceledActions.Contains(actionDate);
+            }
+        }
     }
 }

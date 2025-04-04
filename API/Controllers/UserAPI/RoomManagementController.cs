@@ -56,7 +56,7 @@ namespace API.Controllers.UserAPI
                 }
 
                 // Ghi nhận yêu cầu thuê (không thay đổi trạng thái của phòng)
-                rentalRequest.RentalStatus = 0; // Yêu cầu thuê mới
+                rentalRequest.RentalStatus = 1; // Yêu cầu thuê mới
                 rentalRequest.CreatedDate = DateTime.Now; // Ghi nhận thời điểm tạo
                 await _rentalListRepository.SaveRentalListAsync(rentalRequest);
 
@@ -138,11 +138,23 @@ namespace API.Controllers.UserAPI
                 return BadRequest("Mail của landlord lỗi");
             }
 
-            _emailService.SendRentalNotificationToLandlord(landlord.Gmail!, sendMailDTO.RoomId, sendMailDTO.RenterName);
+            // Send updated rental notification with detailed room info
+            _emailService.SendRentalNotificationToLandlord(
+                landlord.Gmail!,
+                room.Title,
+                room.LocationDetail,
+                room.Price,
+                room.Deposit ?? 0,
+                room.Acreage,
+                room.Furniture,
+                room.NumberOfBathroom,
+                room.NumberOfBedroom,
 
-            // **🔥 Cập nhật trạng thái phòng thành Pending (2)**
-            room.status = 2;
-            await _roomRepository.UpdateRoomAsync(room);
+                sendMailDTO.RenterName
+            );
+            //// **🔥 Cập nhật trạng thái phòng thành Pending (2)**
+            //room.status = 2;
+            //await _roomRepository.UpdateRoomAsync(room);
 
 
             return Ok("Gửi mail thành công.");

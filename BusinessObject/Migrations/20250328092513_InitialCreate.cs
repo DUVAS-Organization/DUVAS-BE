@@ -107,6 +107,58 @@ namespace BusinessObject.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "AuthorizationContracts",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ContractNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Date = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PartyAId = table.Column<int>(type: "int", nullable: false),
+                    PartyBId = table.Column<int>(type: "int", nullable: false),
+                    PdfUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedById = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AuthorizationContracts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AuthorizationContracts_Users_PartyAId",
+                        column: x => x.PartyAId,
+                        principalTable: "Users",
+                        principalColumn: "UserId");
+                    table.ForeignKey(
+                        name: "FK_AuthorizationContracts_Users_PartyBId",
+                        column: x => x.PartyBId,
+                        principalTable: "Users",
+                        principalColumn: "UserId");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "BankAccounts",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    AccountNumber = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    AccountName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    BankCode = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_BankAccounts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_BankAccounts_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Buildings",
                 columns: table => new
                 {
@@ -130,38 +182,19 @@ namespace BusinessObject.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "InsiderTradings",
-                columns: table => new
-                {
-                    InsiderTradingId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<int>(type: "int", nullable: false),
-                    Money = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Note = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Status = table.Column<int>(type: "int", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_InsiderTradings", x => x.InsiderTradingId);
-                    table.ForeignKey(
-                        name: "FK_InsiderTradings_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "LandlordLicenses",
                 columns: table => new
                 {
                     LandlordLicenseId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<int>(type: "int", nullable: false),
-                    AnhCCCDMatTruoc = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    AnhCCCDMatSau = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CCCD = table.Column<int>(type: "int", nullable: false),
+                    AnhCCCDMatTruoc = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    AnhCCCDMatSau = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CCCD = table.Column<string>(type: "nvarchar(12)", maxLength: 12, nullable: true),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    dateOfBirth = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Sex = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Address = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     GiayPhepKinhDoanh = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
@@ -210,9 +243,13 @@ namespace BusinessObject.Migrations
                     ServiceLicenseId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<int>(type: "int", nullable: false),
-                    AnhCCCDMatTruoc = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    AnhCCCDMatSau = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CCCD = table.Column<int>(type: "int", nullable: false),
+                    AnhCCCDMatTruoc = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    AnhCCCDMatSau = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CCCD = table.Column<string>(type: "nvarchar(12)", maxLength: 12, nullable: true),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    dateOfBirth = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Sex = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Address = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     GiayPhepKinhDoanh = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     GiayPhepChuyenMon = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
@@ -240,6 +277,7 @@ namespace BusinessObject.Migrations
                     Location = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Image = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsPermission = table.Column<int>(type: "int", nullable: true),
                     CategoryServiceId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -312,10 +350,18 @@ namespace BusinessObject.Migrations
                     Garret = table.Column<bool>(type: "bit", nullable: true),
                     Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Deposit = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    Dien = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    Nuoc = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    Internet = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    Rac = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    GuiXe = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    QuanLy = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    ChiPhiKhac = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     Image = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Note = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     status = table.Column<int>(type: "int", nullable: true),
-                    IsPermission = table.Column<int>(type: "int", nullable: true)
+                    IsPermission = table.Column<int>(type: "int", nullable: true),
+                    reputation = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -441,7 +487,7 @@ namespace BusinessObject.Migrations
                     Reason = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    TransactionId = table.Column<int>(type: "int", nullable: false)
+                    TransactionId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -505,7 +551,9 @@ namespace BusinessObject.Migrations
                     RoomId = table.Column<int>(type: "int", nullable: false),
                     ContractId = table.Column<int>(type: "int", nullable: true),
                     RenterID = table.Column<int>(type: "int", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    RentDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    MonthForRent = table.Column<int>(type: "int", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     RentalStatus = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -658,15 +706,89 @@ namespace BusinessObject.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "InsiderTradings",
+                columns: table => new
+                {
+                    InsiderTradingId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Remitter = table.Column<int>(type: "int", nullable: false),
+                    RemittersUserId = table.Column<int>(type: "int", nullable: true),
+                    Receiver = table.Column<int>(type: "int", nullable: false),
+                    ReceiversUserId = table.Column<int>(type: "int", nullable: true),
+                    Money = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Note = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    RoomId = table.Column<int>(type: "int", nullable: true),
+                    PriorityPackageRoomId = table.Column<int>(type: "int", nullable: true),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    Type = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    HoldUntil = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_InsiderTradings", x => x.InsiderTradingId);
+                    table.ForeignKey(
+                        name: "FK_InsiderTradings_PriorityPackageRooms_PriorityPackageRoomId",
+                        column: x => x.PriorityPackageRoomId,
+                        principalTable: "PriorityPackageRooms",
+                        principalColumn: "PriorityPackageRoomId");
+                    table.ForeignKey(
+                        name: "FK_InsiderTradings_Rooms_RoomId",
+                        column: x => x.RoomId,
+                        principalTable: "Rooms",
+                        principalColumn: "RoomId");
+                    table.ForeignKey(
+                        name: "FK_InsiderTradings_Users_ReceiversUserId",
+                        column: x => x.ReceiversUserId,
+                        principalTable: "Users",
+                        principalColumn: "UserId");
+                    table.ForeignKey(
+                        name: "FK_InsiderTradings_Users_RemittersUserId",
+                        column: x => x.RemittersUserId,
+                        principalTable: "Users",
+                        principalColumn: "UserId");
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AuthorizationContracts_PartyAId",
+                table: "AuthorizationContracts",
+                column: "PartyAId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AuthorizationContracts_PartyBId",
+                table: "AuthorizationContracts",
+                column: "PartyBId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_BankAccounts_UserId",
+                table: "BankAccounts",
+                column: "UserId");
+
             migrationBuilder.CreateIndex(
                 name: "IX_Buildings_UserId",
                 table: "Buildings",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_InsiderTradings_UserId",
+                name: "IX_InsiderTradings_PriorityPackageRoomId",
                 table: "InsiderTradings",
-                column: "UserId");
+                column: "PriorityPackageRoomId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InsiderTradings_ReceiversUserId",
+                table: "InsiderTradings",
+                column: "ReceiversUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InsiderTradings_RemittersUserId",
+                table: "InsiderTradings",
+                column: "RemittersUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InsiderTradings_RoomId",
+                table: "InsiderTradings",
+                column: "RoomId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_LandlordLicenses_UserId",
@@ -832,7 +954,8 @@ namespace BusinessObject.Migrations
                 name: "IX_WithdrawRequests_TransactionId",
                 table: "WithdrawRequests",
                 column: "TransactionId",
-                unique: true);
+                unique: true,
+                filter: "[TransactionId] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_WithdrawRequests_UserId",
@@ -844,6 +967,12 @@ namespace BusinessObject.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "AuthorizationContracts");
+
+            migrationBuilder.DropTable(
+                name: "BankAccounts");
+
+            migrationBuilder.DropTable(
                 name: "InsiderTradings");
 
             migrationBuilder.DropTable(
@@ -851,9 +980,6 @@ namespace BusinessObject.Migrations
 
             migrationBuilder.DropTable(
                 name: "Message");
-
-            migrationBuilder.DropTable(
-                name: "PriorityPackageRooms");
 
             migrationBuilder.DropTable(
                 name: "PriorityPackageServicePosts");
@@ -886,7 +1012,7 @@ namespace BusinessObject.Migrations
                 name: "WithdrawRequests");
 
             migrationBuilder.DropTable(
-                name: "CategoryPriorityPackageRooms");
+                name: "PriorityPackageRooms");
 
             migrationBuilder.DropTable(
                 name: "CategoryPriorityPackageServicePosts");
@@ -898,10 +1024,13 @@ namespace BusinessObject.Migrations
                 name: "ServicePosts");
 
             migrationBuilder.DropTable(
-                name: "Rooms");
+                name: "Transactions");
 
             migrationBuilder.DropTable(
-                name: "Transactions");
+                name: "CategoryPriorityPackageRooms");
+
+            migrationBuilder.DropTable(
+                name: "Rooms");
 
             migrationBuilder.DropTable(
                 name: "CategoryServices");

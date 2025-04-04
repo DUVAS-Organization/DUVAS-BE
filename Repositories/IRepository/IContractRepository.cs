@@ -1,4 +1,5 @@
-﻿using DTO;
+﻿using DataAccess;
+using DTO;
 using DUVAS;
 using System;
 using System.Collections.Generic;
@@ -18,5 +19,7 @@ namespace Repositories.IRepository
         Task UpdateContractAsync(Contract b);
         Task<List<ContractDTO>> GetContractsAsync();
         Task UpdateContractStatusAsync(int contractId, int status);
+        //Task GetContractByIdAsync(int? contractId);
+
     }
 }

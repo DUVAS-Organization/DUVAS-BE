@@ -18,8 +18,8 @@ namespace Repositories
         public async Task<List<RentalListDTO>> GetRentalsByUserIdAsync(int id) => await RentalListDAO.GetRentalsByUserIdAsync(id);
         public async Task SaveRentalListAsync(RentalList b) => await RentalListDAO.SaveRentalListAsync(b);
         public async Task UpdateRentalListAsync(RentalList b) => await RentalListDAO.UpdateRentalListAsync(b);
-        public async Task UpdateRentalListContractAsync(int rentalId, int contractId)
-            => await RentalListDAO.UpdateRentalListContractAsync(rentalId, contractId);
-
+        public async Task UpdateRentalListContractAsync(int rentalId, int contractId) => await RentalListDAO.UpdateRentalListContractAsync(rentalId, contractId); // Call to DAO method
+        public async Task<RentalList> GetRentalListByRoomIdAsync(int roomId) => await RentalListDAO.GetRentalListByRoomIdAsync(roomId);
+        public async Task UpdateRentalListStatusAsync(int rentalId, int status) => await RentalListDAO.UpdateRentalListStatusAsync(rentalId, status);
     }
 }

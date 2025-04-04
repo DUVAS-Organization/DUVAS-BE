@@ -26,8 +26,25 @@ namespace Repositories
         public async Task LockUserAsync(int userId) => await UserDAO.LockUserAsync(userId);
         public async Task UnLockUserAsync(int userId) => await UserDAO.UnLockUserAsync(userId);
         public async Task<List<UserDTO>> GetListUserLockAsync() => await UserDAO.GetListUserLockAsync();
-
         public async Task<List<UserDTO>> GetListUserActiveAsync() => await UserDAO.GetListUserActiveAsync();
+        public Task<BankAccounts> CreateNewBankAccounts(int userId, BankAccountsDTO bankAccounts) =>
+           new UserDAO(new ApplicationDbContext()).CreateNewUserBankAccount(userId, bankAccounts);
+        public Task<List<BankAccounts>> GetUserBankAccounts(int userId) =>
+            new UserDAO(new ApplicationDbContext()).GetUserBankAccountsByIdAsync(userId);
+        public Task<Boolean> UpdateBankAccountStatus(int userId, int bankAccountId, bool active) => new UserDAO(new ApplicationDbContext()).UpdateBankAccountStatus(userId, bankAccountId, active);
+        public Task<BankAccounts> GetUserBankAccountByIdAndUserIdAsync(int userId, int bankAccountId) => new UserDAO(new ApplicationDbContext()).GetUserBankAccountByIdAndUserIdAsync(userId, bankAccountId);
 
+        public Task<decimal> GetUserMoneyWithIdAsync(int userId) =>
+            new UserDAO(new ApplicationDbContext()).GetUserMoneyWithIdAsync(userId);
+        public async Task<List<UserDTO>> GetListUpRoleLandLord() => await UserDAO.GetListUpRoleLandLord();
+        public async Task<List<UserDTO>> GetListUpRoleService() => await UserDAO.GetListUpRoleService();
+        public async Task AcceptUpRoleLandLordAsync(int userId) => await UserDAO.AcceptUpRoleLandLordAsync(userId);
+        public async Task AcceptUpRoleServiceAsync(int userId) => await UserDAO.AcceptUpRoleServiceAsync(userId);
+        public async Task<bool> CheckBankAccountExistsAsync(string accountNumber, string bankCode)
+        {
+            return await new UserDAO(new ApplicationDbContext()).CheckBankAccountExistsAsync(accountNumber, bankCode);
+        }
+        public async Task CancelUpRoleLandLordAsync(int userId) => await UserDAO.CancelUpRoleLandLordAsync(userId);
+        public async Task CancelUpRoleServiceAsync(int userId) => await UserDAO.CancelUpRoleServiceAsync(userId);
     }
 }

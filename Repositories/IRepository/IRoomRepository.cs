@@ -25,12 +25,19 @@ namespace Repositories.IRepository
         Task<List<RoomDTO>> GetRoomsByStatusAsync(int landlordId, int status); // lay phong theo status
         Task<bool> UpdateRoomStatusAsync(int roomId, int landlordId, int status); // luu trang thai phong cua chuc nang manage room status
         Task<List<RoomDTO>> GetAllRoomsByStatusAsync( int status);
+        Task<List<RoomDTO>> GetRoomReputationAsync();
+        Task<List<RoomDTO>> GetListRoomLockAsync();
+        Task<List<RoomDTO>> GetListRoomActiveAsync();
+        Task<RoomDTO> GetRoomContractByIdAsync(int roomId);
+        Task<List<RoomDTO>> GetRoomRegisterReputationAsync();
         Task LockRoomAsync(int roomId);
         Task UnLockRoomAsync(int roomId);
         Task AcceptReputationAsync(int roomId);
         Task CancelReputationAsync(int roomId);
-        Task<List<RoomDTO>> GetRoomReputationAsync();
-        Task<List<RoomDTO>> GetListRoomLockAsync();
-        Task<List<RoomDTO>> GetListRoomActiveAsync();
+        Task<Room?> GetRoomEntityByIdForLandlordAsync(int roomId, int landlordId);
+        Task<bool> CheckRoomIsDuplicatedAsync(int userId, string title, string locationDetail, string description);
+        Task<bool> CheckDescriptionExistsAsync(string description);
+        Task<bool> CheckLocationExistsAsync(string locationDetail);
+
     }
 }

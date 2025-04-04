@@ -35,6 +35,7 @@ namespace DUVAS
         public virtual ICollection<SavedPost>? SavedPosts { get; set; }
         public virtual ICollection<PriorityPackageServicePost>? PriorityPackageServicePosts { get; set; }
         public virtual ICollection<PriorityPackageRoom> PriorityPackageRooms { get; set; }
+        public virtual ICollection<BankAccounts> BankAccounts { get; set; }
 
         public User(string gmail, string userName, string name, string password, string address, string sex, string profilePicture, decimal money, int? roleUser)
         {
