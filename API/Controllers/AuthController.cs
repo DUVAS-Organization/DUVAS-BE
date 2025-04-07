@@ -105,7 +105,6 @@ namespace API.Controllers
             {
                 var otp = _otpService.GenerateOtp(verifyDto.EmailOrPhone);
 
-                // Nội dung email được định dạng bằng HTML
                 var emailContent = $@"
                 <p>Chào {verifyDto.EmailOrPhone},</p>
                 <p>Chúng tôi thấy bạn đang gửi yêu cầu xác thực địa chỉ email này để tạo tài khoản DUVAS.</p>
@@ -115,7 +114,7 @@ namespace API.Controllers
                 <p>Chúng tôi xin chân thành cảm ơn.</p>
                 <p><b>DUVAS Team</b></p>";
 
-                // Gửi email với nội dung HTML
+                
                 _emailService.SendEmail(verifyDto.EmailOrPhone, "Xác thực email", emailContent);
 
                 return Ok(new { Message = "Vui lòng kiểm tra email để nhận mã OTP." });
@@ -192,7 +191,7 @@ namespace API.Controllers
             }
 
             var otp = _otpService.GenerateOtp(emailOrPhone);
-            // Nội dung email được định dạng bằng HTML
+
             var emailContent = $@"
             <p>Chào {emailOrPhone},</p>
             <p>Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn.</p>
@@ -200,14 +199,13 @@ namespace API.Controllers
             <p><b>Mã OTP để đặt lại mật khẩu là: <span style='font-size: 18px; color: #ee1414;'>{otp}</span></b></p>
             <p>Nếu bạn không yêu cầu đặt lại mật khẩu, bạn có thể bỏ qua email này. Mật khẩu của bạn sẽ không bị thay đổi.</p>
             <p>Chúng tôi xin chân thành cảm ơn.</p>
-            <<p><b>DUVAS Team</b></p>";
+            <p><b>DUVAS Team</b></p>";
 
-            // Gửi email với nội dung HTML
             _emailService.SendEmail(emailOrPhone, "Đặt lại mật khẩu", emailContent);
 
             return Ok(new { Message = "Vui lòng kiểm tra email để nhận mã OTP." });
-
         }
+
 
         [HttpPost("reset-password")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDTO resetPassword)

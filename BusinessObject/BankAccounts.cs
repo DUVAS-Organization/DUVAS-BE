@@ -19,7 +19,7 @@ public class BankAccounts
     public string? BankCode { get; set; }
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public BankAccountStatus Status { get; set; }
-
+    
     [JsonIgnore]
     [Required]
     public User? User { get; set; }

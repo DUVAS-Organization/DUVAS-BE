@@ -102,6 +102,7 @@ namespace API.Controllers.Landlord
         }
 
 
+
         // GET: api/landlord/RoomManagement/{id}
         [HttpGet("{id}")]
         public async Task<IActionResult> GetRoom(int id)
@@ -158,59 +159,6 @@ namespace API.Controllers.Landlord
             {
                 return BadRequest("CategoryRoomId không tồn tại.");
             }
-            // ✅ Kiểm tra trùng lặp theo Title + LocationDetail + UserId
-            bool isDuplicate = await _roomRepository.CheckRoomIsDuplicatedAsync(
-                landlordId,
-                roomDto.Title.Trim(),
-                roomDto.LocationDetail.Trim(),
-                roomDto.Description.Trim() // Kiểm tra cả mô tả
-            );
-
-            if (isDuplicate)
-            {
-                return Conflict(new
-                {
-                    message = "Phòng với tiêu đề, địa chỉ và mô tả này đã được đăng. Vui lòng kiểm tra lại để tránh trùng lặp."
-                });
-            }
-
-
-            // ✅ Kiểm tra Description đã từng được dùng bởi user khác (spam xuyên tài khoản)
-            bool isDescUsedGlobally = await _roomRepository.CheckDescriptionExistsAsync(roomDto.Description.Trim());
-            if (isDescUsedGlobally)
-            {
-                return Conflict(new
-                {
-                    message = "Mô tả phòng đã từng được sử dụng trên hệ thống. Vui lòng điều chỉnh lại nội dung."
-                });
-            }
-            // ✅ Check locationDetail trùng toàn hệ thống
-            bool isLocationUsedGlobally = await _roomRepository.CheckLocationExistsAsync(roomDto.LocationDetail.Trim());
-            if (isLocationUsedGlobally)
-            {
-                return Conflict(new
-                {
-                    message = "Địa chỉ phòng đã từng được sử dụng trên hệ thống. Vui lòng kiểm tra lại."
-                });
-            }
-
-
-            // ✅ Sử dụng AI để phát hiện nội dung mô tả phòng có bị spam hoặc lặp
-            try
-            {
-                var (generatedTitle, generatedDescription) = await _aiService.GenerateRoomTitleAndDescription(
-                    $"Tiêu đề: {roomDto.Title}, Mô tả: {roomDto.Description}, Diện tích: {roomDto.Acreage}, Giá: {roomDto.Price}, Nội thất: {roomDto.Furniture}"
-                );
-
-                if (generatedDescription != null && generatedDescription.Equals(roomDto.Description))
-                {
-                    return BadRequest("Mô tả phòng có dấu hiệu spam hoặc trùng với mô tả đã được tạo tự động. Vui lòng chỉnh sửa lại mô tả.");
-                }
-            }
-            catch (Exception aiEx)
-            {
-                Console.WriteLine($"[AI CHECK] Lỗi khi kiểm tra AI: {aiEx.Message}");
-            }
 
             try
             {
@@ -234,13 +182,6 @@ namespace API.Controllers.Landlord
                     Deposit = roomDto.Deposit,  // Thêm giá trị tiền đặt cọc
                     Garret = roomDto.Garret,
                     reputation = roomDto.reputation ?? 0, //không tích xanh
-                    Dien = roomDto.Dien,
-                    Nuoc = roomDto.Nuoc,
-                    Internet = roomDto.Internet,
-                    Rac = roomDto.Rac,
-                    GuiXe = roomDto.GuiXe,
-                    QuanLy = roomDto.QuanLy,
-                    ChiPhiKhac = roomDto.ChiPhiKhac,
                 };
 
                 await _roomRepository.SaveRoomAsync(room);
@@ -305,14 +246,7 @@ namespace API.Controllers.Landlord
                     BuildingId = roomDto.BuildingId,
                     CategoryRoomId = roomDto.CategoryRoomId,
                     Deposit = roomDto.Deposit,
-                    Garret = roomDto.Garret,
-                    Dien = roomDto.Dien,
-                    Nuoc = roomDto.Nuoc,
-                    Internet = roomDto.Internet,
-                    Rac = roomDto.Rac,
-                    GuiXe = roomDto.GuiXe,
-                    QuanLy = roomDto.QuanLy,
-                    ChiPhiKhac = roomDto.ChiPhiKhac,
+                    Garret = roomDto.Garret
                 };
 
                 await _roomRepository.UpdateRoomAsync(room);
@@ -326,10 +260,8 @@ namespace API.Controllers.Landlord
 
 
 
-        // PATCH: api/landlord/RoomManagement/{id}/lock
-        [HttpPatch("{id}/lock")]
-        [Authorize]
-        public async Task<IActionResult> LockRoom(int id)
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteRoom(int id)
         {
             int landlordId = GetLandlordId();
 
@@ -339,117 +271,16 @@ namespace API.Controllers.Landlord
                 return Unauthorized("Bạn không phải Role Landlord nên không được sử dụng chức năng này.");
             }
 
-            // Lấy entity Room thật sự (không dùng DTO)
-            var room = await _roomRepository.GetRoomEntityByIdForLandlordAsync(id, landlordId);
+            var room = await _roomRepository.GetRoomByIdForLandlordAsync(id, landlordId); // Lấy đối tượng Room
             if (room == null)
             {
-                return NotFound("Không tìm thấy phòng hoặc bạn không có quyền thao tác.");
+                return NotFound("Room not found or access denied.");
             }
 
-            try
-            {
-                room.IsPermission = 0; // ⚠️ Lock phòng lại
-                await _roomRepository.UpdateRoomAsync(room);
-
-                return Ok(new { message = "Phòng đã được khóa thành công (IsPermission = 0)." });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Lỗi khi khóa phòng.", error = ex.Message });
-            }
+            // Truyền đối tượng Room vào phương thức xóa
+            await _roomRepository.DeleteRoomAsync(new Room { RoomId = id });
+            return NoContent();
         }
-        // GET: api/landlord/RoomManagement/{id}/is-locked
-        [HttpGet("{id}/is-locked")]
-        [Authorize]
-        public async Task<IActionResult> IsRoomLocked(int id)
-        {
-            int landlordId = GetLandlordId();
-
-            // Kiểm tra quyền Landlord
-            if (!await IsLandlord(landlordId))
-            {
-                return Unauthorized("Bạn không phải Role Landlord nên không được sử dụng chức năng này.");
-            }
-
-            var room = await _roomRepository.GetRoomEntityByIdForLandlordAsync(id, landlordId);
-            if (room == null)
-            {
-                return NotFound("Không tìm thấy phòng hoặc bạn không có quyền truy cập.");
-            }
-
-            bool isLocked = room.IsPermission == 0;
-
-            return Ok(new
-            {
-                RoomId = room.RoomId,
-                IsLocked = isLocked,
-                Message = isLocked ? "Phòng hiện đang bị khóa." : "Phòng đang hoạt động bình thường."
-            });
-        }
-        // PATCH: api/landlord/RoomManagement/{id}/unlock
-        [HttpPatch("{id}/unlock")]
-        [Authorize]
-        public async Task<IActionResult> UnlockRoom(int id)
-        {
-            int landlordId = GetLandlordId();
-
-            // Kiểm tra quyền Landlord
-            if (!await IsLandlord(landlordId))
-            {
-                return Unauthorized("Bạn không phải Role Landlord nên không được sử dụng chức năng này.");
-            }
-
-            var room = await _roomRepository.GetRoomEntityByIdForLandlordAsync(id, landlordId);
-            if (room == null)
-            {
-                return NotFound("Không tìm thấy phòng hoặc bạn không có quyền thao tác.");
-            }
-
-            try
-            {
-                room.IsPermission = 1; // ✅ Mở khóa phòng
-                await _roomRepository.UpdateRoomAsync(room);
-
-                return Ok(new { message = "Phòng đã được mở khóa thành công (IsPermission = 1)." });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Lỗi khi mở khóa phòng.", error = ex.Message });
-            }
-        }
-        // GET: api/landlord/RoomManagement/locked-rooms
-        [HttpGet("locked-rooms")]
-        [Authorize]
-        public async Task<IActionResult> GetLockedRooms()
-        {
-            int landlordId = GetLandlordId();
-
-            // Kiểm tra quyền Landlord
-            if (!await IsLandlord(landlordId))
-            {
-                return Unauthorized("Bạn không có quyền truy cập chức năng này.");
-            }
-
-            var rooms = await _roomRepository.GetRoomsByLandlordAsync(landlordId);
-
-            var lockedRooms = rooms
-                .Where(r => r.IsPermission.HasValue && r.IsPermission == 0)
-                .ToList();
-
-            if (!lockedRooms.Any())
-            {
-                return NotFound("Hiện không có phòng nào đang bị khóa.");
-            }
-
-            return Ok(new
-            {
-                message = "Danh sách các phòng đang bị khóa.",
-                rooms = lockedRooms
-            });
-        }
-
-
-
 
         // GET: api/landlord/RoomManagement/{id}/Reviews
         [HttpGet("{id}/Reviews")]
@@ -492,6 +323,7 @@ namespace API.Controllers.Landlord
 
             return Ok(new { Message = "Trạng thái phòng đã được cập nhật thành công." });
         }
+
         [HttpPost("generate-description")]
         public async Task<IActionResult> GenerateRoomDescription([FromBody] RoomDTO roomDto)
         {

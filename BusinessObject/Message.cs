@@ -10,9 +10,11 @@ namespace DUVAS
         [Key]
         public int MessageId { get; set; }
 
+        [ForeignKey("SenderId")]
         public int UserSendID { get; set; }
         public User? UserSend { get; set; }
 
+        [ForeignKey("ReceiverId")]
         public int UserGetID { get; set; }
         public User? UserGet { get; set; }
 

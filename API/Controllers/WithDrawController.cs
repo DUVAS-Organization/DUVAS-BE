@@ -60,6 +60,7 @@ public class WithDrawController : ControllerBase
         string uuid = newUuid.ToString().Replace("-", "");
 
         var transaction = await _transactionRepository.AddTransaction(-withdrawRequestDto.Amount, uuid, userId);
+        await _userRepository.UpdateUserMoneyAsync(transaction.UserId, transaction.Amount);
         await _withdrawRequestRepository.AddAsync(userId, -withdrawRequestDto.Amount, transaction.Id, bankAccount.BankCode, bankAccount.AccountNumber);
 
         return Ok(new { message = "Withdraw request created successfully." });
@@ -83,7 +84,7 @@ public class WithDrawController : ControllerBase
                           (-withDrawReq.Transaction.Amount) + "&addInfo=" + withDrawReq.Transaction.Description + "&accountName=" + _configuration["CassoSettings:AccountName"];
         return Ok(new { QRCode = qrCodeImage });
     }
-
+    
     [HttpGet("user")]
     [Authorize] // moi sua
     public async Task<ActionResult<IEnumerable<WithdrawRequest>>> GetUserWithdrawRequests()

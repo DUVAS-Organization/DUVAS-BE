@@ -77,12 +77,15 @@ public class WebHookController : ControllerBase
                     Status = TransactionStatus.Paid
                 };
                 transaction = await _transactionRepository.UpdateTransaction(transaction);
-                await _userRepository.UpdateUserMoneyAsync(transaction.UserId, transaction.Amount);
                 Console.WriteLine(webHookRequest.data.FirstOrDefault().Amount);
                 Console.WriteLine(Convert.ToInt32(webHookRequest.data.FirstOrDefault().Amount));
                 if (Convert.ToInt32(webHookRequest.data.FirstOrDefault().Amount) < 0)
                 {
                     await _withdrawRequestRepository.WebHookConfirm(transaction.Id);
+                }
+                else
+                {
+                    await _userRepository.UpdateUserMoneyAsync(transaction.UserId, transaction.Amount);
                 }
                 return Ok(new { success = true });
             }

@@ -22,7 +22,7 @@ namespace DUVAS
         public int? RoleUser { get; set; }
         public int? RoleLandlord { get; set; }
         public int? RoleService { get; set; }
-            
+
         public virtual ICollection<Transaction>? Transactions { get; set; }
         public virtual ICollection<UserFeedback>? UserFeedbacks { get; set; }
         public virtual ICollection<ServiceLicense>? ServiceLicenses { get; set; }

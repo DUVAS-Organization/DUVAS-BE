@@ -158,6 +158,7 @@ namespace API
             builder.Services.AddScoped<IPriorityPackageServicePostRepository, PriorityPackageServicePostRepository>();
             builder.Services.AddScoped<IMessageRepository, MessageRepository>();
             builder.Services.AddScoped<UserDAO>();
+            builder.Services.AddScoped<UserFeedbackDAO>();
             builder.Services.AddHttpClient<FPTAIService>();
             builder.Services.AddScoped<CloudinaryService>();
             builder.Services.AddScoped<IInsiderTradingRepository, InsiderTradingRepository>();

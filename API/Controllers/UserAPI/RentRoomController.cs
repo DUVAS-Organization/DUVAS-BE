@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using DTO;
 using DUVAS;
+using Microsoft.AspNetCore.Authorization;
 using Repositories;
 
 namespace API.Controllers.UserAPI
@@ -16,17 +17,20 @@ namespace API.Controllers.UserAPI
         private readonly IContractRepository _contractRepository;
         private readonly IRoomRepository _roomRepository;
         private readonly IUserRepository _userRepository;
+        private readonly IUserFeedbackRepository _userFeedbackRepository;
 
         public RentRoomController(IRentalListRepository rentalListRepository,
             IContractRepository contractRepository,
             IRoomRepository roomRepository,
-            IUserRepository userRepository
+            IUserRepository userRepository,
+            IUserFeedbackRepository userFeedbackRepository
             )
         {
             _rentalListRepository = rentalListRepository;
             _contractRepository = contractRepository;
             _roomRepository = roomRepository;
             _userRepository = userRepository;
+            _userFeedbackRepository = userFeedbackRepository;
         }
 
         // API lấy danh sách RentalList có ContractID tồn tại và Contract có Status = 3
@@ -196,5 +200,47 @@ namespace API.Controllers.UserAPI
                 Message = hasValidPhone ? "User có số điện thoại hợp lệ." : "User chưa có số điện thoại hợp lệ."
             });
         }
+        
+        [HttpPost("send-review")]
+        [Authorize(Policy = "User")]
+        public async Task<IActionResult> UserSendReview([FromBody] UserFeedbackDTO review)
+        {
+            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId");
+            if (userIdClaim == null)
+            {
+                return Unauthorized("User không được xác thực!");
+            }
+            
+            if (!int.TryParse(userIdClaim.Value, out int userId))
+            {
+                return BadRequest("UserID không hợp lệ!");
+            }
+
+            var rentals = await _rentalListRepository.GetRentalsByUserIdAsync(userId);
+            if (rentals.All(r => r.ContractId != review.ContractId))
+            {
+                return BadRequest("Không có ContractID");
+            }
+            
+            var contract = await _contractRepository.GetContractByIdAsync(review.ContractId.Value);
+            if (contract.status != 3 || contract.RentalDateTimeEnd > DateTime.Now)
+            {
+                Console.WriteLine(DateTime.Now.ToString());
+                return BadRequest("Contract Status hoặc thời gian chấm dứt không hợp lệ!");
+            }
+            
+            review.UserId = userId;
+
+            await _userFeedbackRepository.SaveUserFeedbackAsync(review);
+            return Ok("Thành công");
+        }
+
+        [HttpGet("get-feedbacks/{roomId}")]
+        public async Task<IActionResult> GetUserFeedbackForRoom(int roomId)
+        {
+            var userFeedbackList = await _userFeedbackRepository.GetUserFeedbacksByRoomIdAsync(roomId);
+            return Ok(userFeedbackList);
+        }
+
     }
 }

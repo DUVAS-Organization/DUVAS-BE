@@ -18,7 +18,7 @@ namespace API.Controllers
         }
 
         [HttpPost()]
-        [Authorize]
+        [Authorize] //moi sua
         public async Task<IActionResult> CreateTransaction([FromBody] DepositRequest depositRequest)
         {
             var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId");
@@ -38,7 +38,7 @@ namespace API.Controllers
             string QRCodeImage = "https://img.vietqr.io/image/" + _configuration["CassoSettings:BankId"] + "-" + _configuration["CassoSettings:AccountNo"] + "-print.jpg?amount=" + depositRequest.Amount + "&addInfo=" + uuid + "&accountName=" + _configuration["CassoSettings:AccountName"];
             return Ok(new { QRCode = QRCodeImage });
         }
-
+        
         [HttpGet()]
         public async Task<IActionResult> CheckTransactionStatus(string description)
         {
@@ -57,7 +57,7 @@ namespace API.Controllers
             }
             int.TryParse(userIdClaim.Value, out int userId);
             var transactions = _transactionRepository.GetTransactionsByUserId(userId);
-            return Ok(new { transactions });
+            return Ok(new {transactions});
         }
     }
 }
