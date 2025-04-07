@@ -26,7 +26,7 @@ public class WithdrawRequestController : ODataController
         _configuration = configuration;
         _userRepository = userRepository;
     }
-    
+
     [HttpGet("")]
     [EnableQuery]
     public async Task<ActionResult<IEnumerable<WithdrawRequest>>> GetWithdrawRequestsList(string searchTerm = null)
@@ -34,17 +34,17 @@ public class WithdrawRequestController : ODataController
 
         if (searchTerm.IsNullOrEmpty())
         {
-            return Ok( await _withdrawRequestRepository.GetAllAsync());
+            return Ok(await _withdrawRequestRepository.GetAllAsync());
         }
         var withDrawReq = await _withdrawRequestRepository.SearchWithdrawRequestsAsync(searchTerm);
-        
-        return Ok( withDrawReq);
+
+        return Ok(withDrawReq);
     }
 
 
     [HttpPatch("{id}/status")]
     [Authorize("Admin")]
-    public async Task<IActionResult> RejectWithdrawRequestStatus(int id,RejectTransactionDTO rejectTransactionDTO)
+    public async Task<IActionResult> RejectWithdrawRequestStatus(int id, RejectTransactionDTO rejectTransactionDTO)
     {
         var withdrawRequest = await _withdrawRequestRepository.GetByIdAsync(id);
         if (withdrawRequest == null)
@@ -58,11 +58,11 @@ public class WithdrawRequestController : ODataController
         }
         withdrawRequest.Status = WithdrawRequestStatus.Rejected;
         withdrawRequest.Reason = rejectTransactionDTO.reason;
-        withdrawRequest.UpdatedAt = DateTime.UtcNow;
+        withdrawRequest.UpdatedAt = DateTime.Now;
 
         await _withdrawRequestRepository.UpdateStatusAsync(withdrawRequest);
-
-        return Ok(new { message = "Withdraw request status updated successfully."});
+        await _userRepository.UpdateUserMoneyAsync(withdrawRequest.UserId, -withdrawRequest.Amount);
+        return Ok(new { message = "Withdraw request status updated successfully." });
     }
-       
+
 }

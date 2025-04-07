@@ -12,7 +12,7 @@ using Repositories.IRepository;
 namespace API.Controllers;
 [Route("api/[controller]")]
 [ApiController]
-public class WebHookController:ControllerBase
+public class WebHookController : ControllerBase
 {
     private readonly IConfiguration _configuration;
     private readonly ITransactionRepository _transactionRepository;
@@ -30,8 +30,8 @@ public class WebHookController:ControllerBase
     public async Task<IActionResult> CassoWebhook()
     {
         string requestBody = await ReadRequestBodyAsync();
-        JObject webHookRequest = JsonConvert.DeserializeObject<JObject>(requestBody)  ?? throw new InvalidOperationException("Error deserializing JSON response: Deserialized object is null.");
-        
+        JObject webHookRequest = JsonConvert.DeserializeObject<JObject>(requestBody) ?? throw new InvalidOperationException("Error deserializing JSON response: Deserialized object is null.");
+
         if (webHookRequest != null)
         {
             Console.WriteLine(webHookRequest);
@@ -40,10 +40,10 @@ public class WebHookController:ControllerBase
         {
             Console.WriteLine("No 'data' array found in the request.");
         }
-        
+
         return Ok();
     }
-    
+
     [HttpPost("casso")]
     [AllowAnonymous]
     public async Task<IActionResult> PayOsWebhook()
@@ -56,7 +56,7 @@ public class WebHookController:ControllerBase
                 WebHookRequest webHookRequest = JsonConvert.DeserializeObject<WebHookRequest>(requestBody) ?? throw new InvalidOperationException("Error deserializing JSON response: Deserialized object is null.");
                 if (_transactionRepository.DoesTransactionProcessedAsync(Convert.ToInt32(webHookRequest.data.FirstOrDefault().Id)).Result)
                 {
-                    return Ok(new {success = true});
+                    return Ok(new { success = true });
                 }
                 Transaction transaction = new Transaction
                 {
@@ -77,20 +77,23 @@ public class WebHookController:ControllerBase
                     Status = TransactionStatus.Paid
                 };
                 transaction = await _transactionRepository.UpdateTransaction(transaction);
-                await _userRepository.UpdateUserMoneyAsync(transaction.UserId, transaction.Amount);
                 Console.WriteLine(webHookRequest.data.FirstOrDefault().Amount);
                 Console.WriteLine(Convert.ToInt32(webHookRequest.data.FirstOrDefault().Amount));
                 if (Convert.ToInt32(webHookRequest.data.FirstOrDefault().Amount) < 0)
                 {
                     await _withdrawRequestRepository.WebHookConfirm(transaction.Id);
                 }
-                return Ok(new {success = true});
+                else
+                {
+                    await _userRepository.UpdateUserMoneyAsync(transaction.UserId, transaction.Amount);
+                }
+                return Ok(new { success = true });
             }
             return BadRequest($"Invalid Token: {secureToken}");
         }
         return BadRequest("Secure-Token header not found");
     }
-    
+
     private async Task<string> ReadRequestBodyAsync()
     {
         using (var reader = new StreamReader(Request.Body, Encoding.UTF8))

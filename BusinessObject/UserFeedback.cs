@@ -19,7 +19,7 @@ namespace DUVAS
 
         [Range(1, 5)]
         public double Star { get; set; }
-        public string Image { get; set; }
+        public string? Image { get; set; }
 
         public DateTime CreatedDate { get; set; }
     }
