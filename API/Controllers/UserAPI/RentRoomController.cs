@@ -225,7 +225,7 @@ namespace API.Controllers.UserAPI
             var contract = await _contractRepository.GetContractByIdAsync(review.ContractId.Value);
             if (contract.status != 3 || contract.RentalDateTimeEnd > DateTime.Now)
             {
-                Console.WriteLine(DateTime.Now.ToString());
+                Console.WriteLine($"Validation failed: status={contract.status}, endDate={contract.RentalDateTimeEnd}, now={DateTime.Now}");
                 return BadRequest("Contract Status hoặc thời gian chấm dứt không hợp lệ!");
             }
             
