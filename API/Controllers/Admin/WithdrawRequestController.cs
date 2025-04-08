@@ -61,7 +61,7 @@ public class WithdrawRequestController : ODataController
         withdrawRequest.UpdatedAt = DateTime.Now;
 
         await _withdrawRequestRepository.UpdateStatusAsync(withdrawRequest);
-
+        await _userRepository.UpdateUserMoneyAsync(withdrawRequest.UserId, -withdrawRequest.Amount);
         return Ok(new { message = "Withdraw request status updated successfully." });
     }
 
