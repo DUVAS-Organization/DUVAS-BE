@@ -40,6 +40,8 @@ namespace DUVAS
         public DbSet<SavedPost> SavedPosts { get; set; }
         public virtual DbSet<BankAccounts> BankAccounts { get; set; }
         public virtual DbSet<AuthorizationContract> AuthorizationContracts { get; set; }
+        public virtual DbSet<Notification> Notifications { get; set; }
+
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
        : base(options)
         {
@@ -275,6 +277,15 @@ namespace DUVAS
                 .HasForeignKey(a => a.PartyBId)
                 .OnDelete(DeleteBehavior.NoAction); // Đổi từ Cascade thành NoAction
 
+            modelBuilder.Entity<Notification>()
+               .HasOne(n => n.User)
+               .WithMany(u => u.Notifications)
+               .HasForeignKey(n => n.UserId)
+               .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Notification>()
+                .Property(n => n.Type)
+                .HasConversion<string>();
         }
 
     }
