@@ -69,19 +69,27 @@ namespace DataAccess
             return userFeedback;
         }
 
-        public static async Task SaveUserFeedbackAsync(UserFeedback userFeedback)
+        public async Task SaveUserFeedbackAsync(UserFeedbackDTO userFeedback)
         {
             try
             {
-                using (var context = new ApplicationDbContext())
+                var feedback = new UserFeedback
                 {
-                    await context.UserFeedbacks.AddAsync(userFeedback);
-                    await context.SaveChangesAsync();
-                }
+                    UserId = userFeedback.UserId,
+                    Comment = userFeedback.Comment,
+                    Star = userFeedback.Star,
+                    Image = userFeedback.Image,
+                    CreatedDate = DateTime.Now,
+                    RoomId = userFeedback.RoomId,
+                };
+                _context.UserFeedbacks.Add(feedback);
+                await _context.SaveChangesAsync();
+
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                // Log the error if needed
+                throw new Exception("Error saving user feedback: " + ex.Message);
             }
         }
 
@@ -118,6 +126,31 @@ namespace DataAccess
             catch (Exception ex)
             {
                 throw new Exception(ex.Message);
+            }
+        }
+        public async Task<IEnumerable<object>> GetUserFeedbacksByRoomIdAsync(int roomId)
+        {
+            try
+            {
+                var feedbacks = await _context.UserFeedbacks
+                    .Where(f => f.RoomId == roomId).Include(userFeedback => userFeedback.User)
+                    .ToListAsync();
+
+                return feedbacks.Select(f => new
+                {
+                    Id = f.UserFeedbackId,
+                    UserId = f.UserId,
+                    UserName = f.User.UserName,
+                    UserAvatar = f.User.ProfilePicture ?? string.Empty,
+                    Comment = f.Comment,
+                    Image = f.Image,
+                    Rating = f.Star,
+                    CreatedAt = f.CreatedDate
+                });
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
             }
         }
 

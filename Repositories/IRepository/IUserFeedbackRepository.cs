@@ -10,10 +10,11 @@ namespace Repositories.IRepository
 {
     public interface IUserFeedbackRepository
     {
-        Task SaveUserFeedbackAsync(UserFeedback b);
+        Task SaveUserFeedbackAsync(UserFeedbackDTO b);
         Task<UserFeedback> GetUserFeedbackByIdAsync(int id);
         Task DeleteUserFeedbackAsync(UserFeedback b);
         Task UpdateUserFeedbackAsync(UserFeedback b);
         Task<List<UserFeedbackDTO>> GetUserFeedbacksAsync();
+        Task<IEnumerable<object>> GetUserFeedbacksByRoomIdAsync(int roomId);
     }
 }

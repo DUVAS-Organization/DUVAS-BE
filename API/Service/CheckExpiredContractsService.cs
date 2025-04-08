@@ -41,7 +41,7 @@ namespace API.Services
                 }
 
                 // Chờ 24 giờ trước khi kiểm tra lại
-                await Task.Delay(TimeSpan.FromHours(24), stoppingToken);
+                await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
             }
         }
 

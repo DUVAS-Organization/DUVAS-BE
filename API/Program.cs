@@ -20,8 +20,8 @@ using API.Hubs;
 using API.Services;
 using Utilities;
 using Microsoft.Extensions.DependencyInjection;
-using Hangfire; // Thêm namespace cho Hangfire
-using Hangfire.SqlServer; // Thêm namespace cho Hangfire.SqlServer
+using Hangfire;
+using Hangfire.SqlServer; 
 
 namespace API
 {
@@ -158,6 +158,7 @@ namespace API
             builder.Services.AddScoped<IPriorityPackageServicePostRepository, PriorityPackageServicePostRepository>();
             builder.Services.AddScoped<IMessageRepository, MessageRepository>();
             builder.Services.AddScoped<UserDAO>();
+            builder.Services.AddScoped<UserFeedbackDAO>();
             builder.Services.AddHttpClient<FPTAIService>();
             builder.Services.AddScoped<CloudinaryService>();
             builder.Services.AddScoped<IInsiderTradingRepository, InsiderTradingRepository>();
@@ -211,11 +212,10 @@ namespace API
             // Sử dụng CORS trước các middleware khác
             app.UseCors("AllowReactApp");
             app.UseRouting();
-            app.UseAuthentication(); // Thêm UseAuthentication trước UseAuthorization
+            app.UseAuthentication(); 
             app.UseAuthorization();
 
-            // Thêm middleware Hangfire
-            app.UseHangfireDashboard(); // (Tùy chọn) Dashboard tại /hangfire
+            app.UseHangfireDashboard(); 
 
             // Map SignalR Hubs
             app.MapHub<SavedPostHub>("/savedPostHub");
