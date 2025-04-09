@@ -163,7 +163,7 @@ namespace API
             builder.Services.AddScoped<CloudinaryService>();
             builder.Services.AddScoped<IInsiderTradingRepository, InsiderTradingRepository>();
             builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
-
+            builder.Services.AddScoped<FPTAIService>();
             // Add SignalR
             builder.Services.AddSignalR();
             builder.Services.AddHostedService<CheckExpiredContractsService>();

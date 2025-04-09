@@ -12,7 +12,7 @@ namespace DUVAS
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public DateTime RentalDateTimeEnd { get; set; }
 
-
+        public decimal? DownPayment { get; set; }
 
         public string ContractFile { get; set; }
 

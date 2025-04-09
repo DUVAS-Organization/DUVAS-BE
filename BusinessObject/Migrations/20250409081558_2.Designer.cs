@@ -4,6 +4,7 @@ using DUVAS;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BusinessObject.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250409081558_2")]
+    partial class _2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -582,7 +585,13 @@ namespace BusinessObject.Migrations
                     b.Property<int?>("RoomId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("ServicePostId")
+                        .HasColumnType("int");
+
                     b.Property<int?>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TransactionId")
                         .HasColumnType("int");
 
                     b.Property<int>("UserId")
@@ -591,6 +600,10 @@ namespace BusinessObject.Migrations
                     b.HasKey("ReportId");
 
                     b.HasIndex("RoomId");
+
+                    b.HasIndex("ServicePostId");
+
+                    b.HasIndex("TransactionId");
 
                     b.HasIndex("UserId");
 
@@ -1302,6 +1315,16 @@ namespace BusinessObject.Migrations
                         .HasForeignKey("RoomId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.HasOne("DUVAS.ServicePost", "ServicePost")
+                        .WithMany()
+                        .HasForeignKey("ServicePostId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("DUVAS.Transaction", "Transaction")
+                        .WithMany()
+                        .HasForeignKey("TransactionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("DUVAS.User", "User")
                         .WithMany("Reports")
                         .HasForeignKey("UserId")
@@ -1309,6 +1332,10 @@ namespace BusinessObject.Migrations
                         .IsRequired();
 
                     b.Navigation("Room");
+
+                    b.Navigation("ServicePost");
+
+                    b.Navigation("Transaction");
 
                     b.Navigation("User");
                 });
