@@ -32,6 +32,7 @@ namespace DataAccess
                             RentalDateTimeEnd = p.RentalDateTimeEnd,
                             ContractFile = p.ContractFile,
                             Status = p.status, // Trạng thái hợp đồng\
+                            DownPayment = p.DownPayment,
                             RoomId = 0
                         })
                         .ToListAsync();

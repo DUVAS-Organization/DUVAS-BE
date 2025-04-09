@@ -37,7 +37,7 @@ namespace API.Controllers.UserAPI
             }
             report.UserId = userId;
             await _reportRepository.SaveReportAsync(report);
-            return Ok(new { message = "Withdraw request created successfully." });
+            return Ok(new { message = "Report created successfully." });
         }
     }
 }
