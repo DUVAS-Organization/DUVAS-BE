@@ -31,6 +31,7 @@ namespace DataAccess
                             RentalDateTimeStart = p.RentalDateTimeStart,
                             RentalDateTimeEnd = p.RentalDateTimeEnd,
                             ContractFile = p.ContractFile,
+                            DownPayment = p.DownPayment,
                             Status = p.status, // Trạng thái hợp đồng\
                             RoomId = 0
                         })

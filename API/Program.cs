@@ -161,6 +161,7 @@ namespace API
             builder.Services.AddHttpClient<FPTAIService>();
             builder.Services.AddScoped<CloudinaryService>();
             builder.Services.AddScoped<IInsiderTradingRepository, InsiderTradingRepository>();
+            builder.Services.AddScoped<FPTAIService>();
 
             // Add SignalR
             builder.Services.AddSignalR();

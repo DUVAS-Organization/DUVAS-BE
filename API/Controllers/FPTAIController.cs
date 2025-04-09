@@ -1,28 +1,38 @@
-﻿using DTO;
+﻿// Controllers/FPTAIController.cs
+using DTO;
+using API.Services;
 using Microsoft.AspNetCore.Mvc;
-using System.Net.Http;
-using System.Net.Http.Headers;
+using System;
 using System.Threading.Tasks;
 
-[ApiController]
-[Route("api/fptai")]
-public class FPTAIController : ControllerBase
+namespace API.Controllers
 {
-    private readonly FPTAIService _fptaiService;
-
-    public FPTAIController(FPTAIService fptaiService)
+    [ApiController]
+    [Route("api/fptai")]
+    public class FPTAIController : ControllerBase
     {
-        _fptaiService = fptaiService;
-    }
+        private readonly FPTAIService _fptaiService;
 
-    [HttpPost("upload")]
-    public async Task<IActionResult> UploadImage([FromForm] FileUploadDTO uploadDto)
-    {
-        var file = uploadDto.File;
-        if (file == null || file.Length == 0)
-            return BadRequest("File is required");
+        public FPTAIController(FPTAIService fptaiService)
+        {
+            _fptaiService = fptaiService ?? throw new ArgumentNullException(nameof(fptaiService));
+        }
 
-        var result = await _fptaiService.UploadImageAsync(uploadDto);
-        return Ok(result);
+        [HttpPost("upload")]
+        public async Task<IActionResult> UploadImage([FromForm] FileUploadDTO uploadDto)
+        {
+            try
+            {
+                if (uploadDto?.File == null || uploadDto.File.Length == 0)
+                    return BadRequest(new { Message = "Image file is required" });
+
+                var result = await _fptaiService.UploadImageAsync(uploadDto);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = $"Server error: {ex.Message}" });
+            }
+        }
     }
 }

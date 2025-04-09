@@ -101,7 +101,6 @@ namespace API.Controllers.Landlord
             return Ok(new { message = successMessage, rooms });
         }
 
-
         // GET: api/landlord/RoomManagement/{id}
         [HttpGet("{id}")]
         public async Task<IActionResult> GetRoom(int id)
@@ -247,9 +246,6 @@ namespace API.Controllers.Landlord
             }
         }
 
-
-
-
         // PUT: api/landlord/RoomManagement/{id}
         [HttpPut("{id}")]
         [Authorize]
@@ -310,8 +306,6 @@ namespace API.Controllers.Landlord
             }
         }
 
-
-
         // PATCH: api/landlord/RoomManagement/{id}/lock
         [HttpPatch("{id}/lock")]
         [Authorize]
@@ -344,6 +338,7 @@ namespace API.Controllers.Landlord
                 return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Lỗi khi khóa phòng.", error = ex.Message });
             }
         }
+
         // GET: api/landlord/RoomManagement/{id}/is-locked
         [HttpGet("{id}/is-locked")]
         [Authorize]
@@ -372,6 +367,7 @@ namespace API.Controllers.Landlord
                 Message = isLocked ? "Phòng hiện đang bị khóa." : "Phòng đang hoạt động bình thường."
             });
         }
+
         // PATCH: api/landlord/RoomManagement/{id}/unlock
         [HttpPatch("{id}/unlock")]
         [Authorize]
@@ -403,6 +399,7 @@ namespace API.Controllers.Landlord
                 return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Lỗi khi mở khóa phòng.", error = ex.Message });
             }
         }
+
         // GET: api/landlord/RoomManagement/locked-rooms
         [HttpGet("locked-rooms")]
         [Authorize]
@@ -433,9 +430,6 @@ namespace API.Controllers.Landlord
                 rooms = lockedRooms
             });
         }
-
-
-
 
         // GET: api/landlord/RoomManagement/{id}/Reviews
         [HttpGet("{id}/Reviews")]
@@ -478,6 +472,7 @@ namespace API.Controllers.Landlord
 
             return Ok(new { Message = "Trạng thái phòng đã được cập nhật thành công." });
         }
+
         [HttpPost("generate-description")]
         public async Task<IActionResult> GenerateRoomDescription([FromBody] RoomDTO roomDto)
         {
