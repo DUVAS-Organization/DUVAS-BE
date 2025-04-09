@@ -31,8 +31,6 @@ namespace DataAccess
                             ReportId = p.ReportId,
                             UserId = p.UserId,
                             RoomId = p.RoomId,
-                            ServicePostId = p.ServicePostId,
-                            TransactionId = p.TransactionId,
                             ReportContent = p.ReportContent,
                             Image = p.Image,
 

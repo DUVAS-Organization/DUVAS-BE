@@ -25,6 +25,7 @@ namespace API.Controllers.UserAPI
             report.ReportContent = reportDto.ReportContent;
             report.Image = reportDto.Image;
             report.Status = 0;
+            report.RoomId = reportDto.RoomId;
             var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId");
             if (userIdClaim == null)
             {
@@ -36,7 +37,7 @@ namespace API.Controllers.UserAPI
             }
             report.UserId = userId;
             await _reportRepository.SaveReportAsync(report);
-            return Ok(new { message = "Withdraw request created successfully." });
+            return Ok(new { message = "Report created successfully." });
         }
     }
 }

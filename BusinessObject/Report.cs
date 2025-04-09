@@ -13,12 +13,6 @@ namespace DUVAS
         public int? RoomId { get; set; }
         public Room? Room { get; set; }
 
-        public int? ServicePostId { get; set; }
-        public ServicePost? ServicePost { get; set; }
-
-        public int? TransactionId { get; set; }
-        public Transaction? Transaction { get; set; }
-
         public string ReportContent { get; set; }
         public string Image { get; set; }
         public int? Status { get; set; }

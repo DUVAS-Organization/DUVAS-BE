@@ -148,20 +148,6 @@ namespace DUVAS
                 .HasForeignKey(r => r.RoomId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Report - ServicePost
-            modelBuilder.Entity<Report>()
-                .HasOne(r => r.ServicePost)
-                .WithMany()
-                .HasForeignKey(r => r.ServicePostId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            // Report - Transaction
-            modelBuilder.Entity<Report>()
-                .HasOne(r => r.Transaction)
-                .WithMany()
-                .HasForeignKey(r => r.TransactionId)
-                .OnDelete(DeleteBehavior.Restrict);
-
             modelBuilder.Entity<ServicePost>()
                 .HasOne(r => r.User)
                 .WithMany(u => u.ServicePosts)
