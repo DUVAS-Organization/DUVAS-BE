@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.OData.Query;
 using Repositories.IRepository;
 using DTO;
 using Microsoft.AspNetCore.OData.Routing.Controllers;
+using Repositories;
 
 namespace API.Controllers.Admin
 {
@@ -93,6 +94,46 @@ namespace API.Controllers.Admin
             }
 
             await _categoryRoomRepository.DeleteCategoryRoomAsync(categoryRooms);
+            return NoContent();
+        }
+        [HttpPut("lock/{id}")]
+        public async Task<IActionResult> LockCategoryRoom(int id)
+        {
+            var categoryRooms = await _categoryRoomRepository.GetCategoryRoomByIdAsync(id);
+            if (categoryRooms == null)
+            {
+                return NotFound("Room không tồn tại.");
+            }
+
+            try
+            {
+                await _categoryRoomRepository.LockCategoryRoom(id);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi khóa Room: {ex.Message}");
+            }
+
+            return NoContent();
+        }
+        [HttpPut("unlock/{id}")]
+        public async Task<IActionResult> UnLockCategoryRoom(int id)
+        {
+            var categoryRooms = await _categoryRoomRepository.GetCategoryRoomByIdAsync(id);
+            if (categoryRooms == null)
+            {
+                return NotFound("Room không tồn tại.");
+            }
+
+            try
+            {
+                await _categoryRoomRepository.UnLockCategoryRoom(id);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi khóa Room: {ex.Message}");
+            }
+
             return NoContent();
         }
         private async Task<bool> CategoryRoomExists(int id)

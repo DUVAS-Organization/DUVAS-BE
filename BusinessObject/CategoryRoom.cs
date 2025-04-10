@@ -9,6 +9,7 @@ namespace DUVAS
 
         [Required]
         public string CategoryName { get; set; }
+        public int Status {  get; set; }
 
         public virtual ICollection<Room>? Rooms { get; set; }
     }

@@ -19,5 +19,6 @@ namespace DTO
         public string CategoryName { get; set; }
         public int? UserId { get; set; }
         public string Image { get; set; }
+        public int Status { get; set; }
     }
 }
