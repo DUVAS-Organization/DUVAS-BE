@@ -9,7 +9,7 @@ namespace DUVAS
 
         [Required]
         public string CategoryServiceName { get; set; }
-
+        public int? Status { get; set; }
         public virtual ICollection<ServicePost>? ServicePosts { get; set; }
     }
 }
