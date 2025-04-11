@@ -29,6 +29,7 @@ namespace DataAccess
                         {
                             CategoryServiceId = p.CategoryServiceId,
                             CategoryServiceName = p.CategoryServiceName,
+                            Status = p.Status,
                         })
                         .ToListAsync();
 
@@ -65,6 +66,7 @@ namespace DataAccess
             {
                 using (var context = new ApplicationDbContext())
                 {
+                    categoryServices.Status = 1;
                     await context.CategoryServices.AddAsync(categoryServices);
                     await context.SaveChangesAsync();
                 }
@@ -81,6 +83,7 @@ namespace DataAccess
             {
                 using (var context = new ApplicationDbContext())
                 {
+                    categoryServices.Status = 1;
                     context.Entry(categoryServices).State = EntityState.Modified;
                     await context.SaveChangesAsync();
                 }
@@ -108,6 +111,50 @@ namespace DataAccess
             catch (Exception ex)
             {
                 throw new Exception(ex.Message);
+            }
+        }
+        public static async Task LockCategoryService(int categoryServiceId)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var categoryService = await context.CategoryServices.FirstOrDefaultAsync(u => u.CategoryServiceId == categoryServiceId);
+                    if (categoryService == null)
+                    {
+                        throw new KeyNotFoundException($"Service với ID {categoryServiceId} không tồn tại.");
+                    }
+
+                    categoryService.Status = 0;
+                    context.CategoryServices.Update(categoryService);
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi khóa Service: {ex.Message}");
+            }
+        }
+        public static async Task UnLockCategoryService(int categoryServiceId)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var categoryService = await context.CategoryServices.FirstOrDefaultAsync(u => u.CategoryServiceId == categoryServiceId);
+                    if (categoryService == null)
+                    {
+                        throw new KeyNotFoundException($"Service với ID {categoryServiceId} không tồn tại.");
+                    }
+
+                    categoryService.Status = 1;
+                    context.CategoryServices.Update(categoryService);
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi mở khóa Service: {ex.Message}");
             }
         }
     }

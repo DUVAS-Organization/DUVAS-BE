@@ -39,5 +39,34 @@ namespace API.Controllers.UserAPI
             await _reportRepository.SaveReportAsync(report);
             return Ok(new { message = "Report created successfully." });
         }
+
+        [HttpGet("")]
+        [Authorize]
+        public async Task<IActionResult> GetAllReports()
+        {
+            try
+            {
+                // Lấy danh sách báo cáo từ repository
+                var reports = await _reportRepository.GetReportsAsync();
+
+                // Ánh xạ từ Report sang ReportDTO
+                var reportDtos = reports.Select(report => new ReportDTO
+                {
+                    ReportId = report.ReportId,
+                    UserId = report.UserId,
+                    RoomId = report.RoomId,
+                    ReportContent = report.ReportContent,
+                    Image = report.Image,
+                    Status = report.Status,
+                    Feedback = report.Feedback
+                }).ToList();
+
+                return Ok(reportDtos);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while retrieving reports.", error = ex.Message });
+            }
+        }
     }
 }

@@ -95,6 +95,46 @@ namespace API.Controllers.Admin
             await _categoryServiceRepository.DeleteCategoryServiceAsync(categoryServices);
             return NoContent();
         }
+        [HttpPut("lock/{id}")]
+        public async Task<IActionResult> LockCategoryService(int id)
+        {
+            var categoryServices = await _categoryServiceRepository.GetCategoryServiceByIdAsync(id);
+            if (categoryServices == null)
+            {
+                return NotFound("Service không tồn tại.");
+            }
+
+            try
+            {
+                await _categoryServiceRepository.LockCategoryService(id);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi khóa Service: {ex.Message}");
+            }
+
+            return NoContent();
+        }
+        [HttpPut("unlock/{id}")]
+        public async Task<IActionResult> UnLockCategoryService(int id)
+        {
+            var categoryServices = await _categoryServiceRepository.GetCategoryServiceByIdAsync(id);
+            if (categoryServices == null)
+            {
+                return NotFound("Service không tồn tại.");
+            }
+
+            try
+            {
+                await _categoryServiceRepository.UnLockCategoryService(id);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi khóa Service: {ex.Message}");
+            }
+
+            return NoContent();
+        }
         private async Task<bool> CategoryServiceExists(int id)
         {
             var categoryServices = await _categoryServiceRepository.GetCategoryServiceByIdAsync(id);

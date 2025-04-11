@@ -121,6 +121,46 @@ namespace API.Controllers.Admin
             await _buildingRepository.DeleteBuildingAsync(building);
             return NoContent();
         }
+        [HttpPut("lock/{id}")]
+        public async Task<IActionResult> LockBuilding(int id)
+        {
+            var Buildings = await _buildingRepository.GetBuildingByIdAsync(id);
+            if (Buildings == null)
+            {
+                return NotFound("Building không tồn tại.");
+            }
+
+            try
+            {
+                await _buildingRepository.LockBuilding(id);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi khóa Building: {ex.Message}");
+            }
+
+            return NoContent();
+        }
+        [HttpPut("unlock/{id}")]
+        public async Task<IActionResult> UnLockBuilding(int id)
+        {
+            var Buildings = await _buildingRepository.GetBuildingByIdAsync(id);
+            if (Buildings == null)
+            {
+                return NotFound("Building không tồn tại.");
+            }
+
+            try
+            {
+                await _buildingRepository.UnLockBuilding(id);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi khóa Building: {ex.Message}");
+            }
+
+            return NoContent();
+        }
         private async Task<bool> BuildingExists(int id)
         {
             var Building = await _buildingRepository.GetBuildingByIdAsync(id);
