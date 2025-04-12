@@ -38,7 +38,7 @@ namespace DataAccess
                             Sex = p.Sex,
                             Address = p.Address,
                             GiayPhepKinhDoanh = p.GiayPhepKinhDoanh,
-
+                            Status = p.Status,
                             //CategoryName = p.Category.CategoryName,
                             //CategoryId = p.CategoryId,                            
 

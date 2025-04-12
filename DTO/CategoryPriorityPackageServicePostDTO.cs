@@ -16,5 +16,6 @@ namespace DTO
         public int CategoryPriorityPackageServicePostValue { get; set; }
 
         public decimal Price { get; set; }
+        public int? Status { get; set; }
     }
 }

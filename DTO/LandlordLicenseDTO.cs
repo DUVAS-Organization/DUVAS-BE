@@ -23,6 +23,7 @@ namespace DTO
         public string Sex { get; set; }
         public string Address { get; set; }
         public string? GiayPhepKinhDoanh { get; set; }
+        public int? Status { get; set; }
     }
     public class ExtractedDataDTO
     {

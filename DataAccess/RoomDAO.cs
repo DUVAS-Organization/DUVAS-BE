@@ -109,7 +109,8 @@ namespace DataAccess
                         ChiPhiKhac = p.ChiPhiKhac,
                         BuildingName = p.Building != null ? p.Building.BuildingName : null,
                         CategoryName = p.CategoryRoom.CategoryName,
-                        IsPermission = p.IsPermission
+                        IsPermission = p.IsPermission,
+                        status = p.status,
                     })
                     .ToListAsync();
             }
@@ -148,7 +149,8 @@ namespace DataAccess
                         ChiPhiKhac = p.ChiPhiKhac,
                         BuildingName = p.Building != null ? p.Building.BuildingName : null,
                         CategoryName = p.CategoryRoom.CategoryName,
-                        IsPermission = p.IsPermission
+                        IsPermission = p.IsPermission,
+                        status = p.status,
                     })
                     .ToListAsync();
             }
@@ -611,7 +613,8 @@ namespace DataAccess
                     ChiPhiKhac = r.ChiPhiKhac,
                     BuildingName = r.Building != null ? r.Building.BuildingName : null,
                     CategoryName = r.CategoryRoom.CategoryName,
-                    IsPermission = r.IsPermission
+                    IsPermission = r.IsPermission,
+                    status = r.status,
                 })
                 .ToListAsync();
 

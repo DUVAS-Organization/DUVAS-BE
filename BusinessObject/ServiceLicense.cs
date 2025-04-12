@@ -20,5 +20,9 @@ namespace DUVAS
         public string? Address { get; set; }
         public string? GiayPhepKinhDoanh { get; set; }
         public string? GiayPhepChuyenMon { get; set; }
+        public int? Status { get; set; }
+        //0: mặc định
+        //1: đồng ý
+        //2: Từ chối
     }
 }

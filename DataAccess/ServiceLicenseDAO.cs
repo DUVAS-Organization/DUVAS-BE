@@ -3,6 +3,7 @@ using DUVAS;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -39,6 +40,7 @@ namespace DataAccess
                             Address = p.Address,
                             GiayPhepKinhDoanh = p.GiayPhepKinhDoanh,
                             GiayPhepChuyenMon = p.GiayPhepChuyenMon,
+                            Status = p.Status,
                         })
                         .ToListAsync();
 
@@ -75,8 +77,15 @@ namespace DataAccess
         {
             try
             {
+               
                 using (var context = new ApplicationDbContext())
                 {
+   //                 var existing = await _context.ServiceLicenses
+   //.FirstOrDefaultAsync(l => l.UserId == serviceLicense.UserId);
+   //                 if (existing != null)
+   //                 {
+   //                     throw new Exception("Người dùng đã có yêu cầu đang chờ xử lý.");
+   //                 }
                     await context.ServiceLicenses.AddAsync(serviceLicense);
                     await context.SaveChangesAsync();
                 }

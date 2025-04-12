@@ -188,7 +188,7 @@ namespace API.Controllers.UserAPI
         {
             if (license == null)
                 return BadRequest("Invalid data.");
-
+           
             await _serviceLicenseRepository.SaveServiceLicenseAsync(license);
             return StatusCode(201, "Service License created successfully.");
         }

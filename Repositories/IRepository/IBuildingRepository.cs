@@ -18,6 +18,8 @@ namespace Repositories.IRepository
         Task<List<BuildingDTO>> SearchBuildingsAsync(string searchTerm);
         Task LockBuilding(int buildingId);
         Task UnLockBuilding(int buildingId);
+        Task<List<BuildingDTO>> GetLockedBuildingsAsync();
+        Task<List<BuildingDTO>> GetActiveBuildingsAsync();
 
     }
 }

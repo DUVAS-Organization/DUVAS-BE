@@ -13,5 +13,8 @@ namespace Repositories.IRepository
         Task SaveCategoryPriorityPackageRoomAsync(CategoryPriorityPackageRoom categoryPriorityPackageRoom);
         Task UpdateCategoryPriorityPackageRoomAsync(CategoryPriorityPackageRoom categoryPriorityPackageRoom);
         Task DeleteCategoryPriorityPackageRoomAsync(CategoryPriorityPackageRoom categoryPriorityPackageRoom);
+        Task LockCategoryPriorityPackageRoom(int categoryPriorityPackageRoomId);
+        Task UnLockCategoryPriorityPackageRoom(int categoryPriorityPackageRoomId);
+
     }
 }

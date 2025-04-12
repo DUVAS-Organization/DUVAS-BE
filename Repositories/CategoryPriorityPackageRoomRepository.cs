@@ -24,5 +24,9 @@ namespace Repositories
 
         public async Task DeleteCategoryPriorityPackageRoomAsync(CategoryPriorityPackageRoom categoryPriorityPackageRoom)
             => await CategoryPriorityPackageRoomDAO.DeleteCategoryPriorityPackageRoomAsync(categoryPriorityPackageRoom);
+        public async Task LockCategoryPriorityPackageRoom(int categoryPriorityPackageRoomId)
+                => await CategoryPriorityPackageRoomDAO.LockCategoryPriorityPackageRoom(categoryPriorityPackageRoomId);
+        public async Task UnLockCategoryPriorityPackageRoom(int categoryPriorityPackageRoomId)
+            => await CategoryPriorityPackageRoomDAO.UnLockCategoryPriorityPackageRoom(categoryPriorityPackageRoomId);
     }
 }

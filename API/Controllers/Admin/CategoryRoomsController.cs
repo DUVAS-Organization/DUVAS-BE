@@ -135,6 +135,18 @@ namespace API.Controllers.Admin
 
             return NoContent();
         }
+        [HttpGet("Locked")]
+        public async Task<ActionResult<IEnumerable<CategoryRoomDTO>>> GetCategoryLockedRooms()
+        {
+            var categoryRooms = await _categoryRoomRepository.GetCategoryLockedRoomsAsync();
+            return Ok(categoryRooms);
+        }
+        [HttpGet("Active")]
+        public async Task<ActionResult<IEnumerable<CategoryRoomDTO>>> GetCategoryActiveRooms()
+        {
+            var categoryRooms = await _categoryRoomRepository.GetCategoryActiveRoomsAsync();
+            return Ok(categoryRooms);
+        }
         private async Task<bool> CategoryRoomExists(int id)
         {
             var categoryRooms = await _categoryRoomRepository.GetCategoryRoomByIdAsync(id);

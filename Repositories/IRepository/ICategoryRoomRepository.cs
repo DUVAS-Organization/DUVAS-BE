@@ -17,5 +17,7 @@ namespace Repositories.IRepository
         Task<List<CategoryRoomDTO>> GetCategoryRoomsAsync();
         Task LockCategoryRoom(int categoryRoomId);
         Task UnLockCategoryRoom(int categoryRoomId);
+        Task<List<CategoryRoomDTO>> GetCategoryLockedRoomsAsync();
+        Task<List<CategoryRoomDTO>> GetCategoryActiveRoomsAsync();
     }
 }

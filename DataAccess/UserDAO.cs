@@ -447,7 +447,7 @@ namespace DataAccess
             {
                 using (var context = new ApplicationDbContext())
                 {
-                    var lockedUsers = await context.Users
+                    var activeUsers = await context.Users
                         .AsNoTracking()
                         .Where(u => u.RoleUser == 1)
                         .Select(p => new UserDTO
@@ -468,12 +468,12 @@ namespace DataAccess
                         })
                         .ToListAsync();
 
-                    return lockedUsers;
+                    return activeUsers;
                 }
             }
             catch (Exception ex)
             {
-                throw new Exception($"Lỗi khi lấy danh sách User bị khóa: {ex.Message}");
+                throw new Exception($"Lỗi khi lấy danh sách User activeUsers: {ex.Message}");
             }
         }
         public static async Task<List<UserDTO>> GetListUpRoleLandLord()
@@ -601,7 +601,11 @@ namespace DataAccess
                     {
                         throw new KeyNotFoundException($"User với ID {userId} không tồn tại.");
                     }
-
+                    var userLicense = await context.LandlordLicenses.FirstOrDefaultAsync(ll => ll.UserId == userId);
+                    if (userLicense != null)
+                    {
+                        userLicense.Status = 1;
+                    }
                     user.RoleLandlord = 1;
                     context.Users.Update(user);
                     await context.SaveChangesAsync();
@@ -623,7 +627,11 @@ namespace DataAccess
                     {
                         throw new KeyNotFoundException($"User với ID {userId} không tồn tại.");
                     }
-
+                    var userLicense = await context.ServiceLicenses.FirstOrDefaultAsync(ll => ll.UserId == userId);
+                    if (userLicense != null)
+                    {
+                        userLicense.Status = 1;
+                    }
                     user.RoleService = 1;
                     context.Users.Update(user);
                     await context.SaveChangesAsync();
@@ -648,7 +656,7 @@ namespace DataAccess
                     var userLicense = await context.LandlordLicenses.FirstOrDefaultAsync(ll => ll.UserId == userId);
                     if (userLicense != null)
                     {
-                        context.LandlordLicenses.Remove(userLicense);
+                        userLicense.Status = 2;
                     }
 
                     user.RoleLandlord = 0;
@@ -675,10 +683,10 @@ namespace DataAccess
                     var userLicense = await context.ServiceLicenses.FirstOrDefaultAsync(sl => sl.UserId == userId);
                     if (userLicense != null)
                     {
-                        context.ServiceLicenses.Remove(userLicense);
+                        userLicense.Status = 2;
                     }
 
-                    user.RoleLandlord = 0;
+                    user.RoleService = 0;
                     context.Users.Update(user);
                     await context.SaveChangesAsync();
                 }
