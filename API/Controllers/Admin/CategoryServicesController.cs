@@ -135,6 +135,18 @@ namespace API.Controllers.Admin
 
             return NoContent();
         }
+        [HttpGet("Locked")]
+        public async Task<ActionResult<IEnumerable<CategoryServiceDTO>>> GetCategoryLockedServices()
+        {
+            var categoryServices = await _categoryServiceRepository.GetCategoryLockedServicesAsync();
+            return Ok(categoryServices);
+        }
+        [HttpGet("Active")]
+        public async Task<ActionResult<IEnumerable<CategoryServiceDTO>>> GetCategoryActiveServices()
+        {
+            var categoryServices = await _categoryServiceRepository.GetCategoryActiveServicesAsync();
+            return Ok(categoryServices);
+        }
         private async Task<bool> CategoryServiceExists(int id)
         {
             var categoryServices = await _categoryServiceRepository.GetCategoryServiceByIdAsync(id);

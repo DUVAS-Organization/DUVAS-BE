@@ -17,5 +17,9 @@ namespace Repositories.IRepository
         Task<List<CategoryServiceDTO>> GetCategoryServicesAsync();
         Task LockCategoryService(int categoryServiceId);
         Task UnLockCategoryService(int categoryServiceId);
+        Task<List<CategoryServiceDTO>> GetCategoryLockedServicesAsync();
+        Task<List<CategoryServiceDTO>> GetCategoryActiveServicesAsync();
+
+
     }
 }

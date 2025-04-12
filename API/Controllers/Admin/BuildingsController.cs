@@ -9,6 +9,7 @@ using DUVAS;
 using Microsoft.AspNetCore.OData.Query;
 using Microsoft.AspNetCore.OData.Routing.Controllers;
 using Repositories.IRepository;
+using DTO;
 
 namespace API.Controllers.Admin
 {
@@ -160,6 +161,18 @@ namespace API.Controllers.Admin
             }
 
             return NoContent();
+        }
+        [HttpGet("Locked")]
+        public async Task<ActionResult<IEnumerable<BuildingDTO>>> GetLockedBuildingsAsync()
+        {
+            var buildings = await _buildingRepository.GetLockedBuildingsAsync();
+            return Ok(buildings);
+        }
+        [HttpGet("Active")]
+        public async Task<ActionResult<IEnumerable<BuildingDTO>>> GetActiveBuildingsAsync()
+        {
+            var buildings = await _buildingRepository.GetActiveBuildingsAsync();
+            return Ok(buildings);
         }
         private async Task<bool> BuildingExists(int id)
         {
