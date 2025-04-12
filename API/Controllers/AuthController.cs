@@ -50,10 +50,20 @@ namespace API.Controllers
 
             if (BCrypt.Net.BCrypt.Verify(loginDto.Password, user.Password))
             {
-                return Ok(new { Message = _jwtService.GenerateToken(user) });
+                // ✅ Cho phép nếu có ít nhất một quyền
+                if (user.RoleUser == 1 || user.RoleAdmin == 1)
+                {
+                    return Ok(new { Message = _jwtService.GenerateToken(user) });
+                }
+                else
+                {
+                    return BadRequest(new { Message = "Tài khoản không có quyền đăng nhập." });
+                }
             }
+
             return BadRequest(new { Message = "Tài khoản hoặc mật khẩu sai" });
         }
+
 
         [HttpPost("register")]
         [AllowAnonymous]
