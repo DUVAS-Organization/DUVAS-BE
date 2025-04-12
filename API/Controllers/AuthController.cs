@@ -137,44 +137,77 @@ namespace API.Controllers
             return Redirect("https://accounts.google.com/o/oauth2/auth?client_id=" + _configuration["Google:ClientId"] + "&redirect_uri=" + _configuration["Google:RedirectUri"] + "&response_type=code&scope=openid%20profile%20email");
         }
 
-        [HttpGet("login-google")]
-        public async Task<IActionResult> LoginGoogle([FromQuery] String code)
+       [HttpGet("login-google")]
+public async Task<IActionResult> LoginGoogle([FromQuery] String code)
+{
+    try
+    {
+        var flow = new GoogleAuthorizationCodeFlow(new GoogleAuthorizationCodeFlow.Initializer
         {
-            var flow = new GoogleAuthorizationCodeFlow(new GoogleAuthorizationCodeFlow.Initializer
+            ClientSecrets = new ClientSecrets
             {
-                ClientSecrets = new ClientSecrets
-                {
-                    ClientId = _configuration["Google:ClientId"],
-                    ClientSecret = _configuration["Google:ClientSecret"]
-                },
-                Scopes = new[] { "openid", "profile", "email" }
-            });
-            var tokenResponse = await flow.ExchangeCodeForTokenAsync(
-                userId: "me",
-                code: code,
-                redirectUri: _configuration["Google:RedirectUri"],
-                taskCancellationToken: CancellationToken.None
-            );
-            var payload = GoogleJsonWebSignature.ValidateAsync(tokenResponse.IdToken).Result;
-            var email = payload.Email;
-            var name = payload.Name;
-            var avatar = payload.Picture;
-            var user = await _iuserRepository.GetUserByGmailOrPhoneAsync(email);
-            Console.WriteLine(user == null ? "new user" : "existing user");
-            if (user == null)
-            {
-                user = new User(name, email, avatar, 0);
-                await _iuserRepository.SaveUserAsync(user);
-            }
+                ClientId = _configuration["Google:ClientId"],
+                ClientSecret = _configuration["Google:ClientSecret"]
+            },
+            Scopes = new[] { "openid", "profile", "email" }
+        });
 
-            if (user.Gmail == null)
-            {
-                return StatusCode(500, new {Message= "Server Error."});
-            }
-            String codeExchange = _tokenDictionaryService.GenerateCode(user.Gmail);
-            return Redirect("http://localhost:3000/Logins?token=" + codeExchange);
+        var tokenResponse = await flow.ExchangeCodeForTokenAsync(
+            userId: "me",
+            code: code,
+            redirectUri: _configuration["Google:RedirectUri"],
+            taskCancellationToken: CancellationToken.None
+        );
 
+        var payload = await GoogleJsonWebSignature.ValidateAsync(tokenResponse.IdToken);
+        var email = payload.Email;
+        var name = payload.Name;
+        var avatar = payload.Picture;
+
+        var user = await _iuserRepository.GetUserByGmailOrPhoneAsync(email);
+        Console.WriteLine(user == null ? "new user" : "existing user");
+
+        if (user == null)
+        {
+            user = new User(name, email, avatar, 0); // Role mặc định là 0
+            await _iuserRepository.SaveUserAsync(user);
         }
+
+        if (user.Gmail == null)
+        {
+            return StatusCode(500, new { Message = "Server Error." });
+        }
+
+        // Role-based access logic
+        // Case 1: If RoleAdmin = 1, allow login regardless of other roles
+        if (user.RoleAdmin == 1)
+        {
+            string codeExchange = _tokenDictionaryService.GenerateCode(user.Gmail);
+            return Redirect("http://localhost:3000/Logins?token=" + codeExchange);
+        }
+
+        // Case 2: For RoleLandlord or RoleService to be valid, RoleUser must be 1
+        if (user.RoleUser != 1)
+        {
+            return Redirect("http://localhost:3000/Logins?error=" + Uri.EscapeDataString("Tài khoản đã bị khóa. Vui lòng liên hệ hotline để mở khóa tài khoản"));
+        }
+
+        // Case 3: If RoleUser = 1, allow login if RoleLandlord = 1 or RoleService = 1 (or even if both are 0, as a regular user)
+        if (user.RoleUser == 1)
+        {
+            string codeExchange = _tokenDictionaryService.GenerateCode(user.Gmail);
+            return Redirect("http://localhost:3000/Logins?token=" + codeExchange);
+        }
+
+        // Default case: If none of the above conditions are met, deny access
+        return Redirect("http://localhost:3000/Logins?error=" + Uri.EscapeDataString("Tài khoản không có quyền đăng nhập. Vui lòng liên hệ quản trị viên."));
+    }
+    catch (Exception ex)
+    {
+        return Redirect("http://localhost:3000/Logins?error=" + Uri.EscapeDataString($"Đăng nhập thất bại: {ex.Message}"));
+    }
+}
+
 
         [HttpGet("token-exchange")]
         public async Task<IActionResult> TokenExchange([FromQuery] String code)
