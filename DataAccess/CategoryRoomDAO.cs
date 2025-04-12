@@ -29,6 +29,57 @@ namespace DataAccess
                         {
                             CategoryRoomId = p.CategoryRoomId,
                             CategoryName = p.CategoryName,
+                            Status = p.Status,
+                        })
+                        .ToListAsync();
+
+                    return categoryRooms;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+        public static async Task<List<CategoryRoomDTO>> GetCategoryLockedRoomsAsync()
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var categoryRooms = await context.CategoryRooms
+                        .AsNoTracking()
+                        .Where(u => u.Status == 0)
+                        .Select(p => new CategoryRoomDTO
+                        {
+                            CategoryRoomId = p.CategoryRoomId,
+                            CategoryName = p.CategoryName,
+                            Status = p.Status,
+                        })
+                        .ToListAsync();
+
+                    return categoryRooms;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+        public static async Task<List<CategoryRoomDTO>> GetCategoryActiveRoomsAsync()
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var categoryRooms = await context.CategoryRooms
+                        .AsNoTracking()
+                        .Where(u => u.Status == 1)
+                        .Select(p => new CategoryRoomDTO
+                        {
+                            CategoryRoomId = p.CategoryRoomId,
+                            CategoryName = p.CategoryName,
+                            Status = p.Status,
                         })
                         .ToListAsync();
 

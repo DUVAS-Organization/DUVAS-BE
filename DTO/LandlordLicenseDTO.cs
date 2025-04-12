@@ -23,6 +23,10 @@ namespace DTO
         public string Sex { get; set; }
         public string Address { get; set; }
         public string? GiayPhepKinhDoanh { get; set; }
+        public int Status { get; set; }
+        //0: mặc định (Sort danh sách đăng ký)
+        //1: đồng ý
+        //2: Từ chối
     }
     public class ExtractedDataDTO
     {

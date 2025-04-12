@@ -77,6 +77,9 @@ namespace BusinessObject.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.HasKey("CategoryPriorityPackageRoomId");
 
                     b.ToTable("CategoryPriorityPackageRooms");
@@ -95,6 +98,9 @@ namespace BusinessObject.Migrations
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.HasKey("CategoryPriorityPackageServicePostId");
 

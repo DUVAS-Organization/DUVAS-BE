@@ -112,5 +112,49 @@ namespace DataAccess
                 throw new Exception(ex.Message);
             }
         }
+        public static async Task LockCategoryPriorityPackageServicePost(int categoryPriorityPackageServicePostId)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var categoryPriorityPackageServicePost = await context.CategoryPriorityPackageServicePosts.FirstOrDefaultAsync(u => u.CategoryPriorityPackageServicePostId == categoryPriorityPackageServicePostId);
+                    if (categoryPriorityPackageServicePost == null)
+                    {
+                        throw new KeyNotFoundException($"CategoryPriorityPackageServicePost với ID {categoryPriorityPackageServicePostId} không tồn tại.");
+                    }
+
+                    categoryPriorityPackageServicePost.Status = 0;
+                    context.CategoryPriorityPackageServicePosts.Update(categoryPriorityPackageServicePost);
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi khóa CategoryPriorityPackageServicePost: {ex.Message}");
+            }
+        }
+        public static async Task UnLockCategoryPriorityPackageServicePost(int categoryPriorityPackageServicePostId)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var categoryPriorityPackageServicePost = await context.CategoryPriorityPackageServicePosts.FirstOrDefaultAsync(u => u.CategoryPriorityPackageServicePostId == categoryPriorityPackageServicePostId);
+                    if (categoryPriorityPackageServicePost == null)
+                    {
+                        throw new KeyNotFoundException($"CategoryPriorityPackageServicePost với ID {categoryPriorityPackageServicePostId} không tồn tại.");
+                    }
+
+                    categoryPriorityPackageServicePost.Status = 1;
+                    context.CategoryPriorityPackageServicePosts.Update(categoryPriorityPackageServicePost);
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi mở khóa CategoryPriorityPackageServicePost: {ex.Message}");
+            }
+        }
     }
 }

@@ -33,6 +33,18 @@ namespace API.Controllers.Admin
             var categoryServices = await _categoryServiceRepository.GetCategoryServicesAsync();
             return Ok(categoryServices);
         }
+        [HttpGet("Locked")]
+        public async Task<ActionResult<IEnumerable<CategoryServiceDTO>>> GetCategoryLockedServices()
+        {
+            var categoryServices = await _categoryServiceRepository.GetCategoryLockedServicesAsync();
+            return Ok(categoryServices);
+        }
+        [HttpGet("Active")]
+        public async Task<ActionResult<IEnumerable<CategoryServiceDTO>>> GetCategoryActiveServices()
+        {
+            var categoryServices = await _categoryServiceRepository.GetCategoryActiveServicesAsync();
+            return Ok(categoryServices);
+        }
 
         // GET: odata/Category/{id}
         [HttpGet("{id}")]

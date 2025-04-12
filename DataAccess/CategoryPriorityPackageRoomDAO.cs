@@ -112,5 +112,49 @@ namespace DataAccess
                 throw new Exception(ex.Message);
             }
         }
+        public static async Task LockCategoryPriorityPackageRoom(int categoryPriorityPackageRoomId)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var categoryPriorityPackageRoom = await context.CategoryPriorityPackageRooms.FirstOrDefaultAsync(u => u.CategoryPriorityPackageRoomId == categoryPriorityPackageRoomId);
+                    if (categoryPriorityPackageRoom == null)
+                    {
+                        throw new KeyNotFoundException($"CategoryPriorityPackageRoom với ID {categoryPriorityPackageRoomId} không tồn tại.");
+                    }
+
+                    categoryPriorityPackageRoom.Status = 0;
+                    context.CategoryPriorityPackageRooms.Update(categoryPriorityPackageRoom);
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi khóa CategoryPriorityPackageRoom: {ex.Message}");
+            }
+        }
+        public static async Task UnLockCategoryPriorityPackageRoom(int categoryPriorityPackageRoomId)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var categoryPriorityPackageRoom = await context.CategoryPriorityPackageRooms.FirstOrDefaultAsync(u => u.CategoryPriorityPackageRoomId == categoryPriorityPackageRoomId);
+                    if (categoryPriorityPackageRoom == null)
+                    {
+                        throw new KeyNotFoundException($"CategoryPriorityPackageRoom với ID {categoryPriorityPackageRoomId} không tồn tại.");
+                    }
+
+                    categoryPriorityPackageRoom.Status = 1;
+                    context.CategoryPriorityPackageRooms.Update(categoryPriorityPackageRoom);
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi mở khóa CategoryPriorityPackageRoom: {ex.Message}");
+            }
+        }
     }
 }

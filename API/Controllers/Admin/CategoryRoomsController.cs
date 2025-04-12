@@ -33,6 +33,18 @@ namespace API.Controllers.Admin
             var categoryRooms = await _categoryRoomRepository.GetCategoryRoomsAsync();
             return Ok(categoryRooms);
         }
+        [HttpGet("Locked")]
+        public async Task<ActionResult<IEnumerable<CategoryRoomDTO>>> GetCategoryLockedRooms()
+        {
+            var categoryRooms = await _categoryRoomRepository.GetCategoryLockedRoomsAsync();
+            return Ok(categoryRooms);
+        }
+        [HttpGet("Active")]
+        public async Task<ActionResult<IEnumerable<CategoryRoomDTO>>> GetCategoryActiveRooms()
+        {
+            var categoryRooms = await _categoryRoomRepository.GetCategoryActiveRoomsAsync();
+            return Ok(categoryRooms);
+        }
 
         // GET: odata/Category/{id}
         [HttpGet("{id}")]

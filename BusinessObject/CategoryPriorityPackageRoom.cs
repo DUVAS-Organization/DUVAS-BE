@@ -16,6 +16,7 @@ namespace BusinessObject
         [Required]
         public int CategoryPriorityPackageRoomValue { get; set; }
         public decimal Price { get; set; }
+        public int Status { get; set; } = 1;
 
         public virtual ICollection<PriorityPackageRoom>? PriorityPackageRooms { get; set; }
     }

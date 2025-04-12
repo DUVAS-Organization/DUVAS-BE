@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BusinessObject.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250410171230_1")]
+    [Migration("20250412065758_1")]
     partial class _1
     {
         /// <inheritdoc />
@@ -80,6 +80,9 @@ namespace BusinessObject.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.HasKey("CategoryPriorityPackageRoomId");
 
                     b.ToTable("CategoryPriorityPackageRooms");
@@ -98,6 +101,9 @@ namespace BusinessObject.Migrations
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.HasKey("CategoryPriorityPackageServicePostId");
 
