@@ -18,5 +18,6 @@ namespace DTO
         public string PdfUrl { get; set; }
         public int CreatedById { get; set; }
         public DateTime CreatedAt { get; set; }
+        public int status { get; set; }
     }
 }

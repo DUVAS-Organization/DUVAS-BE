@@ -735,5 +735,28 @@ namespace DataAccess
             }
         }
 
+        public static async Task UpdateAuthorizationAsync(int roomId, int authorization)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var room = await context.Rooms.FirstOrDefaultAsync(r => r.RoomId == roomId);
+                    if (room == null)
+                    {
+                        throw new KeyNotFoundException($"Room với ID {roomId} không tồn tại.");
+                    }
+
+                    room.Authorization = authorization;
+                    context.Rooms.Update(room);
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi cập nhật Authorization: {ex.Message}");
+            }
+        }
+
     }
 }

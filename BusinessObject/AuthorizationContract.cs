@@ -18,5 +18,11 @@ namespace BusinessObject
         public string PdfUrl { get; set; } // URL của file PDF trên Cloudinary
         public int CreatedById { get; set; } // ID của người tạo
         public DateTime CreatedAt { get; set; } // Thời gian tạo
+        public int status { get; set; }
+        //0: Bị hủy
+        //1: Đang hoạt động
+        //2: Đang chờ admin duyệt
+        //3: Admin đã duyệt
+        //4: Hết hạn
     }
 }

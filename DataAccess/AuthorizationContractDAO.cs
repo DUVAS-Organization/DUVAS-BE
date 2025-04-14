@@ -28,7 +28,8 @@ namespace DataAccess
                             PartyBId = p.PartyBId,
                             PdfUrl = p.PdfUrl,
                             CreatedById = p.CreatedById,
-                            CreatedAt = p.CreatedAt
+                            CreatedAt = p.CreatedAt,
+                            status = p.status
                         })
                         .ToListAsync();
 
@@ -59,7 +60,9 @@ namespace DataAccess
                             PartyBId = p.PartyBId,
                             PdfUrl = p.PdfUrl,
                             CreatedById = p.CreatedById,
-                            CreatedAt = p.CreatedAt
+                            CreatedAt = p.CreatedAt,
+                            status = p.status
+
                         })
                         .ToListAsync();
 
@@ -140,6 +143,29 @@ namespace DataAccess
             catch (Exception ex)
             {
                 throw new Exception(ex.Message);
+            }
+        }
+
+        public static async Task UpdateStatusAsync(int id, int status)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var contract = await context.AuthorizationContracts.FirstOrDefaultAsync(c => c.Id == id);
+                    if (contract == null)
+                    {
+                        throw new KeyNotFoundException($"Hợp đồng ủy quyền với ID {id} không tồn tại.");
+                    }
+
+                    contract.status = status;
+                    context.AuthorizationContracts.Update(contract);
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi cập nhật status: {ex.Message}");
             }
         }
     }

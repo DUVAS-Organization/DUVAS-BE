@@ -8,6 +8,7 @@ using DTO;
 using System;
 using API.Service;
 using Repositories.IRepository;
+using Repositories;
 
 namespace GITHUB_ACTIONS.Controllers
 {
@@ -19,6 +20,7 @@ namespace GITHUB_ACTIONS.Controllers
         private readonly IAuthorizationContractRepository _authorizationContractRepository;
         private readonly PdfService _pdfService;
         private readonly CloudinaryService _cloudinaryService;
+        private readonly IRoomRepository _roomRepository;
 
         public ContractController(
             IAuthorizationContractRepository authorizationContractRepository,
@@ -104,6 +106,74 @@ namespace GITHUB_ACTIONS.Controllers
             };
 
             return Ok(contractDTO);
+        }
+
+        [HttpPut("update-rooms-authorization")]
+        public async Task<IActionResult> UpdateRoomsAuthorization([FromBody] UpdateRoomsAuthorizationRequest request)
+        {
+            try
+            {
+                // Kiểm tra xác thực người dùng (nếu cần)
+                //var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                //if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+                //    return Unauthorized("User not authenticated or invalid user ID");
+
+                // Kiểm tra danh sách roomIds hợp lệ
+                if (request.RoomIds == null || !request.RoomIds.Any())
+                    return BadRequest("Danh sách RoomIds không được để trống.");
+
+                // Cập nhật Authorization cho từng phòng
+                foreach (var roomId in request.RoomIds)
+                {
+                    // Kiểm tra quyền của người dùng đối với phòng (nếu cần)
+                    //var room = await _roomRepository.GetRoomEntityByIdForLandlordAsync(roomId, userId);
+                    //if (room == null)
+                    //    return Forbid($"Bạn không có quyền cập nhật phòng với ID {roomId} hoặc phòng không tồn tại.");
+
+                    await _roomRepository.UpdateAuthorizationAsync(roomId, request.Authorization);
+                }
+
+                return Ok(new { Message = "Cập nhật Authorization cho các phòng thành công." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = $"Lỗi khi cập nhật Authorization: {ex.Message}" });
+            }
+        }
+
+        [HttpPut("update-contracts-status")]
+        public async Task<IActionResult> UpdateContractsStatus([FromBody] UpdateContractsStatusRequest request)
+        {
+            try
+            {
+                // Kiểm tra xác thực người dùng
+                //var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                //if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+                //    return Unauthorized("User not authenticated or invalid user ID");
+
+                // Kiểm tra danh sách contractIds hợp lệ
+                if (request.ContractIds == null || !request.ContractIds.Any())
+                    return BadRequest("Danh sách ContractIds không được để trống.");
+
+                // Cập nhật status cho từng hợp đồng
+                foreach (var contractId in request.ContractIds)
+                {
+                    // Kiểm tra quyền của người dùng đối với hợp đồng
+                    var contract = await _authorizationContractRepository.GetAuthorizationContractByIdAsync(contractId);
+                    if (contract == null)
+                        return NotFound($"Hợp đồng với ID {contractId} không tồn tại.");
+                    //if (contract.CreatedById != userId)
+                    //    return Forbid($"Bạn không có quyền cập nhật hợp đồng với ID {contractId}.");
+
+                    await _authorizationContractRepository.UpdateStatusAsync(contractId, request.Status);
+                }
+
+                return Ok(new { Message = "Cập nhật status cho các hợp đồng thành công." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = $"Lỗi khi cập nhật status: {ex.Message}" });
+            }
         }
     }
 }
