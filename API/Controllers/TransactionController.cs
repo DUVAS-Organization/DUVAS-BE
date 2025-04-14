@@ -59,5 +59,53 @@ namespace API.Controllers
             var transactions = _transactionRepository.GetTransactionsByUserId(userId);
             return Ok(new { transactions });
         }
+        [HttpGet("getAll-Transaction")]
+        public async Task<IActionResult> GetAllTransactionAdminView()
+        {
+            var transactions = await _transactionRepository.GetAllTransactionAdminView();
+            return Ok(transactions);
+        }
+        [HttpGet("deposits")]
+        public async Task<IActionResult> GetAllDeposits()
+        {
+            var deposits = await _transactionRepository.GetAllDeposits();
+            return Ok(deposits);
+        }
+
+        [HttpGet("withdrawals")]
+        public async Task<IActionResult> GetAllWithdrawals()
+        {
+            var withdrawals = await _transactionRepository.GetAllWithdrawals();
+            return Ok(withdrawals);
+        }
+
+        [HttpGet("total-deposit")]
+        public async Task<IActionResult> GetTotalDeposit()
+        {
+            var total = await _transactionRepository.GetTotalDeposits();
+            return Ok(new { totalDeposit = total });
+        }
+
+        [HttpGet("total-withdrawal")]
+        public async Task<IActionResult> GetTotalWithdrawal()
+        {
+            var total = await _transactionRepository.GetTotalWithdrawals();
+            return Ok(new { totalWithdrawal = total });
+        }
+
+        [HttpGet("total-revenue")]
+        public async Task<IActionResult> GetTotalRevenue()
+        {
+            var totalRevenue = await _transactionRepository.GetTotalRevenue();
+            return Ok(new { totalRevenue });
+        }
+
+        [HttpGet("monthly-revenue")]
+        public async Task<IActionResult> GetMonthlyRevenue()
+        {
+            var monthlyRevenue = await _transactionRepository.GetMonthlyRevenue();
+            return Ok(monthlyRevenue);
+        }
+
     }
 }

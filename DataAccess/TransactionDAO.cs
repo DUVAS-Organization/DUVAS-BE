@@ -91,6 +91,84 @@ namespace DataAccess
 
             return transaction != null && transaction.Status == TransactionStatus.Paid;
         }
+        public async Task<List<TransactionAdminDTO>> GetAllTransactionAdminView()
+        {
+            return await _context.Transactions
+                .Include(t => t.User)
+                .Select(t => new TransactionAdminDTO
+                {
+                    UserName = t.User != null ? t.User.UserName : "Unknown",
+                    Gmail = t.User != null ? t.User.Gmail : "Unknown",
+                    Amount = t.Amount,
+                    Description = t.Description,
+                    When = t.When
+                }).ToListAsync();
+        }
+        public async Task<List<TransactionAdminDTO>> GetAllDeposits()
+        {
+            return await _context.Transactions
+                .Include(t => t.User)
+                .Where(t => t.Amount > 0)
+                .Select(t => new TransactionAdminDTO
+                {
+                    UserName = t.User != null ? t.User.UserName : "Unknown",
+                    Gmail = t.User != null ? t.User.Gmail : "Unknown",
+                    Amount = t.Amount,
+                    Description = t.Description,
+                    When = t.When
+                }).ToListAsync();
+        }
+
+        public async Task<List<TransactionAdminDTO>> GetAllWithdrawals()
+        {
+            return await _context.Transactions
+                .Include(t => t.User)
+                .Where(t => t.Amount < 0)
+                .Select(t => new TransactionAdminDTO
+                {
+                    UserName = t.User != null ? t.User.UserName : "Unknown",
+                    Gmail = t.User != null ? t.User.Gmail : "Unknown",
+                    Amount = t.Amount,
+                    Description = t.Description,
+                    When = t.When
+                }).ToListAsync();
+        }
+
+        public async Task<decimal> GetTotalDeposits()
+        {
+            return await _context.Transactions
+                .Where(t => t.Amount > 0)
+                .SumAsync(t => t.Amount);
+        }
+
+        public async Task<decimal> GetTotalWithdrawals()
+        {
+            return await _context.Transactions
+                .Where(t => t.Amount < 0)
+                .SumAsync(t => t.Amount);
+        }
+
+        public async Task<decimal> GetTotalRevenue()
+        {
+            var deposit = await GetTotalDeposits();
+            var withdrawal = await GetTotalWithdrawals();
+            return deposit + withdrawal;
+        }
+
+        public async Task<Dictionary<string, decimal>> GetMonthlyRevenue()
+        {
+            var transactions = await _context.Transactions.ToListAsync();
+
+            var monthlyRevenue = transactions
+                .GroupBy(t => t.CreatedAt.ToString("yyyy-MM"))
+                .OrderBy(g => g.Key)
+                .ToDictionary(
+                    g => g.Key, // yyyy-MM
+                    g => g.Sum(t => t.Amount)
+                );
+
+            return monthlyRevenue;
+        }
 
     }
 }
