@@ -35,7 +35,7 @@ namespace Repositories.IRepository
         Task AcceptReputationAsync(int roomId);
         Task CancelReputationAsync(int roomId);
         Task<Room?> GetRoomEntityByIdForLandlordAsync(int roomId, int landlordId);
-        Task<bool> CheckRoomIsDuplicatedAsync(int userId, string title, string locationDetail, string description);
+        Task<bool> CheckRoomIsDuplicatedAsync(int userId, string title, string description);
         Task<bool> CheckDescriptionExistsAsync(string description);
         Task<bool> CheckLocationExistsAsync(string locationDetail);
 
