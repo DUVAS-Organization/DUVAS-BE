@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.OData.Routing.Controllers;
 using Repositories.IRepository;
 using Repositories;
 using DTO;
+using API.Service;
 
 namespace API.Controllers.Admin
 {
@@ -180,5 +181,7 @@ namespace API.Controllers.Admin
             var Building = await _buildingRepository.GetBuildingByIdAsync(id);
             return Building != null;
         }
+        
+
     }
 }
