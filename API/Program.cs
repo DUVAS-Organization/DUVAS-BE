@@ -169,6 +169,7 @@ namespace API
             builder.Services.AddHostedService<CheckExpiredContractsService>();
             builder.Services.AddScoped<IAuthorizationContractRepository, AuthorizationContractRepository>();
             builder.Services.AddScoped<PdfService>();
+            builder.Services.AddSingleton(new AzureImageService("https://checkimageduvas.cognitiveservices.azure.com/", "Adz1RZeZ8Y53Eqp7zgXokcHIX3ETopRbDj4xOVdtc9NrKlPrySm6JQQJ99BDAC3pKaRXJ3w3AAAFACOGlB14"));
 
             // Add Hangfire
             builder.Services.AddHangfire(configuration => configuration
