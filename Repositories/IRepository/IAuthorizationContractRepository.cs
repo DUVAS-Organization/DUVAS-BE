@@ -14,5 +14,6 @@ namespace Repositories.IRepository
         Task UpdateAuthorizationContractAsync(AuthorizationContract contract);
         Task<List<AuthorizationContractDTO>> GetAuthorizationContractsAsync();
         Task<List<AuthorizationContractDTO>> GetAuthorizationContractsByUserAsync(int createdById);
+        Task UpdateStatusAsync(int id, int status);
     }
 }

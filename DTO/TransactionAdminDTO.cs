@@ -16,6 +16,10 @@ namespace DTO
         public decimal Amount { get; set; }
         public string? Description { get; set; }
         public DateTime? When { get; set; }
+        public string FormattedWhen => When.HasValue
+      ? When.Value.ToString("dd-MM-yyyy HH:mm:ss")
+      : "";
+
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public TransactionStatus Status { get; set; }
         public DateTime CreatedAt { get; set; }

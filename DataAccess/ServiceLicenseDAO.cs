@@ -131,6 +131,35 @@ namespace DataAccess
                 throw new Exception(ex.Message);
             }
         }
+        public static async Task<bool> IsCCCDExistsAsync(string cccd)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    return await context.ServiceLicenses.AnyAsync(s => s.CCCD == cccd);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Lỗi khi kiểm tra CCCD: " + ex.Message);
+            }
+        }
 
+        public static async Task<ServiceLicense?> GetByUserIdAsync(int userId)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    return await context.ServiceLicenses
+                        .SingleOrDefaultAsync(s => s.UserId == userId);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Lỗi khi tìm ServiceLicense theo UserId: " + ex.Message);
+            }
+        }
     }
 }

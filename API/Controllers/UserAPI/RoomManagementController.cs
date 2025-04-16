@@ -116,6 +116,8 @@ namespace API.Controllers.UserAPI
         {
             var landlord = await _userRepository.GetUserByIdAsync(sendMailDTO.UserIdLandlord);
 
+            string adminEmail = "manhhung02082003@gmail.com";
+
             if (landlord == null)
             {
                 return BadRequest("Thông tin người thuê hoặc chủ phòng không hợp lệ.");
@@ -139,19 +141,50 @@ namespace API.Controllers.UserAPI
             }
 
             // Send updated rental notification with detailed room info
-            _emailService.SendRentalNotificationToLandlord(
-                landlord.Gmail!,
-                room.Title,
-                room.LocationDetail,
-                room.Price,
-                room.Deposit ?? 0,
-                room.Acreage,
-                room.Furniture,
-                room.NumberOfBathroom,
-                room.NumberOfBedroom,
+            //_emailService.SendRentalNotificationToLandlord(
+            //    landlord.Gmail!,
+            //    room.Title,
+            //    room.LocationDetail,
+            //    room.Price,
+            //    room.Deposit ?? 0,
+            //    room.Acreage,
+            //    room.Furniture,
+            //    room.NumberOfBathroom,
+            //    room.NumberOfBedroom,
 
-                sendMailDTO.RenterName
-            );
+            //    sendMailDTO.RenterName
+            //);
+            if (room.Authorization == 1)
+            {
+                _emailService.SendRentalNotificationToLandlord(
+                    adminEmail,
+                    sendMailDTO.RoomTitle,
+                    sendMailDTO.LocationDetail,
+                    sendMailDTO.Price,
+                    sendMailDTO.Deposit,
+                    sendMailDTO.Acreage,
+                    sendMailDTO.Furniture,
+                    sendMailDTO.NumberOfBathroom,
+                    sendMailDTO.NumberOfBedroom,
+                    sendMailDTO.RenterName
+                );
+            }
+            else
+            {
+                _emailService.SendRentalNotificationToLandlord(
+                    landlord.Gmail!,
+                    sendMailDTO.RoomTitle,
+                    sendMailDTO.LocationDetail,
+                    sendMailDTO.Price,
+                    sendMailDTO.Deposit,
+                    sendMailDTO.Acreage,
+                    sendMailDTO.Furniture,
+                    sendMailDTO.NumberOfBathroom,
+                    sendMailDTO.NumberOfBedroom,
+                    sendMailDTO.RenterName
+                );
+            }
+
             //// **🔥 Cập nhật trạng thái phòng thành Pending (2)**
             //room.status = 2;
             //await _roomRepository.UpdateRoomAsync(room);

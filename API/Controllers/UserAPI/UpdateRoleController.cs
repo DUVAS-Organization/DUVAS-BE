@@ -33,7 +33,38 @@ namespace API.Controllers.UserAPI
             {
                 return BadRequest("Invalid data.");
             }
+            // Validate CCCD format (e.g., max length 12 as per model)
+            if (string.IsNullOrEmpty(dto.CCCD) || dto.CCCD.Length > 12)
+            {
+                return BadRequest("Invalid CCCD.");
+            }
+            Console.WriteLine($"Checking CCCD: {dto.CCCD}");
+            // Check if CCCD already exists in LandlordLicense or ServiceLicense
+            var existingLandlordLicense = await _landlordLicenseRepository.IsCCCDExistsAsync(dto.CCCD);
+            Console.WriteLine($"CCCD exists in ServiceLicenses: {existingLandlordLicense}");
+            if (existingLandlordLicense != false)
+            {
+                return Conflict("A license with this CCCD already exists.");
+            }
+            
+            var user = await _userRepository.GetUserByIdAsync(dto.UserId);
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
 
+            // Check if user already has an approved LandlordLicense
+            if (user.RoleLandlord == 1)
+            {
+                return Conflict("User already has an approved Landlord License.");
+            }
+
+            // Check if user has a pending LandlordLicense
+            var pendingLandlordLicense = await _landlordLicenseRepository.GetByUserIdAsync(dto.UserId);
+            if (pendingLandlordLicense != null)
+            {
+                return Conflict("User already has a pending Landlord License.");
+            }
             var landlordLicense = new LandlordLicense
             {
                 UserId = dto.UserId,
@@ -58,7 +89,38 @@ namespace API.Controllers.UserAPI
             {
                 return BadRequest("Invalid data.");
             }
+            // Validate CCCD format (e.g., max length 12 as per model)
+            if (string.IsNullOrEmpty(dto.CCCD) || dto.CCCD.Length > 12)
+            {
+                return BadRequest("Invalid CCCD.");
+            }
 
+            // Check if CCCD already exists in LandlordLicense or ServiceLicense
+            var existingServiceLicense = await _serviceLicenseRepository.IsCCCDExistsAsync(dto.CCCD);
+            if (existingServiceLicense != false)
+            {
+                return Conflict("A license with this CCCD already exists.");
+            }
+
+            // Check if user exists and their RoleService status
+            var user = await _userRepository.GetUserByIdAsync(dto.UserId);
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            // Check if user already has an approved ServiceLicense
+            if (user.RoleService == 1)
+            {
+                return Conflict("User already has an approved Service License.");
+            }
+
+            // Check if user has a pending ServiceLicense
+            var pendingServiceLicense = await _serviceLicenseRepository.GetByUserIdAsync(dto.UserId);
+            if (pendingServiceLicense != null)
+            {
+                return Conflict("User already has a pending Service License.");
+            }
             var serviceLicense = new ServiceLicense
             {
                 UserId = dto.UserId,
