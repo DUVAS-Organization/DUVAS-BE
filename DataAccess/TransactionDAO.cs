@@ -95,6 +95,7 @@ namespace DataAccess
         {
             return await _context.Transactions
                 .Include(t => t.User)
+                .Where(t => t.When != null)
                 .Select(t => new TransactionAdminDTO
                 {
                     UserName = t.User != null ? t.User.UserName : "Unknown",
@@ -104,11 +105,12 @@ namespace DataAccess
                     When = t.When
                 }).ToListAsync();
         }
+
         public async Task<List<TransactionAdminDTO>> GetAllDeposits()
         {
             return await _context.Transactions
                 .Include(t => t.User)
-                .Where(t => t.Amount > 0)
+                .Where(t => t.Amount > 0 && t.When != null)
                 .Select(t => new TransactionAdminDTO
                 {
                     UserName = t.User != null ? t.User.UserName : "Unknown",
@@ -118,12 +120,13 @@ namespace DataAccess
                     When = t.When
                 }).ToListAsync();
         }
+
 
         public async Task<List<TransactionAdminDTO>> GetAllWithdrawals()
         {
             return await _context.Transactions
                 .Include(t => t.User)
-                .Where(t => t.Amount < 0)
+                .Where(t => t.Amount < 0 && t.When != null)
                 .Select(t => new TransactionAdminDTO
                 {
                     UserName = t.User != null ? t.User.UserName : "Unknown",
@@ -134,19 +137,22 @@ namespace DataAccess
                 }).ToListAsync();
         }
 
+
         public async Task<decimal> GetTotalDeposits()
         {
             return await _context.Transactions
-                .Where(t => t.Amount > 0)
+                .Where(t => t.Amount > 0 && t.When != null)
                 .SumAsync(t => t.Amount);
         }
+
 
         public async Task<decimal> GetTotalWithdrawals()
         {
             return await _context.Transactions
-                .Where(t => t.Amount < 0)
+                .Where(t => t.Amount < 0 && t.When != null)
                 .SumAsync(t => t.Amount);
         }
+
 
         public async Task<decimal> GetTotalRevenue()
         {
@@ -157,10 +163,12 @@ namespace DataAccess
 
         public async Task<Dictionary<string, decimal>> GetMonthlyRevenue()
         {
-            var transactions = await _context.Transactions.ToListAsync();
+            var transactions = await _context.Transactions
+                .Where(t => t.When != null)
+                .ToListAsync();
 
             var monthlyRevenue = transactions
-                .GroupBy(t => t.CreatedAt.ToString("yyyy-MM"))
+                .GroupBy(t => t.When.Value.ToString("yyyy-MM"))
                 .OrderBy(g => g.Key)
                 .ToDictionary(
                     g => g.Key, // yyyy-MM
@@ -169,6 +177,7 @@ namespace DataAccess
 
             return monthlyRevenue;
         }
+
 
     }
 }
