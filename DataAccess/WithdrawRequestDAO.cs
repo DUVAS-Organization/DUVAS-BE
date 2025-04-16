@@ -89,6 +89,7 @@ public class WithdrawRequestDAO
 
         existingRequest.Status = WithdrawRequestStatus.Approved;
         _context.WithdrawRequests.Update(existingRequest);
+        await _context.SaveChangesAsync();
     }
 
     public async Task<List<WithdrawRequest>> SearchWithdrawRequestsAsync(string searchTerm)
