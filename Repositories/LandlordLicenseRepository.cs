@@ -17,5 +17,10 @@ namespace Repositories
         public async Task<List<LandlordLicenseDTO>> GetLandlordLicensesAsync() => await LandlordLicenseDAO.GetLandlordLicensesAsync();
         public async Task SaveLandlordLicenseAsync(LandlordLicense b) => await LandlordLicenseDAO.SaveLandlordLicenseAsync(b);
         public async Task UpdateLandlordLicenseAsync(LandlordLicense b) => await LandlordLicenseDAO.UpdateLandlordLicenseAsync(b);
+        public async Task<bool> IsCCCDExistsAsync(string cccd)
+                    => await LandlordLicenseDAO.IsCCCDExistsAsync(cccd);
+
+        public async Task<LandlordLicense?> GetByUserIdAsync(int userId)
+            => await LandlordLicenseDAO.GetByUserIdAsync(userId);
     }
 }

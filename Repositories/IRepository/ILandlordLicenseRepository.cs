@@ -15,5 +15,7 @@ namespace Repositories.IRepository
         Task DeleteLandlordLicenseAsync(LandlordLicense b);
         Task UpdateLandlordLicenseAsync(LandlordLicense b);
         Task<List<LandlordLicenseDTO>> GetLandlordLicensesAsync();
+        Task<bool> IsCCCDExistsAsync(string cccd); // Thêm để kiểm tra CCCD
+        Task<LandlordLicense?> GetByUserIdAsync(int userId); // Thêm để kiểm tra đơn đang chờ
     }
 }

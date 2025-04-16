@@ -116,6 +116,8 @@ namespace API.Controllers.UserAPI
         {
             var landlord = await _userRepository.GetUserByIdAsync(sendMailDTO.UserIdLandlord);
 
+            string adminEmail = "manhhung02082003@gmail.com";
+
             if (landlord == null)
             {
                 return BadRequest("Thông tin người thuê hoặc chủ phòng không hợp lệ.");
@@ -138,7 +140,14 @@ namespace API.Controllers.UserAPI
                 return BadRequest("Mail của landlord lỗi");
             }
 
-            _emailService.SendRentalNotificationToLandlord(landlord.Gmail!, sendMailDTO.RoomId, sendMailDTO.RenterName);
+            if (room.Authorization == 1)
+            {
+                _emailService.SendRentalNotificationToLandlord(adminEmail, sendMailDTO.RoomId, sendMailDTO.RenterName);
+            }
+            else
+            {
+                _emailService.SendRentalNotificationToLandlord(landlord.Gmail!, sendMailDTO.RoomId, sendMailDTO.RenterName);
+            }
 
             //// **🔥 Cập nhật trạng thái phòng thành Pending (2)**
             //room.status = 2;
@@ -220,7 +229,7 @@ namespace API.Controllers.UserAPI
         {
             try
             {
-                var rooms = await _roomRepository.GetAllRoomsByStatusAsync(1); 
+                var rooms = await _roomRepository.GetAllRoomsByStatusAsync(1);
                 if (rooms == null || !rooms.Any())
                 {
                     return NotFound("Không có phòng trống nào hiện tại.");

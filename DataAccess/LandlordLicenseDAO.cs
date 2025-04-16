@@ -126,5 +126,35 @@ namespace DataAccess
             }
         }
 
+        public static async Task<bool> IsCCCDExistsAsync(string cccd)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    return await context.LandlordLicenses.AnyAsync(l => l.CCCD == cccd);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Lỗi khi kiểm tra CCCD: " + ex.Message);
+            }
+        }
+
+        public static async Task<LandlordLicense?> GetByUserIdAsync(int userId)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    return await context.LandlordLicenses
+                        .SingleOrDefaultAsync(l => l.UserId == userId);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Lỗi khi tìm LandlordLicense theo UserId: " + ex.Message);
+            }
+        }
     }
 }
