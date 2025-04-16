@@ -114,5 +114,9 @@ namespace Repositories
         {
             await RoomDAO.UpdateAuthorizationAsync(roomId, authorization);
         }
+        public async Task<List<RoomDTO>> GetRoomAuthorizationAsync(int? userId)
+        {
+            return await RoomDAO.GetRoomAuthorizationAsync(userId);
+        }
     }
 }

@@ -169,7 +169,6 @@ namespace API
             builder.Services.AddHostedService<CheckExpiredContractsService>();
             builder.Services.AddScoped<IAuthorizationContractRepository, AuthorizationContractRepository>();
             builder.Services.AddScoped<PdfService>();
-            //builder.Services.AddSingleton(new AzureImageService("https://checkimageduvas.cognitiveservices.azure.com/", "A5kTqVPgAS1HizDXk1DB3gqlc4xQhjXAxQSovmxqN8HRjPZkUXWjJQQJ99BDAC3pKaRXJ3w3AAAFACOG4Z7M"));
             builder.Services.Configure<AzureImageServiceOptions>(
             builder.Configuration.GetSection("AzureImageService"));
             builder.Services.AddSingleton<AzureImageService>(sp =>

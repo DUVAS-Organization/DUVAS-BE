@@ -1,6 +1,7 @@
 ﻿using DTO;
 using DUVAS;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -799,5 +800,59 @@ namespace DataAccess
                 throw new Exception($"Lỗi khi cập nhật Authorization: {ex.Message}");
             }
         }
+        public static async Task<List<RoomDTO>> GetRoomAuthorizationAsync(int? userId)
+        {
+            using var context = new ApplicationDbContext();
+
+            var query = context.Rooms
+                .Include(p => p.User)
+                .Include(p => p.Building)
+                .Include(p => p.CategoryRoom)
+                .Where(p => p.Authorization == 1)
+                .AsQueryable();
+
+            if (userId.HasValue)
+            {
+                query = query.Where(p => p.UserId == userId);
+            }
+
+            return await query
+                .AsNoTracking()
+                .Select(p => new RoomDTO
+                {
+                    RoomId = p.RoomId,
+                    BuildingId = p.BuildingId,
+                    UserId = p.UserId,
+                    UserName = p.User.UserName,
+                    Title = p.Title,
+                    Description = p.Description,
+                    LocationDetail = p.LocationDetail,
+                    Acreage = p.Acreage,
+                    Furniture = p.Furniture,
+                    NumberOfBathroom = p.NumberOfBathroom,
+                    NumberOfBedroom = p.NumberOfBedroom,
+                    Garret = p.Garret,
+                    Price = p.Price,
+                    CategoryRoomId = p.CategoryRoomId,
+                    Image = p.Image,
+                    Note = p.Note,
+                    status = p.status,
+                    reputation = p.reputation,
+                    Deposit = p.Deposit,
+                    Dien = p.Dien,
+                    Nuoc = p.Nuoc,
+                    Internet = p.Internet,
+                    Rac = p.Rac,
+                    GuiXe = p.GuiXe,
+                    QuanLy = p.QuanLy,
+                    ChiPhiKhac = p.ChiPhiKhac,
+                    BuildingName = p.Building != null ? p.Building.BuildingName : null,
+                    CategoryName = p.CategoryRoom.CategoryName,
+                    IsPermission = p.IsPermission,
+                    Authorization = p.Authorization
+                })
+                .ToListAsync();
+        }
+
     }
 }

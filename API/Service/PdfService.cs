@@ -11,7 +11,7 @@ namespace Utilities
         public class AuthorizationContractDetails
         {
             public string Date { get; set; }
-            public string CertificationLocation { get; set; }
+            //public string CertificationLocation { get; set; }
             public int PartyAId { get; set; }
             public string PartyAName { get; set; }
             public DateTime PartyABirthDate { get; set; }
@@ -48,7 +48,7 @@ namespace Utilities
             PdfAcroForm form = PdfAcroForm.GetAcroForm(pdfDoc, true);
 
             form.GetField("Date").SetValue(details.Date);
-            form.GetField("CertificationLocation").SetValue(details.CertificationLocation);
+            //form.GetField("CertificationLocation").SetValue(details.CertificationLocation);
             form.GetField("PartyAName").SetValue(details.PartyAName);
             form.GetField("PartyABirthDate").SetValue(details.PartyABirthDate.ToString("dd/MM/yyyy"));
             form.GetField("PartyAIDNumber").SetValue(details.PartyAIDNumber);
