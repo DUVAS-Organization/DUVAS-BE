@@ -110,5 +110,10 @@ namespace Repositories
         {
             return await RoomDAO.CheckLocationExistsAsync(locationDetail);
         }
+        public async Task<List<RoomDTO>> GetRoomAuthorizationAsync(string? userName = null)
+        {
+            return await RoomDAO.GetRoomAuthorizationAsync(userName);
+        }
+
     }
 }

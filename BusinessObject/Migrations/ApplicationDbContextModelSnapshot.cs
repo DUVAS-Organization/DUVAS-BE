@@ -449,6 +449,9 @@ namespace BusinessObject.Migrations
                     b.Property<string>("Sex")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
@@ -622,6 +625,9 @@ namespace BusinessObject.Migrations
 
                     b.Property<double>("Acreage")
                         .HasColumnType("float");
+
+                    b.Property<int?>("Authorization")
+                        .HasColumnType("int");
 
                     b.Property<int?>("BuildingId")
                         .HasColumnType("int");
@@ -823,6 +829,9 @@ namespace BusinessObject.Migrations
 
                     b.Property<string>("Sex")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");

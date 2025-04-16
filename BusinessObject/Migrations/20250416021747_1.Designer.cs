@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BusinessObject.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250412065758_1")]
+    [Migration("20250416021747_1")]
     partial class _1
     {
         /// <inheritdoc />
@@ -452,6 +452,9 @@ namespace BusinessObject.Migrations
                     b.Property<string>("Sex")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
@@ -625,6 +628,9 @@ namespace BusinessObject.Migrations
 
                     b.Property<double>("Acreage")
                         .HasColumnType("float");
+
+                    b.Property<int?>("Authorization")
+                        .HasColumnType("int");
 
                     b.Property<int?>("BuildingId")
                         .HasColumnType("int");
@@ -826,6 +832,9 @@ namespace BusinessObject.Migrations
 
                     b.Property<string>("Sex")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");

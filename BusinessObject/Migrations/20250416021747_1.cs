@@ -201,7 +201,8 @@ namespace BusinessObject.Migrations
                     dateOfBirth = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Sex = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Address = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    GiayPhepKinhDoanh = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    GiayPhepKinhDoanh = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Status = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -281,7 +282,8 @@ namespace BusinessObject.Migrations
                     Sex = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Address = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     GiayPhepKinhDoanh = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    GiayPhepChuyenMon = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    GiayPhepChuyenMon = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Status = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -391,7 +393,8 @@ namespace BusinessObject.Migrations
                     Note = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     status = table.Column<int>(type: "int", nullable: true),
                     IsPermission = table.Column<int>(type: "int", nullable: true),
-                    reputation = table.Column<int>(type: "int", nullable: true)
+                    reputation = table.Column<int>(type: "int", nullable: true),
+                    Authorization = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
