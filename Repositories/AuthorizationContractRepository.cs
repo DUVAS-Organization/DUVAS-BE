@@ -27,5 +27,9 @@ namespace Repository
 
         public async Task UpdateAuthorizationContractAsync(AuthorizationContract contract)
             => await AuthorizationContractDAO.UpdateAuthorizationContractAsync(contract);
+        public async Task UpdateStatusAsync(int id, int status)
+        {
+            await AuthorizationContractDAO.UpdateStatusAsync(id, status);
+        }
     }
 }

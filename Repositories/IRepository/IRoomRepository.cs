@@ -38,6 +38,7 @@ namespace Repositories.IRepository
         Task<bool> CheckRoomIsDuplicatedAsync(int userId, string title, string description);
         Task<bool> CheckDescriptionExistsAsync(string description);
         Task<bool> CheckLocationExistsAsync(string locationDetail);
+        Task UpdateAuthorizationAsync(int roomId, int authorization);
 
     }
 }
