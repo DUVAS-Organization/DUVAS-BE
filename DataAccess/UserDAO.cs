@@ -697,6 +697,50 @@ namespace DataAccess
                 throw new Exception($"Lỗi khi Cancel UpRole Service: {ex.Message}");
             }
         }
-        
+        public static async Task<List<LandlordLicenseDTO>> GetLandlordLicensesByUserIdAsync(int userId)
+        {
+            using var context = new ApplicationDbContext();
+            return await context.LandlordLicenses
+                .Include(l => l.User)
+                .Where(l => l.UserId == userId)
+                .Select(license => new LandlordLicenseDTO
+                {
+                    LandlordLicenseId = license.LandlordLicenseId,
+                    UserId = license.UserId,
+                    Name = license.Name,
+                    CCCD = license.CCCD,
+                    Sex = license.Sex,
+                    Address = license.Address,
+                    GiayPhepKinhDoanh = license.GiayPhepKinhDoanh,
+                    Status = license.Status,
+                    AnhCCCDMatTruoc = license.AnhCCCDMatTruoc,
+                    AnhCCCDMatSau = license.AnhCCCDMatSau,
+                    dateOfBirth = license.dateOfBirth
+                }).ToListAsync();
+        }
+
+        public static async Task<List<ServiceLicenseDTO>> GetServiceLicensesByUserIdAsync(int userId)
+        {
+            using var context = new ApplicationDbContext();
+            return await context.ServiceLicenses
+                .Include(s => s.User)
+                .Where(s => s.UserId == userId)
+                .Select(license => new ServiceLicenseDTO
+                {
+                    ServiceLicenseId = license.ServiceLicenseId,
+                    UserId = license.UserId,
+                    Name = license.Name,
+                    CCCD = license.CCCD,
+                    Sex = license.Sex,
+                    Address = license.Address,
+                    GiayPhepKinhDoanh = license.GiayPhepKinhDoanh,
+                    GiayPhepChuyenMon = license.GiayPhepChuyenMon,
+                    Status = license.Status,
+                    AnhCCCDMatTruoc = license.AnhCCCDMatTruoc,
+                    AnhCCCDMatSau = license.AnhCCCDMatSau,
+                    dateOfBirth = license.dateOfBirth
+                }).ToListAsync();
+        }
+
     }
 }

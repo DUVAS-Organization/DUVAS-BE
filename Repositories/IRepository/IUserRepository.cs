@@ -38,5 +38,9 @@ namespace Repositories.IRepository
         Task<bool> CheckBankAccountExistsAsync(string accountNumber, string bankCode);
         Task CancelUpRoleLandLordAsync(int userId);
         Task CancelUpRoleServiceAsync(int userId);
+        Task<List<LandlordLicenseDTO>> GetLandlordLicensesByUserIdAsync(int userId);
+        Task<List<ServiceLicenseDTO>> GetServiceLicensesByUserIdAsync(int userId);
+
+
     }
 }
