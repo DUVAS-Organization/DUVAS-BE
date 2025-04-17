@@ -41,7 +41,10 @@ namespace GITHUB_ACTIONS.Controllers
             {
                 return BadRequest("Invalid contract details.");
             }
-
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             // Tạo file PDF
             var pdfBytes = _pdfService.GenerateAuthorizationContractPdf(details);
 
@@ -53,7 +56,7 @@ namespace GITHUB_ACTIONS.Controllers
             var contract = new AuthorizationContract
             {
                 ContractNumber = details.ContractNumber,
-                Date = details.Date,
+                //Date = details.Date,
                 PartyAId = details.PartyAId,
                 PartyBId = details.PartyBId,
                 PdfUrl = pdfUrl,

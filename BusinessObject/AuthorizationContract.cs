@@ -10,7 +10,6 @@ namespace BusinessObject
     {
         public int Id { get; set; }
         public string ContractNumber { get; set; } // Số hợp đồng
-        public string Date { get; set; } // Ngày lập hợp đồng
         public int PartyAId { get; set; } // ID của Bên A
         public User? PartyA { get; set; }
         public int PartyBId { get; set; } // ID của Bên B
