@@ -69,11 +69,11 @@ namespace GITHUB_ACTIONS.Controllers
         }
 
         [HttpGet("my-authorization-contracts")]
-        public async Task<IActionResult> GetMyAuthorizationContracts()
+        public async Task<IActionResult> GetMyAuthorizationContracts(int userId)
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
-                return Unauthorized("User not authenticated or invalid user ID");
+            //var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            //if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+            //    return Unauthorized("User not authenticated or invalid user ID");
 
             var contracts = await _authorizationContractRepository.GetAuthorizationContractsByUserAsync(userId);
             return Ok(contracts);
@@ -86,12 +86,12 @@ namespace GITHUB_ACTIONS.Controllers
             if (contract == null)
                 return NotFound("Authorization contract not found");
 
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
-                return Unauthorized("User not authenticated or invalid user ID");
+            //var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            //if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+            //    return Unauthorized("User not authenticated or invalid user ID");
 
-            if (contract.CreatedById != userId)
-                return Forbid("You are not authorized to view this contract");
+            //if (contract.CreatedById != userId)
+            //    return Forbid("You are not authorized to view this contract");
 
             var contractDTO = new AuthorizationContractDTO
             {
