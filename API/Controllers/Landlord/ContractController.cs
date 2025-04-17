@@ -9,6 +9,7 @@ using System;
 using API.Service;
 using Repositories.IRepository;
 using DUVAS;
+using DataAccess;
 
 namespace GITHUB_ACTIONS.Controllers
 {
@@ -65,13 +66,29 @@ namespace GITHUB_ACTIONS.Controllers
 
             return Ok(new { ContractId = contract.Id, PdfUrl = pdfUrl });
         }
-
-        [HttpGet("my-authorization-contracts")]
-        public async Task<IActionResult> GetMyAuthorizationContracts()
+        [HttpGet("all-authorization-contract")]
+        public async Task<IActionResult> GetAllAuthorizationContracts()
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
-                return Unauthorized("User not authenticated or invalid user ID");
+            try
+            {
+                var contracts = await AuthorizationContractDAO.GetAuthorizationContractsAsync();
+                if (contracts == null || !contracts.Any())
+                {
+                    return NotFound("Không tìm thấy hợp đồng ủy quyền nào.");
+                }
+                return Ok(contracts);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi lấy danh sách hợp đồng ủy quyền: {ex.Message}");
+            }
+        }
+        [HttpGet("my-authorization-contracts")]
+        public async Task<IActionResult> GetMyAuthorizationContracts(int userId)
+        {
+            //var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            //if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+            //    return Unauthorized("User not authenticated or invalid user ID");
 
             var contracts = await _authorizationContractRepository.GetAuthorizationContractsByUserAsync(userId);
             return Ok(contracts);
@@ -84,18 +101,18 @@ namespace GITHUB_ACTIONS.Controllers
             if (contract == null)
                 return NotFound("Authorization contract not found");
 
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
-                return Unauthorized("User not authenticated or invalid user ID");
+            //var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            //if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+            //    return Unauthorized("User not authenticated or invalid user ID");
 
-            if (contract.CreatedById != userId)
-                return Forbid("You are not authorized to view this contract");
+            //if (contract.CreatedById != userId)
+            //    return Forbid("You are not authorized to view this contract");
 
             var contractDTO = new AuthorizationContractDTO
             {
                 Id = contract.Id,
                 ContractNumber = contract.ContractNumber,
-                Date = contract.Date,
+                //Date = contract.Date,
                 PartyAId = contract.PartyAId,
                 PartyBId = contract.PartyBId,
                 PdfUrl = contract.PdfUrl,
