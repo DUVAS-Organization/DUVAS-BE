@@ -77,7 +77,7 @@ namespace Utilities
             // Format ngày cấp CMND/CCCD A
             form.GetField("PartyAIDIssueDate")
                 .SetValue(DateTime.Parse(details.PartyAIDIssueDate)
-                              .ToString("dd/MM/yyyy"));
+                              .ToString("dd-MM-yyyy"));
             form.GetField("PartyAIDIssuePlace").SetValue(details.PartyAIDIssuePlace);
             form.GetField("PartyAAddress").SetValue(details.PartyAAddress);
 
@@ -89,7 +89,7 @@ namespace Utilities
             // Format ngày cấp CMND/CCCD B
             form.GetField("PartyBIDIssueDate")
                 .SetValue(DateTime.Parse(details.PartyBIDIssueDate)
-                              .ToString("dd/MM/yyyy"));
+                              .ToString("dd-MM-yyyy"));
             form.GetField("PartyBIDIssuePlace").SetValue(details.PartyBIDIssuePlace);
             form.GetField("PartyBAddress").SetValue(details.PartyBAddress);
 
@@ -116,7 +116,7 @@ namespace Utilities
             // Format ngày hiệu lực
             form.GetField("EffectiveDate")
                 .SetValue(DateTime.Parse(details.EffectiveDate)
-                              .ToString("dd/MM/yyyy"));
+                              .ToString("dd-MM-yyyy"));
 
             form.FlattenFields();
             pdfDoc.Close();
