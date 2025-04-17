@@ -303,5 +303,34 @@ namespace API.Controllers.Admin
 
             return NoContent();
         }
+        [HttpGet("landlord-license/{userId}")]
+        public async Task<IActionResult> GetLandlordLicensesByUserId(int userId)
+        {
+            var licenses = await _userRepository.GetLandlordLicensesByUserIdAsync(userId);
+            if (licenses == null || !licenses.Any())
+                return NotFound("Không tìm thấy đơn đăng ký landlord.");
+
+            return Ok(licenses);
+        }
+        [HttpGet("one-landlord-license/{userId}")]
+        public async Task<IActionResult> GetOneLicensesByUserId(int userId)
+        {
+            var licenses = await _userRepository.GetOneLicensesByUserIdAsync(userId);
+            if (licenses == null)
+                return NotFound("Không tìm thấy đơn đăng ký landlord.");
+
+            return Ok(licenses);
+        }
+        [HttpGet("service-license/{userId}")]
+        public async Task<IActionResult> GetServiceLicensesByUserId(int userId)
+        {
+            var licenses = await _userRepository.GetServiceLicensesByUserIdAsync(userId);
+            if (licenses == null || !licenses.Any())
+                return NotFound("Không tìm thấy đơn đăng ký service.");
+
+            return Ok(licenses);
+        }
+
+
     }
 }
