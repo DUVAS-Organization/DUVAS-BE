@@ -46,5 +46,13 @@ namespace Repositories
         }
         public async Task CancelUpRoleLandLordAsync(int userId) => await UserDAO.CancelUpRoleLandLordAsync(userId);
         public async Task CancelUpRoleServiceAsync(int userId) => await UserDAO.CancelUpRoleServiceAsync(userId);
+        public async Task<List<LandlordLicenseDTO>> GetLandlordLicensesByUserIdAsync(int userId)
+               => await UserDAO.GetLandlordLicensesByUserIdAsync(userId);
+        public async Task<LandlordLicenseDTO> GetOneLicensesByUserIdAsync(int userId)
+              => await UserDAO.GetOneLicensesByUserIdAsync(userId);
+        public async Task<List<ServiceLicenseDTO>> GetServiceLicensesByUserIdAsync(int userId)
+            => await UserDAO.GetServiceLicensesByUserIdAsync(userId);
+
+
     }
 }
