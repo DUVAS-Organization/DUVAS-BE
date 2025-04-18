@@ -41,30 +41,45 @@ namespace API.Controllers.UserAPI
                 return BadRequest("Yêu cầu thuê không hợp lệ.");
             }
 
-            const int DAILY_RENTAL_LIMIT = 1; // Số lượt thuê tối đa mỗi ngày (có thể điều chỉnh)
+            const int DAILY_RENTAL_LIMIT = 10; // Số lượt thuê tối đa mỗi ngày (có thể điều chỉnh)
             DateTime today = DateTime.Today;
 
             try
             {
-                // Lấy danh sách các yêu cầu thuê của người dùng trong ngày hôm nay có trạng thái 'mới' (0)
-                var userRentals = await _rentalListRepository.GetRentalsByUserIdAsync(rentalRequest.RenterID);// Noi vs thang hung
-                bool hasActiveRentalToday = userRentals.Any(r => r.CreatedDate.Date == today && r.RentalStatus == 0);
+                // Lấy tất cả yêu cầu thuê của người dùng
+                var userRentals = await _rentalListRepository.GetRentalsByUserIdAsync(rentalRequest.RenterID);
 
-                if (hasActiveRentalToday)
+                // ✅ Kiểm tra xem đã gửi yêu cầu thuê phòng này chưa và vẫn đang chờ xử lý
+                bool hasRequestedThisRoom = userRentals.Any(r =>
+                    r.RoomId == rentalRequest.RoomId &&
+                    (r.RentalStatus == 0 || r.RentalStatus == 1) // 0: chờ xử lý, 1: đã gửi
+                );
+
+                if (hasRequestedThisRoom)
+                {
+                    return BadRequest("Bạn đã gửi yêu cầu thuê phòng này trước đó.");
+                }
+
+                // ✅ Kiểm tra người dùng đã gửi bao nhiêu yêu cầu trong hôm nay
+                int todayRentalCount = userRentals.Count(r =>
+                    r.CreatedDate.Date == today &&
+                    (r.RentalStatus == 0 || r.RentalStatus == 1)
+                );
+
+                if (todayRentalCount >= DAILY_RENTAL_LIMIT)
                 {
                     return BadRequest("Bạn đã đạt giới hạn thuê phòng trong ngày.");
                 }
 
-                // Ghi nhận yêu cầu thuê (không thay đổi trạng thái của phòng)
-                rentalRequest.RentalStatus = 1; // Yêu cầu thuê mới
-                rentalRequest.CreatedDate = DateTime.Now; // Ghi nhận thời điểm tạo
+                // ✅ Ghi nhận yêu cầu thuê
+                rentalRequest.RentalStatus = 1; // Trạng thái: đã gửi yêu cầu
+                rentalRequest.CreatedDate = DateTime.Now;
+
                 await _rentalListRepository.SaveRentalListAsync(rentalRequest);
 
-                // Gọi API gửi thông báo đến chủ phòng
+                // ✅ Gửi thông báo đến chủ phòng (nếu muốn)
                 var room = await _roomRepository.GetRoomByIdAsync(rentalRequest.RoomId);
-
-                // Gọi service track-room
-
+                // TODO: Gọi API hoặc service để gửi noti cho landlord
 
                 return Ok("Yêu cầu thuê phòng đã được tạo thành công.");
             }
@@ -73,6 +88,7 @@ namespace API.Controllers.UserAPI
                 return StatusCode(500, $"Lỗi hệ thống: {ex.Message}");
             }
         }
+
 
 
         /// <summary>
