@@ -9,6 +9,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using BusinessObject.Enums;
+using BusinessObject;
 
 namespace DataAccess
 {
@@ -609,6 +610,18 @@ namespace DataAccess
                     user.RoleLandlord = 1;
                     context.Users.Update(user);
                     await context.SaveChangesAsync();
+
+                    // Add Notification
+                    var notification = new Notification
+                    {
+                        UserId = userId,
+                        Type = "AcceptRegisterUpRole",
+                        Message = "Yêu cầu nâng cấp tài khoản Landlord đã được chấp nhận.",
+                        RedirectUrl = "/",
+                        CreatedDate = DateTime.UtcNow,
+                        IsRead = false
+                    };
+                    await NotificationDAO.CreateNotificationAsync(notification);
                 }
             }
             catch (Exception ex)
@@ -635,6 +648,18 @@ namespace DataAccess
                     user.RoleService = 1;
                     context.Users.Update(user);
                     await context.SaveChangesAsync();
+
+                    // Add Notification
+                    var notification = new Notification
+                    {
+                        UserId = userId,
+                        Type = "AcceptRegisterUpRole",
+                        Message = "Yêu cầu nâng cấp tài khoản Service đã được chấp nhận.",
+                        RedirectUrl = "/",
+                        CreatedDate = DateTime.UtcNow,
+                        IsRead = false
+                    };
+                    await NotificationDAO.CreateNotificationAsync(notification);
                 }
             }
             catch (Exception ex)
