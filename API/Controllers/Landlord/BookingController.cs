@@ -5,6 +5,7 @@ using DUVAS;
 using Hangfire;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using NuGet.Protocol.Core.Types;
 using Repositories;
 using Repositories.IRepository;
@@ -61,11 +62,57 @@ namespace API.Controllers.Landlord
             return Ok(rooms);
         }
 
+        [HttpGet("rentalList-of-room")]
+        public async Task<IActionResult> GetRentalListOfRoom(int RoomId)
+        {
+            try
+            {
+                // Kiểm tra xem phòng có tồn tại không
+                var room = await _roomRepository.GetRoomByIdAsync(RoomId);
+                if (room == null)
+                {
+                    return NotFound("Phòng không tồn tại.");
+                }
+
+                // Truy vấn RentalList với RoomId, RentalStatus = 1 và ContractId = null
+                using (var context = new ApplicationDbContext())
+                {
+                    var rentalLists = await context.RentalLists
+                        .AsNoTracking()
+                        .Where(r => r.RoomId == RoomId && r.RentalStatus == 1 && r.ContractId == null)
+                        .Select(r => new RentalListDTO
+                        {
+                            RentalId = r.RentalId,
+                            ContractId = r.ContractId,
+                            RenterID = r.RenterID,
+                            RoomId = r.RoomId,
+                            RentDate = r.RentDate,
+                            MonthForRent = r.MonthForRent,
+                            CreatedDate = r.CreatedDate,
+                            RenterName = r.User.Name,
+                            RenterEmail = r.User.Gmail,
+                            RenterPhone = r.User.Phone,
+                            RentalStatus = r.RentalStatus
+                        })
+                        .ToListAsync();
+
+                    if (rentalLists == null || !rentalLists.Any())
+                    {
+                        return NotFound("Không tìm thấy RentalList nào phù hợp.");
+                    }
+
+                    return Ok(rentalLists);
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi server: {ex.Message}");
+            }
+        }
+
         [HttpGet("rentalList-of-landlord")]
         public async Task<IActionResult> GetRentalListOfLandlord(int landlordId)
         {
-
-
             var rooms = await _roomRepository.GetRoomsByLandlordAsync(landlordId);
             var rentalLists = await _rentalListRepository.GetRentalListsAsync();
 
@@ -180,10 +227,11 @@ namespace API.Controllers.Landlord
 
         [HttpPut("confirm-reservation/{roomId}")]
         [Authorize(Roles = "Landlord")]
-        public async Task<IActionResult> ConfirmReservation(int roomId, [FromBody] ContractRequestDTO contractDto)
+        public async Task<IActionResult> ConfirmReservation(int RentalList, [FromBody] ContractRequestDTO contractDto)
         {
             // 🔹 Check if room exists
-            var room = await _roomRepository.GetRoomByIdAsync(roomId);
+            var rentalLists = await _rentalListRepository.GetRentalListByIdAsync(RentalList);
+            var room = await _roomRepository.GetRoomByIdAsync(rentalLists.RoomId);
             if (room == null)
             {
                 return NotFound("Phòng không tồn tại.");
@@ -220,50 +268,18 @@ namespace API.Controllers.Landlord
             var newContractId = await _contractRepository.NewContractAsync(contract);
 
             // Cập nhật RentalList với ContractId mới
-            var rentalList = await _rentalListRepository.GetRentalListByRoomIdAsync(roomId);
 
-            if (rentalList == null)
-            {
-                return NotFound("Không tìm thấy yêu cầu thuê phòng.");
-            }
 
             // Cập nhật ContractId vào RentalList đã tồn tại
-            rentalList.ContractId = newContractId;
+            rentalLists.ContractId = newContractId;
 
             // Lưu lại RentalList đã được cập nhật
-            await _rentalListRepository.UpdateRentalListAsync(rentalList);
+            await _rentalListRepository.UpdateRentalListAsync(rentalLists);
             // **🔥 Cập nhật trạng thái phòng thành Pending (2)**
             room.status = 2;
             await _roomRepository.UpdateRoomAsync(room);
             return Ok("Hợp đồng đã được tạo và yêu cầu thuê đã được xác nhận.");
         }
-
-
-
-
-        //// 3. Track Room Status
-        //[HttpGet("rooms/{roomId}/status")]
-        //[Authorize]
-        //public async Task<IActionResult> TrackRoomStatus(int roomId)
-        //{
-        //    int landlordId = GetLandlordId();
-
-        //    var room = await _roomRepository.GetRoomByIdForLandlordAsync(roomId, landlordId);
-        //    if (room == null)
-        //    {
-        //        return NotFound("Phòng không tồn tại hoặc không thuộc chủ nhà.");
-        //    }
-
-        //    string statusMessage = room.status switch
-        //    {
-        //        1 => "Phòng này đang trống và sẵn sàng cho thuê.",
-        //        2 => "Phòng này đang cho thuê hoặc đang làm hợp đồng.",
-        //        3 => "Phòng này đang được thuê.",
-        //        _ => "Phòng này không có trạng thái hợp lệ."
-        //    };
-
-        //    return Ok(new { RoomId = roomId, Status = room.status, Message = statusMessage });
-        //}
 
         // 4. Cancel Reservation
         [HttpPut("cancel-reservation/{rentalId}")]
@@ -312,8 +328,10 @@ namespace API.Controllers.Landlord
 
             return Ok("Yêu cầu thuê phòng đã được hủy, phòng đã được mở lại để cho thuê.");
         }
+        
         [HttpPost("check-balance")]
         [Authorize]
+
         public async Task<IActionResult> CheckUserBalance([FromBody] CheckBalanceDTO request)
         {
             // 🔹 Lấy thông tin User từ Database
@@ -352,6 +370,7 @@ namespace API.Controllers.Landlord
                 return BadRequest($"Lỗi khi cập nhật số dư: {ex.Message}");
             }
         }
+        
         [HttpPost("create-insider-trading")]
         public async Task<IActionResult> CreateInsiderTrading([FromBody] InsiderTradingDTO dto, string type)
         {
@@ -374,6 +393,7 @@ namespace API.Controllers.Landlord
             }
             return Ok(result);
         }
+        
         [HttpPost("create-insider-trading-2")]
         public async Task<IActionResult> CreateInsiderTrading2([FromBody] InsiderTradingDTO insiderTradingDTO, [FromQuery] string type)
         {
@@ -413,7 +433,8 @@ namespace API.Controllers.Landlord
                 return StatusCode(500, new { Message = "Error creating insider trading record", Error = ex.Message });
             }
         }
-       [HttpPost("first-month-insider-trading")]
+       
+        [HttpPost("first-month-insider-trading")]
         public async Task<IActionResult> FirstMonthInsiderTrading([FromBody] InsiderTradingRequest request)
         {
             try

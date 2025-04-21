@@ -27,6 +27,7 @@ namespace DataAccess
                             PartyAId = p.PartyAId,
                             PartyBId = p.PartyBId,
                             PdfUrl = p.PdfUrl,
+                            RoomList = p.RoomList,
                             CreatedById = p.CreatedById,
                             CreatedAt = p.CreatedAt,
                             status = p.status
@@ -59,6 +60,7 @@ namespace DataAccess
                             PartyAId = p.PartyAId,
                             PartyBId = p.PartyBId,
                             PdfUrl = p.PdfUrl,
+                            RoomList = p.RoomList,
                             CreatedById = p.CreatedById,
                             CreatedAt = p.CreatedAt,
                             status = p.status

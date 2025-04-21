@@ -66,59 +66,124 @@ namespace API.Controllers.UserAPI
             return Ok(new { RentalList = validRentals });
         }
 
-        //Đã thuê
-        [HttpGet("rental-list-of-rented-user/{userId}")]
-        public async Task<IActionResult> GetListsRentedByUserId(int userId)
+        // Đang chờ chủ phòng xác nhận: ContractId = null, RentalStatus = 1
+        [HttpGet("rental-list-of-pending-confirmation-user/{userId}")]
+        public async Task<IActionResult> GetListsPendingConfirmationByUserId(int userId)
         {
-            var rentals = await _rentalListRepository.GetRentalsByUserIdAsync(userId);
-            var filteredRentals = rentals.FindAll(r => r.ContractId.HasValue && r.ContractId != 0);
-            var validRentals = new List<RentalListDTO>();
-
-            foreach (var rental in filteredRentals)
+            try
             {
-                var contract = await _contractRepository.GetContractByIdAsync(rental.ContractId.Value);
-                if (contract != null && contract.status == 3)
+                // Fetch all rentals for the user
+                var rentals = await _rentalListRepository.GetRentalsByUserIdAsync(userId);
+                // Filter for pending confirmation: ContractId == null, RentalStatus == 1
+                var pendingRentals = rentals
+                    .Where(r => r.ContractId == null && r.RentalStatus == 1)
+                    .ToList();
+
+                if (pendingRentals == null || !pendingRentals.Any())
                 {
-                    validRentals.Add(rental);
+                    return NotFound("Không tìm thấy RentalList đang chờ xác nhận nào.");
                 }
+
+                return Ok(new { RentalList = pendingRentals });
             }
-            return Ok(new { RentalList = validRentals });
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi server: {ex.Message}");
+            }
         }
-        //Đang thuê
+
+        // Đang chờ giao dịch: ContractId != null, RentalStatus = 1, Contract.Status = 4
+        [HttpGet("rental-list-of-pending-transaction-user/{userId}")]
+        public async Task<IActionResult> GetListsPendingTransactionByUserId(int userId)
+        {
+            try
+            {
+                // Fetch all rentals for the user
+                var rentals = await _rentalListRepository.GetRentalsByUserIdAsync(userId);
+                // Filter rentals with non-null ContractId and RentalStatus == 1
+                var pendingTransactionRentals = rentals
+                    .Where(r => r.ContractId != null && r.RentalStatus == 1)
+                    .ToList();
+
+                // Further filter by Contract.Status == 4
+                var result = new List<RentalListDTO>();
+                foreach (var rental in pendingTransactionRentals)
+                {
+                    var contract = await _contractRepository.GetContractByIdAsync(rental.ContractId.Value);
+                    if (contract != null && contract.status == 4)
+                    {
+                        result.Add(rental);
+                    }
+                }
+
+                if (result == null || !result.Any())
+                {
+                    return NotFound("Không tìm thấy RentalList đang chờ giao dịch nào.");
+                }
+
+                return Ok(new { RentalList = result });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi server: {ex.Message}");
+            }
+        }
+
+        // Đang thuê: ContractId != null, RentalStatus = 1, Contract.Status = 1
         [HttpGet("rental-list-of-rent-user/{userId}")]
         public async Task<IActionResult> GetListsRentingByUserId(int userId)
         {
-            var rentals = await _rentalListRepository.GetRentalsByUserIdAsync(userId);
-            var filteredRentals = rentals.FindAll(r => r.ContractId.HasValue && r.ContractId != 0);
-            var validRentals = new List<RentalListDTO>();
-
-            foreach (var rental in filteredRentals)
+            try
             {
-                var contract = await _contractRepository.GetContractByIdAsync(rental.ContractId.Value);
-                if (contract != null && contract.status == 1)
+                var rentals = await _rentalListRepository.GetRentalsByUserIdAsync(userId);
+                if (rentals == null || !rentals.Any())
                 {
-                    validRentals.Add(rental);
+                    return NotFound("Không tìm thấy RentalList đang thuê nào.");
                 }
+                return Ok(new { RentalList = rentals });
             }
-            return Ok(new { RentalList = validRentals });
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi server: {ex.Message}");
+            }
         }
-        //Đã hủy
+
+        // Đã thuê: ContractId != null, RentalStatus = 1, Contract.Status = 3
+        [HttpGet("rental-list-of-rented-user/{userId}")]
+        public async Task<IActionResult> GetListsRentedByUserId(int userId)
+        {
+            try
+            {
+                var rentals = await _rentalListRepository.GetRentalsByUserIdAsync(userId);
+                if (rentals == null || !rentals.Any())
+                {
+                    return NotFound("Không tìm thấy RentalList đã thuê nào.");
+                }
+                return Ok(new { RentalList = rentals });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi server: {ex.Message}");
+            }
+        }
+
+        // Đã hủy: (ContractId != null, RentalStatus = 1, Contract.Status = 2) HOẶC (ContractId = null, RentalStatus = 2)
         [HttpGet("rental-list-of-cancel-user/{userId}")]
         public async Task<IActionResult> GetListsCancelRentByUserId(int userId)
         {
-            var rentals = await _rentalListRepository.GetRentalsByUserIdAsync(userId);
-            var filteredRentals = rentals.FindAll(r => r.ContractId.HasValue && r.ContractId != 0);
-            var validRentals = new List<RentalListDTO>();
-
-            foreach (var rental in filteredRentals)
+            try
             {
-                var contract = await _contractRepository.GetContractByIdAsync(rental.ContractId.Value);
-                if (contract != null && contract.status == 2)
+                var rentals = await _rentalListRepository.GetRentalsByUserIdAsync(userId);
+                if (rentals == null || !rentals.Any())
                 {
-                    validRentals.Add(rental);
+                    return NotFound("Không tìm thấy RentalList đã hủy nào.");
                 }
+                return Ok(new { RentalList = rentals });
             }
-            return Ok(new { RentalList = validRentals });
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi server: {ex.Message}");
+            }
         }
 
         // API lấy chi tiết RentalList và Contract
@@ -176,6 +241,7 @@ namespace API.Controllers.UserAPI
             }
             return Ok("Contract and associated rental lists updated successfully.");
         }
+        
         [HttpGet("check-phone/{userId}")]
         public async Task<IActionResult> CheckUserPhone(int userId)
         {

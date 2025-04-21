@@ -16,6 +16,7 @@ namespace BusinessObject
         public int PartyBId { get; set; } // ID của Bên B
         public User? PartyB { get; set; }
         public string PdfUrl { get; set; } // URL của file PDF trên Cloudinary
+        public string RoomList {  get; set; }
         public int CreatedById { get; set; } // ID của người tạo
         public DateTime CreatedAt { get; set; } // Thời gian tạo
         public int status { get; set; }
