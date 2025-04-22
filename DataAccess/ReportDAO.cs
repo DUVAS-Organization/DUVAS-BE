@@ -1,4 +1,5 @@
-﻿using DTO;
+﻿using BusinessObject;
+using DTO;
 using DUVAS;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -77,6 +78,19 @@ namespace DataAccess
                 {
                     await context.Reports.AddAsync(report);
                     await context.SaveChangesAsync();
+
+                    // ✅ Gửi thông báo cho admin hoặc user (tuỳ mục đích)
+                    var notification = new Notification
+                    {
+                        UserId = report.UserId, // hoặc gán ID admin nếu muốn admin nhận
+                        Type = "NewReport",
+                        Message = $"Báo cáo mới đã được gửi.",
+                        RedirectUrl = "/reports",
+                        CreatedDate = DateTime.Now,
+                        IsRead = false
+                    };
+
+                    await NotificationDAO.CreateNotificationAsync(notification);
                 }
             }
             catch (Exception ex)

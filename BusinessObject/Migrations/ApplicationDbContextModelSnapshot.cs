@@ -50,6 +50,9 @@ namespace BusinessObject.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("RoomList")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int?>("status")
                         .HasColumnType("int");
 
@@ -351,6 +354,9 @@ namespace BusinessObject.Migrations
                     b.Property<DateTime>("RentalDateTimeStart")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("RenterID")
+                        .HasColumnType("int");
 
                     b.Property<int>("status")
                         .HasColumnType("int");
