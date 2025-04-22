@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using DTO;
 using DUVAS;
 using Repositories;
+using BusinessObject;
+using DataAccess;
 
 namespace API.Controllers.UserAPI
 {
@@ -208,6 +210,7 @@ namespace API.Controllers.UserAPI
         public async Task<IActionResult> ConfirmContract(int rentId)
         {
             var rentals = await _rentalListRepository.GetRentalListByIdAsync(rentId);
+            var rooms = await _roomRepository.GetRoomByIdAsync(rentals.RoomId);
             if (rentals.ContractId == null)
             {
                 return BadRequest("RentalList không tồn tại ContractID");
@@ -217,9 +220,31 @@ namespace API.Controllers.UserAPI
                 int contractId = (int)rentals.ContractId;
                 await _contractRepository.UpdateContractStatusAsync(contractId, 1);
                 await _rentalListRepository.UpdateRentalListStatusAsync(rentId, 1);
-                var rooms = await _roomRepository.GetRoomByIdAsync(rentals.RoomId);
                 await _roomRepository.UpdateRoomStatusAsync(rentals.RoomId, rooms.UserId, 3);
             }
+
+            //Thông báo
+            await NotificationDAO.CreateNotificationAsync(new Notification
+            {
+                UserId = rentals.RenterID,
+                Type = "ConfirmReservation",
+                Message = $"Bạn đã xác nhận hợp dồng thuê phòng",
+                RedirectUrl = $"/RentalList",
+                CreatedDate = DateTime.Now,
+                IsRead = false
+            });
+
+            //Thông báo
+            await NotificationDAO.CreateNotificationAsync(new Notification
+            {
+                UserId = rooms.UserId,
+                Type = "ConfirmReservation",
+                Message = $"Người thuê đã đồng ý hợp đồng",
+                RedirectUrl = $"/RentalList",
+                CreatedDate = DateTime.Now,
+                IsRead = false
+            });
+
             return Ok("Contract and associated rental lists updated successfully.");
         }
 

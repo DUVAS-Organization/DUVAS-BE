@@ -8,6 +8,9 @@ using Repositories;
 using API.Service;
 using DTO;
 using Microsoft.AspNetCore.Authorization;
+using BusinessObject;
+using DataAccess;
+using System.Diagnostics.Contracts;
 
 namespace API.Controllers.UserAPI
 {
@@ -29,7 +32,7 @@ namespace API.Controllers.UserAPI
             _roomRepository = roomRepository;
             _emailService = emailService;
         }
-
+        int admin = 3;
         /// <summary>
         /// API cho thuê phòng
         /// </summary>
@@ -64,7 +67,27 @@ namespace API.Controllers.UserAPI
                 var room = await _roomRepository.GetRoomByIdAsync(rentalRequest.RoomId);
 
                 // Gọi service track-room
-
+                // Gửi thông báo uprole
+                var message = $"Bạn đã gửi thành công yêu cầu thuê phòng #{rentalRequest.RoomId}.";
+                var redirectUrl = $"/RentalList";
+                await NotificationDAO.CreateNotificationAsync(new Notification
+                {
+                    UserId = rentalRequest.RenterID,
+                    Type = "RentRoom",
+                    Message = message,
+                    RedirectUrl = redirectUrl,
+                    CreatedDate = DateTime.Now,
+                    IsRead = false
+                });
+                await NotificationDAO.CreateNotificationAsync(new Notification
+                {
+                    UserId = room.UserId,
+                    Type = "RentRoom",
+                    Message = $"Dang có yêu cầu thuê phòng #{rentalRequest.RoomId}.",
+                    RedirectUrl = redirectUrl,
+                    CreatedDate = DateTime.Now,
+                    IsRead = false
+                });
 
                 return Ok("Yêu cầu thuê phòng đã được tạo thành công.");
             }
@@ -224,6 +247,7 @@ namespace API.Controllers.UserAPI
 
             return Ok(roomFeedbacks);
         }
+        
         [HttpGet("rooms")]
         public async Task<IActionResult> GetAvailableRooms()
         {

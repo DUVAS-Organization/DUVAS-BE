@@ -40,6 +40,8 @@ namespace DUVAS
         public DbSet<SavedPost> SavedPosts { get; set; }
         public virtual DbSet<BankAccounts> BankAccounts { get; set; }
         public virtual DbSet<AuthorizationContract> AuthorizationContracts { get; set; }
+        public virtual DbSet<Notification> Notifications { get; set; }
+
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
        : base(options)
         {

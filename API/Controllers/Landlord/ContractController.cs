@@ -14,7 +14,7 @@ namespace GITHUB_ACTIONS.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
     public class ContractController : ControllerBase
     {
         private readonly IAuthorizationContractRepository _authorizationContractRepository;
@@ -68,13 +68,19 @@ namespace GITHUB_ACTIONS.Controllers
             return Ok(new { ContractId = contract.Id, PdfUrl = pdfUrl });
         }
 
+        //Hàm lấy ra Author contract của mình (user đăng nhập vào)
         [HttpGet("my-authorization-contracts")]
-        public async Task<IActionResult> GetMyAuthorizationContracts(int userId)
+        public async Task<IActionResult> GetMyAuthorizationContracts()
         {
             //var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             //if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
             //    return Unauthorized("User not authenticated or invalid user ID");
-
+            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId");
+            if (userIdClaim == null)
+            {
+                return BadRequest("UserId claim not found.");
+            }
+            int.TryParse(userIdClaim.Value, out int userId);
             var contracts = await _authorizationContractRepository.GetAuthorizationContractsByUserAsync(userId);
             return Ok(contracts);
         }
@@ -106,6 +112,15 @@ namespace GITHUB_ACTIONS.Controllers
             };
 
             return Ok(contractDTO);
+        }
+
+        [HttpGet("authorization")]
+        public async Task<IActionResult> GetAllAuthorizationContract()
+        {
+            var contract = await _authorizationContractRepository.GetAuthorizationContractsAsync();
+            if (contract == null)
+                return NotFound("Không có Author Contract nào");
+            return Ok(contract);
         }
 
         [HttpPut("update-rooms-authorization")]
@@ -175,5 +190,7 @@ namespace GITHUB_ACTIONS.Controllers
                 return StatusCode(500, new { Message = $"Lỗi khi cập nhật status: {ex.Message}" });
             }
         }
+
+
     }
 }
