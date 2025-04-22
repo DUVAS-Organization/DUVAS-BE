@@ -9,6 +9,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using BusinessObject.Enums;
+using BusinessObject;
 
 namespace DataAccess
 {
@@ -344,6 +345,18 @@ namespace DataAccess
 
             _context.BankAccounts.Add(newBankAccount);
             await _context.SaveChangesAsync();
+            // ✅ Tạo thông báo khi thêm tài khoản ngân hàng
+            var notification = new Notification
+            {
+                UserId = userId,
+                Type = "BankAccount",
+                Message = $"Bạn đã thêm tài khoản ngân hàng thành công.",
+                RedirectUrl = "/bank-accounts",
+                CreatedDate = DateTime.Now,
+                IsRead = false
+            };
+            await NotificationDAO.CreateNotificationAsync(notification);
+
 
             return newBankAccount;
         }
@@ -378,6 +391,18 @@ namespace DataAccess
                 _context.BankAccounts.Update(bankAccount);
                 await _context.SaveChangesAsync();
 
+                // ✅ Tạo thông báo
+                var statusText = active ? "kích hoạt" : "vô hiệu hóa";
+                var notification = new Notification
+                {
+                    UserId = userId,
+                    Type = "BankAccountStatusChange",
+                    Message = $"Tài khoản ngân hàng \"{bankAccount.AccountNumber}\" đã được {statusText}.",
+                    RedirectUrl = "/bank-accounts",
+                    CreatedDate = DateTime.Now,
+                    IsRead = false
+                };
+                await NotificationDAO.CreateNotificationAsync(notification);
                 return true;
             }
             catch (Exception e)
@@ -609,6 +634,18 @@ namespace DataAccess
                     user.RoleLandlord = 1;
                     context.Users.Update(user);
                     await context.SaveChangesAsync();
+
+                    // Add Notification
+                    var notification = new Notification
+                    {
+                        UserId = userId,
+                        Type = "AcceptRegisterUpRole",
+                        Message = "Yêu cầu nâng cấp tài khoản Landlord đã được chấp nhận.",
+                        RedirectUrl = "/",
+                        CreatedDate = DateTime.UtcNow,
+                        IsRead = false
+                    };
+                    await NotificationDAO.CreateNotificationAsync(notification);
                 }
             }
             catch (Exception ex)
@@ -635,6 +672,18 @@ namespace DataAccess
                     user.RoleService = 1;
                     context.Users.Update(user);
                     await context.SaveChangesAsync();
+
+                    // Add Notification
+                    var notification = new Notification
+                    {
+                        UserId = userId,
+                        Type = "AcceptRegisterUpRole",
+                        Message = "Yêu cầu nâng cấp tài khoản Service đã được chấp nhận.",
+                        RedirectUrl = "/",
+                        CreatedDate = DateTime.UtcNow,
+                        IsRead = false
+                    };
+                    await NotificationDAO.CreateNotificationAsync(notification);
                 }
             }
             catch (Exception ex)

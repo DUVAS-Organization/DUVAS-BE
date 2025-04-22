@@ -1,4 +1,5 @@
 ﻿using API.Service;
+using BusinessObject;
 using DataAccess;
 using DTO;
 using DUVAS;
@@ -16,13 +17,17 @@ namespace API.Controllers.UserAPI
         private readonly ILandlordLicenseRepository _landlordLicenseRepository;
         private readonly IServiceLicenseRepository _serviceLicenseRepository;
         private readonly IUserRepository _userRepository;
+        private readonly int _adminId;
 
-
-        public UpdateRoleController(ILandlordLicenseRepository landlordLicenseRepository, IUserRepository userRepository, IServiceLicenseRepository serviceLicenseRepository)
+        public UpdateRoleController(ILandlordLicenseRepository landlordLicenseRepository,
+            IUserRepository userRepository,
+            IServiceLicenseRepository serviceLicenseRepository,
+            IConfiguration configuration)
         {
             _landlordLicenseRepository = landlordLicenseRepository;
             _userRepository = userRepository;
             _serviceLicenseRepository = serviceLicenseRepository;
+            _adminId = configuration.GetValue<int>("AdminId"); 
         }
 
 
@@ -79,6 +84,29 @@ namespace API.Controllers.UserAPI
             };
 
             await _landlordLicenseRepository.SaveLandlordLicenseAsync(landlordLicense);
+
+            // Gửi thông báo uprole
+            var message = $"Bạn đã gửi thành công yêu cầu đăng ký làm chủ nhà.";
+            var redirectUrl = $"";
+            await NotificationDAO.CreateNotificationAsync(new Notification
+            {
+                UserId = landlordLicense.UserId,
+                Type = "UpdateRole",
+                Message = message,
+                RedirectUrl = redirectUrl,
+                CreatedDate = DateTime.Now,
+                IsRead = false
+            });
+
+            await NotificationDAO.CreateNotificationAsync(new Notification
+            {
+                UserId = _adminId,
+                Type = "UpdateRole",
+                Message = $"Vừa có đơn đăng ký làm chủ nhà từ User: #{landlordLicense.UserId}",
+                RedirectUrl = redirectUrl,
+                CreatedDate = DateTime.Now,
+                IsRead = false
+            });
             return CreatedAtAction(nameof(SaveLandlordLicense), new { id = landlordLicense.LandlordLicenseId }, landlordLicense);
         }
 
@@ -136,6 +164,29 @@ namespace API.Controllers.UserAPI
             };
 
             await _serviceLicenseRepository.SaveServiceLicenseAsync(serviceLicense);
+
+            // Gửi thông báo uprole
+            var message = $"Bạn đã gửi thành công yêu cầu đăng ký làm chủ dịch vụ.";
+            var redirectUrl = $"";
+            await NotificationDAO.CreateNotificationAsync(new Notification
+            {
+                UserId = serviceLicense.UserId,
+                Type = "ConfirmUpdateRole",
+                Message = message,
+                RedirectUrl = redirectUrl,
+                CreatedDate = DateTime.Now,
+                IsRead = false
+            });
+
+            await NotificationDAO.CreateNotificationAsync(new Notification
+            {
+                UserId = _adminId,
+                Type = "UpdateRole",
+                Message = $"Vừa có đơn đăng ký làm chủ dịch vụ từ User: #{serviceLicense.UserId}",
+                RedirectUrl = redirectUrl,
+                CreatedDate = DateTime.Now,
+                IsRead = false
+            });
             return CreatedAtAction(nameof(SaveServiceLicense), new { id = serviceLicense.ServiceLicenseId }, serviceLicense);
         }
 

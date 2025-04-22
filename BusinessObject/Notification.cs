@@ -16,7 +16,7 @@ namespace BusinessObject
         public string Type { get; set; } // Loại thông báo: "CancelRegisterUpRole", "AcceptRegisterUpRole",........
         public string Message { get; set; }
         public string RedirectUrl { get; set; }
-        public DateTime CreatedDate { get; set; } = DateTime.Now;
+        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
         public bool IsRead { get; set; } = false;
     }
 

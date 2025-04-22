@@ -21,7 +21,7 @@ namespace DUVAS
         // 2: Đã bị hủy
         // 3: Het han
         // 4: pending
-
+        public int RenterID { get; set; }
         public virtual ICollection<RentalList>? RentalLists { get; set; }
     }
 }

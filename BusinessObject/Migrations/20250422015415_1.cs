@@ -5,23 +5,24 @@
 namespace BusinessObject.Migrations
 {
     /// <inheritdoc />
-    public partial class _2 : Migration
+    public partial class _1 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<decimal>(
-                name: "DownPayment",
+            migrationBuilder.AddColumn<int>(
+                name: "RenterID",
                 table: "Contracts",
-                type: "decimal(18,2)",
-                nullable: true);
+                type: "int",
+                nullable: false,
+                defaultValue: 0);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "DownPayment",
+                name: "RenterID",
                 table: "Contracts");
         }
     }
