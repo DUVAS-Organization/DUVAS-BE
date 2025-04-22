@@ -19,13 +19,58 @@ namespace API.Controllers.Landlord
         private readonly UserDAO _userDAO;
         private readonly CloudinaryService _cloudinaryService;
         private readonly AiService _aiService;
+        private readonly SpeechToTextService _speechToTextService;
 
-        public RoomManagementLandlordController(IRoomRepository roomRepository, UserDAO userDAO, CloudinaryService cloudinaryService, AiService aiService)
+        public RoomManagementLandlordController(IRoomRepository roomRepository, UserDAO userDAO, CloudinaryService cloudinaryService, AiService aiService, SpeechToTextService speechToTextService)
         {    _roomRepository = roomRepository;
             _userDAO = userDAO;
             _cloudinaryService = cloudinaryService; // Inject service upload ảnh
             _aiService = aiService;
+            _speechToTextService = speechToTextService;
         }
+        [HttpPost("search-rooms")]
+        public async Task<IActionResult> SearchRooms([FromQuery] string searchTerm = null,  IFormFile audioFile = null)
+        {
+            // If searchTerm is not provided and there is an audio file, convert speech to text to get the search term
+            if (string.IsNullOrWhiteSpace(searchTerm) && audioFile != null)
+            {
+                try
+                {
+                    // Call ConvertSpeechToTextAsync to get the search term from the audio file
+                    var speechResult = await _speechToTextService.ConvertSpeechToTextAsync(audioFile);
+                    searchTerm = speechResult;  // Assign the speech-to-text result as the search term
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest($"Error while converting speech to text: {ex.Message}");
+                }
+            }
+
+            // If searchTerm is still empty after processing, return all rooms
+            if (string.IsNullOrWhiteSpace(searchTerm))
+            {
+                return Ok(await _roomRepository.GetRoomsAsync());  // Return all rooms if no search term
+            }
+
+            try
+            {
+                var rooms = await _roomRepository.SearchRoomsByTermAsync(searchTerm);
+
+                if (rooms == null || !rooms.Any())
+                {
+                    return NotFound(new { message = "No rooms found matching your search." });
+                }
+
+                return Ok(new { message = "Rooms found.", rooms });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error searching for rooms: {ex.Message}");
+            }
+        }
+
+
+
 
 
         private int GetLandlordId()
@@ -515,6 +560,12 @@ if (isLocationUsedGlobally)
                 Console.WriteLine($"[LỖI] Lỗi khi tạo tiêu đề/mô tả: {ex.Message}");
                 return BadRequest(new { message = "Lỗi khi tạo tiêu đề và mô tả", error = ex.Message });
             }
+            // Thêm chức năng tìm kiếm phòng theo từ khóa
+
+            // Correct the placement of the method to be inside the class, not within another method
+
+
+
         }
     }
 }

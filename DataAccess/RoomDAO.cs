@@ -216,6 +216,7 @@ namespace DataAccess
                     {
                         RoomId = p.RoomId,
                         BuildingId = p.BuildingId,
+
                         UserId = p.UserId,
                         UserName = p.User.UserName,
                         Title = p.Title,
@@ -684,6 +685,55 @@ namespace DataAccess
                 throw new Exception($"Lỗi khi kiểm tra LocationDetail trùng: {ex.Message}");
             }
         }
+
+        public static async Task<List<RoomDTO>> SearchRoomsByTermAsync(string searchTerm)
+        {
+            if (string.IsNullOrWhiteSpace(searchTerm))
+            {
+                return await GetRoomsAsync();
+            }
+
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var rooms = await context.Rooms
+                        .AsNoTracking()
+                        .Where(r => r.Title.ToLower().Contains(searchTerm.ToLower())
+                                    || r.Description.ToLower().Contains(searchTerm.ToLower())
+                                    || r.LocationDetail.ToLower().Contains(searchTerm.ToLower()))
+                        .Select(r => new RoomDTO
+                        {
+                            RoomId = r.RoomId,
+                            BuildingId = r.BuildingId,
+                            UserId = r.UserId,
+                            UserName = r.User.UserName,
+                            Title = r.Title,
+                            Description = r.Description,
+                            LocationDetail = r.LocationDetail,
+                            Acreage = r.Acreage,
+                            Furniture = r.Furniture,
+                            NumberOfBathroom = r.NumberOfBathroom,
+                            NumberOfBedroom = r.NumberOfBedroom,
+                            Garret = r.Garret,
+                            Price = r.Price,
+                            CategoryRoomId = r.CategoryRoomId,
+                            CategoryName = r.CategoryRoom.CategoryName,
+                            Image = r.Image,
+                            Note = r.Note,
+                            IsPermission = r.IsPermission
+                        })
+                        .ToListAsync();
+
+                    return rooms;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi tìm kiếm phòng: {ex.Message}");
+            }
+        }
+
 
 
 

@@ -28,6 +28,34 @@ namespace API.Controllers.ServiceOwner
             _rentalServiceListRepository = rentalServiceListRepository;
             _priorityPackageServicePostRepository = priorityPackageServicePostRepository;
         }
+        [HttpGet("search-service")]
+        public async Task<IActionResult> SearchServicePosts([FromQuery] string searchTerm)
+        {
+          
+            if (string.IsNullOrWhiteSpace(searchTerm))
+            {
+                
+                return Ok(await _servicePostRepository.GetServicePostsAsync()); // Get all services if no search term is provided
+            }
+
+            try
+            {
+                // Use the new search functionality to get the services matching the search term
+                var services = await _servicePostRepository.SearchServicePostsByTermAsync(searchTerm);
+
+                if (services == null || !services.Any())
+                {
+                    return NotFound(new { message = "Không có dịch vụ nào phù hợp với từ khóa bạn tìm kiếm." });
+                }
+
+                return Ok(new { message = "Danh sách dịch vụ tìm được.", services });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi tìm kiếm dịch vụ: {ex.Message}");
+            }
+        }
+
 
         private int GetServiceId()
         {

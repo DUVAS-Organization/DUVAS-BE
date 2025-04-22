@@ -10,6 +10,7 @@ namespace DTO
     {
         public string Utterance { get; set; }
         public double Confidence { get; set; }
+        public string Text { get; set; }
     }
 
     // Root response class to represent the overall response

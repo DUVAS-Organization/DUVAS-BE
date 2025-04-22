@@ -29,6 +29,10 @@ namespace Repositories
         {
             return await ServicePostDAO.GetServicePostsByUserIdAsync(userId);
         }
+        public async Task<List<ServicePostDTO>> SearchServicePostsByTermAsync(string searchTerm)
+        {
+            return await ServicePostDAO.SearchServicePostsByTermAsync(searchTerm); // Call the new method in DAO
+        }
 
 
     }

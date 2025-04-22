@@ -139,6 +139,8 @@ namespace API
 
             builder.Services.AddScoped<UserDAO>();
             builder.Services.AddScoped<CloudinaryService>();
+            builder.Services.AddScoped<SpeechToTextService>();
+
 
             // Add CORS policy for React app
             builder.Services.AddCors(options =>

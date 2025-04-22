@@ -110,6 +110,13 @@ namespace Repositories
         {
             return await RoomDAO.CheckLocationExistsAsync(locationDetail);
         }
+        public async Task<List<RoomDTO>> SearchRoomsByTermAsync(string searchTerm)
+        {
+            return await RoomDAO.SearchRoomsByTermAsync(searchTerm); // Use the renamed method
+        }
+
+
+
 
 
     }
