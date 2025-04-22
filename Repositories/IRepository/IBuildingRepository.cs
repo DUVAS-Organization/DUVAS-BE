@@ -15,7 +15,11 @@ namespace Repositories.IRepository
         Task DeleteBuildingAsync(Building b);
         Task UpdateBuildingAsync(Building b);
         Task<List<BuildingDTO>> GetBuildingsAsync();
+        Task<List<BuildingDTO>> GetLockedBuildingsAsync();
+        Task<List<BuildingDTO>> GetActiveBuildingsAsync();
         Task<List<BuildingDTO>> SearchBuildingsAsync(string searchTerm);
+        Task LockBuilding(int buildingId);
+        Task UnLockBuilding(int buildingId);
 
     }
 }

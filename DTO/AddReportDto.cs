@@ -1,8 +1,15 @@
-﻿namespace DTO;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-public class AddReportDto
+namespace DTO
 {
-    public int RoomId { get; set; }
-    public required string ReportContent { get; set; }
-    public required string Image { get; set; }
+    public class AddReportDto
+    {
+        public int RoomId { get; set; }
+        public required string ReportContent { get; set; }
+        public required string Image { get; set; }
+    }
 }

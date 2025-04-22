@@ -20,8 +20,8 @@ using API.Hubs;
 using API.Services;
 using Utilities;
 using Microsoft.Extensions.DependencyInjection;
-using Hangfire; // Thêm namespace cho Hangfire
-using Hangfire.SqlServer; // Thêm namespace cho Hangfire.SqlServer
+using Hangfire;
+using Hangfire.SqlServer; 
 
 namespace API
 {
@@ -162,12 +162,14 @@ namespace API
             builder.Services.AddHttpClient<FPTAIService>();
             builder.Services.AddScoped<CloudinaryService>();
             builder.Services.AddScoped<IInsiderTradingRepository, InsiderTradingRepository>();
-
+            builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+            builder.Services.AddScoped<FPTAIService>();
             // Add SignalR
             builder.Services.AddSignalR();
             builder.Services.AddHostedService<CheckExpiredContractsService>();
             builder.Services.AddScoped<IAuthorizationContractRepository, AuthorizationContractRepository>();
             builder.Services.AddScoped<PdfService>();
+            builder.Services.AddSingleton(new AzureImageService("https://checkimageduvas.cognitiveservices.azure.com/", "Adz1RZeZ8Y53Eqp7zgXokcHIX3ETopRbDj4xOVdtc9NrKlPrySm6JQQJ99BDAC3pKaRXJ3w3AAAFACOGlB14"));
 
             // Add Hangfire
             builder.Services.AddHangfire(configuration => configuration
@@ -212,11 +214,10 @@ namespace API
             // Sử dụng CORS trước các middleware khác
             app.UseCors("AllowReactApp");
             app.UseRouting();
-            app.UseAuthentication(); // Thêm UseAuthentication trước UseAuthorization
+            app.UseAuthentication(); 
             app.UseAuthorization();
 
-            // Thêm middleware Hangfire
-            app.UseHangfireDashboard(); // (Tùy chọn) Dashboard tại /hangfire
+            app.UseHangfireDashboard(); 
 
             // Map SignalR Hubs
             app.MapHub<SavedPostHub>("/savedPostHub");

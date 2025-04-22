@@ -38,5 +38,9 @@ namespace Repositories.IRepository
         Task AcceptUpRoleServiceAsync(int userId);
         Task CancelUpRoleLandLordAsync(int userId);
         Task CancelUpRoleServiceAsync(int userId);
+        Task<List<LandlordLicenseDTO>> GetLandlordLicensesByUserIdAsync(int userId);
+        Task<List<ServiceLicenseDTO>> GetServiceLicensesByUserIdAsync(int userId);
+
+
     }
 }

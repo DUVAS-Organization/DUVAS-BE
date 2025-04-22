@@ -15,5 +15,9 @@ namespace Repositories.IRepository
         Task DeleteCategoryServiceAsync(CategoryService b);
         Task UpdateCategoryServiceAsync(CategoryService b);
         Task<List<CategoryServiceDTO>> GetCategoryServicesAsync();
+        Task<List<CategoryServiceDTO>> GetCategoryLockedServicesAsync();
+        Task<List<CategoryServiceDTO>> GetCategoryActiveServicesAsync();
+        Task LockCategoryService(int categoryServiceId);
+        Task UnLockCategoryService(int categoryServiceId);
     }
 }

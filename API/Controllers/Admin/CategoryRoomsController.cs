@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.OData.Query;
 using Repositories.IRepository;
 using DTO;
 using Microsoft.AspNetCore.OData.Routing.Controllers;
+using Repositories;
 
 namespace API.Controllers.Admin
 {
@@ -30,6 +31,18 @@ namespace API.Controllers.Admin
         public async Task<ActionResult<IEnumerable<CategoryRoomDTO>>> GetCategoryRooms()
         {
             var categoryRooms = await _categoryRoomRepository.GetCategoryRoomsAsync();
+            return Ok(categoryRooms);
+        }
+        [HttpGet("Locked")]
+        public async Task<ActionResult<IEnumerable<CategoryRoomDTO>>> GetCategoryLockedRooms()
+        {
+            var categoryRooms = await _categoryRoomRepository.GetCategoryLockedRoomsAsync();
+            return Ok(categoryRooms);
+        }
+        [HttpGet("Active")]
+        public async Task<ActionResult<IEnumerable<CategoryRoomDTO>>> GetCategoryActiveRooms()
+        {
+            var categoryRooms = await _categoryRoomRepository.GetCategoryActiveRoomsAsync();
             return Ok(categoryRooms);
         }
 
@@ -93,6 +106,46 @@ namespace API.Controllers.Admin
             }
 
             await _categoryRoomRepository.DeleteCategoryRoomAsync(categoryRooms);
+            return NoContent();
+        }
+        [HttpPut("lock/{id}")]
+        public async Task<IActionResult> LockCategoryRoom(int id)
+        {
+            var categoryRooms = await _categoryRoomRepository.GetCategoryRoomByIdAsync(id);
+            if (categoryRooms == null)
+            {
+                return NotFound("Room không tồn tại.");
+            }
+
+            try
+            {
+                await _categoryRoomRepository.LockCategoryRoom(id);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi khóa Room: {ex.Message}");
+            }
+
+            return NoContent();
+        }
+        [HttpPut("unlock/{id}")]
+        public async Task<IActionResult> UnLockCategoryRoom(int id)
+        {
+            var categoryRooms = await _categoryRoomRepository.GetCategoryRoomByIdAsync(id);
+            if (categoryRooms == null)
+            {
+                return NotFound("Room không tồn tại.");
+            }
+
+            try
+            {
+                await _categoryRoomRepository.UnLockCategoryRoom(id);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi khóa Room: {ex.Message}");
+            }
+
             return NoContent();
         }
         private async Task<bool> CategoryRoomExists(int id)

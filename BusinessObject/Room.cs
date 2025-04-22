@@ -52,6 +52,11 @@ namespace DUVAS
         public int? reputation { get; set; }
         //0: Không có tích xanh
         //1: Có tích xanh
+        public int? Authorization { get; set; }
+        //0: Mac dinh
+        //1: Co uy quyen
+        //2: Dang cho admin duyet
+        //3: Da duoc admin duyet 
 
         public virtual ICollection<RoomLicense>? RoomLicenses { get; set; }
         public virtual ICollection<SavedPost>? SavedPosts { get; set; }

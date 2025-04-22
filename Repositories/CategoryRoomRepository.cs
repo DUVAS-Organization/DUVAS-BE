@@ -15,8 +15,12 @@ namespace Repositories
         public async Task DeleteCategoryRoomAsync(CategoryRoom b) => await CategoryRoomDAO.DeleteCategoryRoomAsync(b);
         public async Task<CategoryRoom> GetCategoryRoomByIdAsync(int id) => await CategoryRoomDAO.FindCategoryRoomByIdAsync(id);
         public async Task<List<CategoryRoomDTO>> GetCategoryRoomsAsync() => await CategoryRoomDAO.GetCategoryRoomsAsync();
+        public async Task<List<CategoryRoomDTO>> GetCategoryLockedRoomsAsync() => await CategoryRoomDAO.GetCategoryLockedRoomsAsync();
+        public async Task<List<CategoryRoomDTO>> GetCategoryActiveRoomsAsync() => await CategoryRoomDAO.GetCategoryActiveRoomsAsync();
         public async Task SaveCategoryRoomAsync(CategoryRoom b) => await CategoryRoomDAO.SaveCategoryRoomAsync(b);
         public async Task UpdateCategoryRoomAsync(CategoryRoom b) => await CategoryRoomDAO.UpdateCategoryRoomAsync(b);
-       
+        public async Task LockCategoryRoom(int categoryRoomId) => await CategoryRoomDAO.LockCategoryRoom(categoryRoomId);
+        public async Task UnLockCategoryRoom(int categoryRoomId) => await CategoryRoomDAO.UnLockCategoryRoom(categoryRoomId);
+
     }
 }

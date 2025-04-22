@@ -8,6 +8,7 @@ using DTO;
 using DUVAS;
 using Microsoft.EntityFrameworkCore;
 using BusinessObject;
+using Repositories;
 
 namespace API.Controllers.Admin
 {
@@ -91,6 +92,46 @@ namespace API.Controllers.Admin
             }
 
             await _categoryPriorityPackageRoomRepository.DeleteCategoryPriorityPackageRoomAsync(categoryPriorityPackageRoom);
+            return NoContent();
+        }
+        [HttpPut("lock/{id}")]
+        public async Task<IActionResult> LockCategoryPriorityPackageRoom(int id)
+        {
+            var categoryPriorityPackageRooms = await _categoryPriorityPackageRoomRepository.GetCategoryPriorityPackageRoomByIdAsync(id);
+            if (categoryPriorityPackageRooms == null)
+            {
+                return NotFound("PriorityPackageRoom không tồn tại.");
+            }
+
+            try
+            {
+                await _categoryPriorityPackageRoomRepository.LockCategoryPriorityPackageRoom(id);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi khóa PriorityPackageRoom: {ex.Message}");
+            }
+
+            return NoContent();
+        }
+        [HttpPut("unlock/{id}")]
+        public async Task<IActionResult> UnLockCategoryPriorityPackageRoom(int id)
+        {
+            var categoryPriorityPackageRooms = await _categoryPriorityPackageRoomRepository.GetCategoryPriorityPackageRoomByIdAsync(id);
+            if (categoryPriorityPackageRooms == null)
+            {
+                return NotFound("PriorityPackageRoom không tồn tại.");
+            }
+
+            try
+            {
+                await _categoryPriorityPackageRoomRepository.UnLockCategoryPriorityPackageRoom(id);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi khóa PriorityPackageRoom: {ex.Message}");
+            }
+
             return NoContent();
         }
 

@@ -12,6 +12,7 @@ namespace DTO
         public int ContractId { get; set; }
         public DateTime RentalDateTimeStart { get; set; }
         public DateTime RentalDateTimeEnd { get; set; }
+        public decimal? DownPayment { get; set; }
         public string ContractFile { get; set; }
         public int Status { get; set; }
         public decimal? Deposit { get; set; }

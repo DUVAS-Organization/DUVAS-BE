@@ -13,5 +13,7 @@ namespace Repositories.IRepository
         Task SaveCategoryPriorityPackageServicePostAsync(CategoryPriorityPackageServicePost categoryPriorityPackageServicePost);
         Task UpdateCategoryPriorityPackageServicePostAsync(CategoryPriorityPackageServicePost categoryPriorityPackageServicePost);
         Task DeleteCategoryPriorityPackageServicePostAsync(CategoryPriorityPackageServicePost categoryPriorityPackageServicePost);
+        Task LockCategoryPriorityPackageServicePost(int categoryPriorityPackageServicePostId);
+        Task UnLockCategoryPriorityPackageServicePost(int categoryPriorityPackageServicePostId);
     }
 }

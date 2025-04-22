@@ -269,6 +269,14 @@ namespace API.Controllers.Admin
 
             return Ok(roomContract);
         }
+        [HttpGet("room-authorization")]
+        public async Task<IActionResult> GetRoomAuthorizationAsync([FromQuery] string? userName)
+        {
+            var result = await _roomRepository.GetRoomAuthorizationAsync(userName);
+            if (result == null || result.Count == 0)
+                return NotFound("Không tìm thấy phòng nào có Authorization = 1 phù hợp.");
 
+            return Ok(result);
+        }
     }
 }

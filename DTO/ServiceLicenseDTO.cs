@@ -23,5 +23,9 @@ namespace DTO
         public string? GiayPhepKinhDoanh { get; set; }
         public string? GiayPhepChuyenMon { get; set; }
         //public User? User { get; set; }
+        public int Status { get; set; }
+        //0: mặc định (Sort danh sách đăng ký)
+        //1: đồng ý
+        //2: Từ chối
     }
 }

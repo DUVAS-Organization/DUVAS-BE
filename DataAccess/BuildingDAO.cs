@@ -34,8 +34,76 @@ namespace DataAccess
                             Name = p.User.Name,
                             UserId = p.UserId,
                             Image = p.Image,
-                            //CategoryName = p.Category.CategoryName,
-                            //CategoryId = p.CategoryId,                            
+                            Status = p.Status,
+
+                        })
+                        .ToListAsync();
+
+
+                    return buildings;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+
+        }
+        public static async Task<List<BuildingDTO>> GetLockedBuildingsAsync()
+        {
+
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var buildings = await context.Buildings
+                        .AsNoTracking()
+                        .Where(u => u.Status == 0)
+                        .Select(p => new BuildingDTO
+                        {
+                            BuildingId = p.BuildingId,
+                            BuildingName = p.BuildingName,
+                            Location = p.Location,
+                            Name = p.User.Name,
+                            UserId = p.UserId,
+                            Image = p.Image,
+                            Status = p.Status,
+
+
+                        })
+                        .ToListAsync();
+
+
+                    return buildings;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+
+        }
+        public static async Task<List<BuildingDTO>> GetActiveBuildingsAsync()
+        {
+
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var buildings = await context.Buildings
+                        .AsNoTracking()
+                        .Where(u => u.Status == 1)
+                        .Select(p => new BuildingDTO
+                        {
+                            BuildingId = p.BuildingId,
+                            BuildingName = p.BuildingName,
+                            Location = p.Location,
+                            Name = p.User.Name,
+                            UserId = p.UserId,
+                            Image = p.Image,
+                            Status = p.Status,
 
 
                         })
@@ -119,6 +187,50 @@ namespace DataAccess
             catch (Exception ex)
             {
                 throw new Exception(ex.Message);
+            }
+        }
+        public static async Task LockBuilding(int buildingId)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var building = await context.Buildings.FirstOrDefaultAsync(u => u.BuildingId == buildingId);
+                    if (building == null)
+                    {
+                        throw new KeyNotFoundException($"Room với ID {buildingId} không tồn tại.");
+                    }
+
+                    building.Status = 0;
+                    context.Buildings.Update(building);
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi khóa Room: {ex.Message}");
+            }
+        }
+        public static async Task UnLockBuilding(int buildingId)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var building = await context.Buildings.FirstOrDefaultAsync(u => u.BuildingId == buildingId);
+                    if (building == null)
+                    {
+                        throw new KeyNotFoundException($"Room với ID {buildingId} không tồn tại.");
+                    }
+
+                    building.Status = 1;
+                    context.Buildings.Update(building);
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi mở khóa Room: {ex.Message}");
             }
         }
         public static async Task<List<BuildingDTO>> SearchBuildingsAsync(string searchTerm)

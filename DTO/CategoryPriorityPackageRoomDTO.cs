@@ -14,6 +14,7 @@ namespace DTO
 
         [Required]
         public int CategoryPriorityPackageRoomValue { get; set; }
+        public int Status { get; set; }
 
         public decimal Price { get; set; }
     }
