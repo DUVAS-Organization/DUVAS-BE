@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using BusinessObject;
 
 namespace DataAccess
 {
@@ -74,25 +75,36 @@ namespace DataAccess
             try
             {
                 var feedback = new UserFeedback
-                    {
-                        UserId = userFeedback.UserId,
-                        Comment = userFeedback.Comment,
-                        Star = userFeedback.Star,
-                        Image = userFeedback.Image,
-                        CreatedDate = DateTime.Now,
-                        RoomId = userFeedback.RoomId,
-                    };
+                {
+                    UserId = userFeedback.UserId,
+                    Comment = userFeedback.Comment,
+                    Star = userFeedback.Star,
+                    Image = userFeedback.Image,
+                    CreatedDate = DateTime.Now,
+                    RoomId = userFeedback.RoomId,
+                };
+
                 _context.UserFeedbacks.Add(feedback);
                 await _context.SaveChangesAsync();
 
+                // ✅ Gửi thông báo (cho admin hoặc người đăng phòng tuỳ logic)
+                var notification = new Notification
+                {
+                    UserId = userFeedback.UserId, // hoặc ID chủ phòng nếu bạn muốn họ nhận thông báo
+                    Type = "UserFeedback",
+                    Message = $"Bạn đã gửi đánh giá với {userFeedback.Star} sao.",
+                    RedirectUrl = "/feedbacks", // hoặc /rooms/{RoomId} nếu muốn trỏ đến phòng
+                    CreatedDate = DateTime.Now,
+                    IsRead = false
+                };
+
+                await NotificationDAO.CreateNotificationAsync(notification);
             }
             catch (Exception ex)
             {
-                // Log the error if needed
                 throw new Exception("Error saving user feedback: " + ex.Message);
             }
         }
-
         public static async Task UpdateUserFeedbackAsync(UserFeedback userFeedback)
         {
             try

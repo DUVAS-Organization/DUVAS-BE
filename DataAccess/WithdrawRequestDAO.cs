@@ -1,4 +1,5 @@
-﻿using BusinessObject.Enums;
+﻿using BusinessObject;
+using BusinessObject.Enums;
 using DTO;
 using DUVAS;
 using Microsoft.EntityFrameworkCore;
@@ -20,18 +21,33 @@ public class WithdrawRequestDAO
         var withdrawRequest = new WithdrawRequest
         {
             UserId = userId,
-            Amount = amount, // Assuming you want to include Amount in the WithdrawRequest
+            Amount = amount,
             BankCode = BankCode,
             AccountNumber = AccountNumber,
-            Status = WithdrawRequestStatus.Pending, // Set default status to Pending
-            Reason = null, // Default to null for Reason
-            CreatedAt = DateTime.Now, // Current UTC time for CreatedAt
-            UpdatedAt = DateTime.Now, // Current UTC time for UpdatedAt
+            Status = WithdrawRequestStatus.Pending,
+            Reason = null,
+            CreatedAt = DateTime.Now,
+            UpdatedAt = DateTime.Now,
             TransactionId = transactionId
         };
+
         await _context.WithdrawRequests.AddAsync(withdrawRequest);
         await _context.SaveChangesAsync();
+
+        // ✅ Thêm thông báo
+        var notification = new Notification
+        {
+            UserId = userId,
+            Type = "WithdrawRequest",
+            Message = $"Bạn đã gửi yêu cầu rút {Math.Abs(amount):N0}đ về tài khoản {AccountNumber}.",
+            RedirectUrl = "/withdraw-requests", // Có thể thay đổi thành link chi tiết nếu cần
+            CreatedDate = DateTime.Now,
+            IsRead = false
+        };
+
+        await NotificationDAO.CreateNotificationAsync(notification);
     }
+
 
     // Update an existing WithdrawRequest
     public async Task UpdateAsync(WithdrawRequest withdrawRequest)
@@ -80,15 +96,31 @@ public class WithdrawRequestDAO
 
     public async Task WebHookConfirm(int transactionId)
     {
-        var existingRequest = await _context.WithdrawRequests.Where(w => w.TransactionId == transactionId)
-            .FirstOrDefaultAsync();
+        var existingRequest = await _context.WithdrawRequests
+            .Include(w => w.User) // cần để lấy tên người dùng hoặc dùng UserId
+            .FirstOrDefaultAsync(w => w.TransactionId == transactionId);
+
         if (existingRequest == null)
         {
-            throw new KeyNotFoundException($"WithdrawRequest with ID {transactionId} not found.");
+            throw new KeyNotFoundException($"WithdrawRequest with Transaction ID {transactionId} not found.");
         }
 
         existingRequest.Status = WithdrawRequestStatus.Approved;
+        existingRequest.UpdatedAt = DateTime.Now;
         _context.WithdrawRequests.Update(existingRequest);
+
+        // ✅ Tạo thông báo mới
+        var notification = new Notification
+        {
+            UserId = existingRequest.UserId,
+            Type = "WithdrawPaid",
+            Message = $"Yêu cầu rút {existingRequest.Amount:N0}đ của bạn đã được phê duyệt.",
+            RedirectUrl = "/transactions",
+            CreatedDate = DateTime.Now,
+            IsRead = false
+        };
+        await _context.Notifications.AddAsync(notification);
+
         await _context.SaveChangesAsync();
     }
 
