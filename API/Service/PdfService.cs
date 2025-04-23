@@ -13,6 +13,7 @@ namespace Utilities
     {
         public class AuthorizationContractDetails
         {
+            public List<int> SelectedRoom { get; set; }
             public int PartyAId { get; set; }
             public string PartyAName { get; set; }
             public DateTime PartyABirthDate { get; set; }
@@ -117,7 +118,9 @@ namespace Utilities
             form.GetField("EffectiveDate")
                 .SetValue(DateTime.Parse(details.EffectiveDate)
                               .ToString("dd-MM-yyyy"));
-
+            var scopeText = details.SelectedRoom != null && details.SelectedRoom.Any()
+        ? $"Quản lý {details.SelectedRoom.Count} phòng: {string.Join(", ", details.SelectedRoom.Select(id => $"Phòng {id}"))}"
+        : details.ScopeOfAuthorization;
             form.FlattenFields();
             pdfDoc.Close();
 

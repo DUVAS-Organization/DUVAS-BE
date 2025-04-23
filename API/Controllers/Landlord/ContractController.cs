@@ -45,6 +45,13 @@ namespace GITHUB_ACTIONS.Controllers
             {
                 return BadRequest(ModelState);
             }
+            // Validate SelectedRoom (nếu cần)
+            //if (details.SelectedRoom == null || !details.SelectedRoom.Any())
+            //{
+            //    return BadRequest("No rooms selected.");
+            //}
+            var roomListString = string.Join(",", details.SelectedRoom);
+
             // Tạo file PDF
             var pdfBytes = _pdfService.GenerateAuthorizationContractPdf(details);
 
@@ -63,12 +70,16 @@ namespace GITHUB_ACTIONS.Controllers
                 CreatedById = details.PartyAId,
                 CreatedAt = DateTime.UtcNow,
                 status = 2,
+                RoomList = roomListString
             };
 
             await _authorizationContractRepository.SaveAuthorizationContractAsync(contract);
 
             return Ok(new { ContractId = contract.Id, PdfUrl = pdfUrl });
         }
+
+       
+
         [HttpGet("authorization")]
         public async Task<IActionResult> GetAllAuthorizationContract()
         {
@@ -107,7 +118,6 @@ namespace GITHUB_ACTIONS.Controllers
 
             //if (contract.CreatedById != userId)
             //    return Forbid("You are not authorized to view this contract");
-
             var contractDTO = new AuthorizationContractDTO
             {
                 Id = contract.Id,
@@ -117,7 +127,8 @@ namespace GITHUB_ACTIONS.Controllers
                 PartyBId = contract.PartyBId,
                 PdfUrl = contract.PdfUrl,
                 CreatedById = contract.CreatedById,
-                CreatedAt = contract.CreatedAt
+                CreatedAt = contract.CreatedAt,
+                RoomList = contract.RoomList,
             };
 
             return Ok(contractDTO);
