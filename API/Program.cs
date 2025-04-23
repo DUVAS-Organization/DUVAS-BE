@@ -21,7 +21,9 @@ using API.Services;
 using Utilities;
 using Microsoft.Extensions.DependencyInjection;
 using Hangfire;
-using Hangfire.SqlServer; 
+using Hangfire.SqlServer;
+using Microsoft.AspNetCore.Diagnostics; // Thêm cho UseExceptionHandler
+using Microsoft.Extensions.Logging; // Thêm cho ILogger
 
 namespace API
 {
@@ -158,24 +160,28 @@ namespace API
             builder.Services.AddScoped<IPriorityPackageServicePostRepository, PriorityPackageServicePostRepository>();
             builder.Services.AddScoped<IMessageRepository, MessageRepository>();
             builder.Services.AddScoped<UserDAO>();
-            builder.Services.AddScoped<UserFeedbackDAO>();
-            builder.Services.AddHttpClient<FPTAIService>();
+            builder.Services.AddScoped<UserFeedbackDAO>(); // Thêm từ file thứ hai
+            builder.Services.AddHttpClient<FPTAIService>(); // Thêm từ file thứ hai
             builder.Services.AddScoped<CloudinaryService>();
             builder.Services.AddScoped<IInsiderTradingRepository, InsiderTradingRepository>();
             builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
             builder.Services.AddScoped<FPTAIService>();
+
             // Add SignalR
             builder.Services.AddSignalR();
             builder.Services.AddHostedService<CheckExpiredContractsService>();
             builder.Services.AddScoped<IAuthorizationContractRepository, AuthorizationContractRepository>();
             builder.Services.AddScoped<PdfService>();
+
+            // Thêm cấu hình AzureImageService từ file thứ hai
             builder.Services.Configure<AzureImageServiceOptions>(
-            builder.Configuration.GetSection("AzureImageService"));
+                builder.Configuration.GetSection("AzureImageService"));
             builder.Services.AddSingleton<AzureImageService>(sp =>
             {
                 var options = sp.GetRequiredService<IOptions<AzureImageServiceOptions>>().Value;
                 return new AzureImageService(options.Endpoint, options.ApiKey);
             });
+
             // Add Hangfire
             builder.Services.AddHangfire(configuration => configuration
                 .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
@@ -198,31 +204,48 @@ namespace API
             {
                 options.AddPolicy("AllowReactApp", policy =>
                 {
-                    policy.WithOrigins("http://localhost:3000")
+                    policy.WithOrigins("https://blue-field-0c1caa000.6.azurestaticapps.net")
                           .AllowAnyMethod()
                           .AllowAnyHeader()
-                          .AllowCredentials(); // Quan trọng cho SignalR
+                          .AllowCredentials();
                 });
             });
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline
-            if (app.Environment.IsDevelopment())
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
             {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+                c.RoutePrefix = "swagger";
+            });
 
             app.UseHttpsRedirection();
+
+            // Thêm UseExceptionHandler từ file thứ hai
+            app.UseExceptionHandler(errorApp =>
+            {
+                errorApp.Run(async context =>
+                {
+                    var error = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>();
+                    if (error != null)
+                    {
+                        var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+                        logger.LogError(error.Error, "Unhandled exception occurred");
+                        context.Response.StatusCode = 500;
+                        await context.Response.WriteAsync("Internal Server Error");
+                    }
+                });
+            });
 
             // Sử dụng CORS trước các middleware khác
             app.UseCors("AllowReactApp");
             app.UseRouting();
-            app.UseAuthentication(); 
+            app.UseAuthentication();
             app.UseAuthorization();
 
-            app.UseHangfireDashboard(); 
+            // Thêm middleware Hangfire
+            app.UseHangfireDashboard();
 
             // Map SignalR Hubs
             app.MapHub<SavedPostHub>("/savedPostHub");

@@ -5,7 +5,10 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
-
+	<ItemGroup>
+		<Content Include="Templates\hop-dong-uy-quyen.pdf" CopyToOutputDirectory="Always" />
+		<Content Include="Fonts\arial.ttf" CopyToOutputDirectory="Always" />
+	</ItemGroup>
   <ItemGroup>
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
     <PackageReference Include="CloudinaryDotNet" Version="1.27.4" />
