@@ -17,6 +17,6 @@ namespace DUVAS
         public virtual ServicePost? ServicePost { get; set; }
         public virtual User? User { get; set; }
 
-        public DateTime? SavedAt { get; set; } = DateTime.Now;
+        public DateTime? SavedAt { get; set; } = DateTime.UtcNow;
     }
 }

@@ -76,7 +76,7 @@ namespace DataAccess
         {
             try
             {
-                message.DateTime = DateTime.Now;
+                message.DateTime = DateTime.UtcNow;
                 await _context.Messages.AddAsync(message);
                 await _context.SaveChangesAsync();
             }

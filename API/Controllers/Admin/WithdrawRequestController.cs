@@ -58,7 +58,7 @@ public class WithdrawRequestController : ODataController
         }
         withdrawRequest.Status = WithdrawRequestStatus.Rejected;
         withdrawRequest.Reason = rejectTransactionDTO.reason;
-        withdrawRequest.UpdatedAt = DateTime.Now;
+        withdrawRequest.UpdatedAt = DateTime.UtcNow;
 
         await _withdrawRequestRepository.UpdateStatusAsync(withdrawRequest);
         await _userRepository.UpdateUserMoneyAsync(withdrawRequest.UserId, -withdrawRequest.Amount);

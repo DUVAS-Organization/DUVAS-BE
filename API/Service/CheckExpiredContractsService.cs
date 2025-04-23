@@ -51,7 +51,7 @@ namespace API.Services
             IRentalListRepository rentalListRepository,
             IContractRepository contractRepository)
         {
-            var currentDate = DateTime.Now;
+            var currentDate = DateTime.UtcNow;
 
             var rentalLists = await rentalListRepository.GetRentalListsAsync();
             var validRentalLists = rentalLists.Where(rl => rl.ContractId.HasValue).ToList();

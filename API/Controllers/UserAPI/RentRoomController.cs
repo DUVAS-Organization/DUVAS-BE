@@ -290,7 +290,7 @@ namespace API.Controllers.UserAPI
                 Type = "ConfirmReservation",
                 Message = $"Bạn đã xác nhận hợp dồng thuê phòng",
                 RedirectUrl = $"/RentalList",
-                CreatedDate = DateTime.Now,
+                CreatedDate = DateTime.UtcNow,
                 IsRead = false
             });
 
@@ -301,7 +301,7 @@ namespace API.Controllers.UserAPI
                 Type = "ConfirmReservation",
                 Message = $"Người thuê đã đồng ý hợp đồng",
                 RedirectUrl = $"/RentalList",
-                CreatedDate = DateTime.Now,
+                CreatedDate = DateTime.UtcNow,
                 IsRead = false
             });
 
@@ -368,9 +368,9 @@ namespace API.Controllers.UserAPI
             }
 
             var contract = await _contractRepository.GetContractByIdAsync(review.ContractId.Value);
-            if (contract.status != 3 || contract.RentalDateTimeEnd > DateTime.Now)
+            if (contract.status != 3 || contract.RentalDateTimeEnd > DateTime.UtcNow)
             {
-                Console.WriteLine($"Validation failed: status={contract.status}, endDate={contract.RentalDateTimeEnd}, now={DateTime.Now}");
+                Console.WriteLine($"Validation failed: status={contract.status}, endDate={contract.RentalDateTimeEnd}, now={DateTime.UtcNow}");
                 return BadRequest("Contract Status hoặc thời gian chấm dứt không hợp lệ!");
             }
 
