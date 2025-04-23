@@ -114,7 +114,7 @@ public class WithdrawRequestDAO
             Type = "WithdrawPaid",
             Message = $"Yêu cầu rút {existingRequest.Amount:N0}đ của bạn đã được phê duyệt.",
             RedirectUrl = "/transactions",
-            CreatedDate = DateTime.Now,
+            CreatedDate = DateTime.UtcNow,
             IsRead = false
         };
         await _context.Notifications.AddAsync(notification);

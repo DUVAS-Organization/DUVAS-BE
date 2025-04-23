@@ -49,7 +49,7 @@ namespace GITHUB_ACTIONS.Controllers
             var pdfBytes = _pdfService.GenerateAuthorizationContractPdf(details);
 
             // Upload lên Cloudinary
-            var fileName = $"authorization_contract_{details.PartyAId}_{DateTime.Now.Ticks}.pdf";
+            var fileName = $"authorization_contract_{details.PartyAId}_{DateTime.UtcNow.Ticks}.pdf";
             var pdfUrl = await _cloudinaryService.UploadPdfAsync(pdfBytes, fileName);
 
             // Lưu thông tin cơ bản vào DB

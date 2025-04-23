@@ -94,7 +94,7 @@ namespace API.Controllers.UserAPI
                 Type = "UpdateRole",
                 Message = message,
                 RedirectUrl = redirectUrl,
-                CreatedDate = DateTime.Now,
+                CreatedDate = DateTime.UtcNow,
                 IsRead = false
             });
 
@@ -104,7 +104,7 @@ namespace API.Controllers.UserAPI
                 Type = "UpdateRole",
                 Message = $"Vừa có đơn đăng ký làm chủ nhà từ User: #{landlordLicense.UserId}",
                 RedirectUrl = redirectUrl,
-                CreatedDate = DateTime.Now,
+                CreatedDate = DateTime.UtcNow,
                 IsRead = false
             });
             return CreatedAtAction(nameof(SaveLandlordLicense), new { id = landlordLicense.LandlordLicenseId }, landlordLicense);
@@ -174,7 +174,7 @@ namespace API.Controllers.UserAPI
                 Type = "ConfirmUpdateRole",
                 Message = message,
                 RedirectUrl = redirectUrl,
-                CreatedDate = DateTime.Now,
+                CreatedDate = DateTime.UtcNow,
                 IsRead = false
             });
 
@@ -184,7 +184,7 @@ namespace API.Controllers.UserAPI
                 Type = "UpdateRole",
                 Message = $"Vừa có đơn đăng ký làm chủ dịch vụ từ User: #{serviceLicense.UserId}",
                 RedirectUrl = redirectUrl,
-                CreatedDate = DateTime.Now,
+                CreatedDate = DateTime.UtcNow,
                 IsRead = false
             });
             return CreatedAtAction(nameof(SaveServiceLicense), new { id = serviceLicense.ServiceLicenseId }, serviceLicense);
