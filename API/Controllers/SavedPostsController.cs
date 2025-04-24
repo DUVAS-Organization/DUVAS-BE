@@ -110,7 +110,7 @@ namespace DUVAS.Controllers
                     {
                         RoomId = request.RoomId,
                         UserId = request.UserId,
-                        SavedAt = DateTime.UtcNow
+                        SavedAt = DateTime.Now
                     };
 
                     _context.SavedPosts.Add(newSavedPost);
@@ -175,7 +175,7 @@ namespace DUVAS.Controllers
                     {
                         ServicePostId = request.ServicePostId,
                         UserId = request.UserId,
-                        SavedAt = DateTime.UtcNow
+                        SavedAt = DateTime.Now
                     };
 
                     _context.SavedPosts.Add(newSavedPost);

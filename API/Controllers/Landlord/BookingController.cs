@@ -244,7 +244,7 @@ namespace API.Controllers.Landlord
                 Type = "ConfirmReservation",
                 Message = $"Chủ nhà vừa đồng ý yêu cầu thuê của bạn",
                 RedirectUrl = $"/RentalList",
-                CreatedDate = DateTime.UtcNow,
+                CreatedDate = DateTime.Now,
                 IsRead = false
             });
 
@@ -315,7 +315,7 @@ namespace API.Controllers.Landlord
 
             // Cập nhật trạng thái yêu cầu thuê thành 'Đã hủy'
             rentalList.RentalStatus = 2; // Đã hủy
-            rentalList.CreatedDate = DateTime.UtcNow; // Lưu ngày hủy
+            rentalList.CreatedDate = DateTime.Now; // Lưu ngày hủy
 
             await _rentalListRepository.UpdateRentalListAsync(rentalList);
 
@@ -330,7 +330,7 @@ namespace API.Controllers.Landlord
                 Type = "ConfirmReservation",
                 Message = $"Chủ nhà vừa từ chối yêu cầu thuê của bạn",
                 RedirectUrl = $"/RentalList",
-                CreatedDate = DateTime.UtcNow,
+                CreatedDate = DateTime.Now,
                 IsRead = false
             });
 
@@ -426,7 +426,7 @@ namespace API.Controllers.Landlord
                     Note = $"User {request.Remnitter} thanh toán {request.Money} tiền phòng đến User {request.Receiver}",
                     Status = 1, // Giá trị cố định
                     Type = "aaa", // Giá trị cố định
-                    CreatedDate = DateTime.UtcNow,
+                    CreatedDate = DateTime.Now,
                     HoldUntil = 3 // 3 ngày từ hiện tại
                 };
 
@@ -452,7 +452,7 @@ namespace API.Controllers.Landlord
 
                     Status = 2, // Giá trị cố định
                     Type = "ThanhToanLanDau", // Giá trị cố định
-                    CreatedDate = DateTime.UtcNow,
+                    CreatedDate = DateTime.Now,
                     HoldUntil = 3 // 3 ngày từ hiện tại
                 };
 
@@ -535,7 +535,7 @@ namespace API.Controllers.Landlord
                 Type = "InsiderTrading",
                 Message = $"Bạn vừa nhận được #{money} vnđ",
                 RedirectUrl = $"/Transaction",
-                CreatedDate = DateTime.UtcNow,
+                CreatedDate = DateTime.Now,
                 IsRead = false
             });
 

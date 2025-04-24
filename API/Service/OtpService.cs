@@ -16,14 +16,14 @@ public class OtpService
             {
                 var otpEntry = _otpStorage[emailOrPhone];
                 otpEntry.Otp = otp;
-                otpEntry.ExpirationTime = DateTime.UtcNow.AddMinutes(15);
+                otpEntry.ExpirationTime = DateTime.Now.AddMinutes(15);
             }
             else
             {
                 var otpEntry = new OtpEntry
                 {
                     Otp = otp,
-                    ExpirationTime = DateTime.UtcNow.AddMinutes(15),
+                    ExpirationTime = DateTime.Now.AddMinutes(15),
                     EmailOrPhone = emailOrPhone
                 };
                 _otpStorage[emailOrPhone] = otpEntry;
@@ -35,7 +35,7 @@ public class OtpService
         {
             var otpEntry = _otpStorage.Values.FirstOrDefault(o => o.Otp == otp);
 
-            if (otpEntry != null && otpEntry.ExpirationTime > DateTime.UtcNow)
+            if (otpEntry != null && otpEntry.ExpirationTime > DateTime.Now)
             {
                 return otpEntry.EmailOrPhone;
             }

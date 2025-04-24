@@ -29,7 +29,7 @@ namespace DataAccess
                 Description = description,
                 UserId = userId,
                 Status = TransactionStatus.Pending, 
-                CreatedAt = DateTime.UtcNow 
+                CreatedAt = DateTime.Now 
             };
             await _context.Transactions.AddAsync(transaction);
             await _context.SaveChangesAsync();
@@ -101,7 +101,7 @@ namespace DataAccess
                         Type = "TransactionPaid",
                         Message = $"Giao dịch của bạn với mô tả \"{transaction.Description}\" đã được xác nhận thành công.",
                         RedirectUrl = "/transactions",
-                        CreatedDate = DateTime.UtcNow,
+                        CreatedDate = DateTime.Now,
                         IsRead = false
                     };
                     await NotificationDAO.CreateNotificationAsync(notification);

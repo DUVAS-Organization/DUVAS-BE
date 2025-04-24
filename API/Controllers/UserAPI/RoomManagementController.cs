@@ -75,7 +75,7 @@ namespace API.Controllers.UserAPI
 
                 // ✅ Ghi nhận yêu cầu thuê
                 rentalRequest.RentalStatus = 1; // Trạng thái: đã gửi yêu cầu
-                rentalRequest.CreatedDate = DateTime.UtcNow;
+                rentalRequest.CreatedDate = DateTime.Now;
 
                 await _rentalListRepository.SaveRentalListAsync(rentalRequest);
 
@@ -92,7 +92,7 @@ namespace API.Controllers.UserAPI
                     Type = "RentRoom",
                     Message = message,
                     RedirectUrl = redirectUrl,
-                    CreatedDate = DateTime.UtcNow,
+                    CreatedDate = DateTime.Now,
                     IsRead = false
                 });
                 await NotificationDAO.CreateNotificationAsync(new Notification
@@ -101,7 +101,7 @@ namespace API.Controllers.UserAPI
                     Type = "RentRoom",
                     Message = $"Đang có yêu cầu thuê phòng #{rentalRequest.RoomId}.",
                     RedirectUrl = redirectUrl,
-                    CreatedDate = DateTime.UtcNow,
+                    CreatedDate = DateTime.Now,
                     IsRead = false
                 });
                 return Ok("Yêu cầu thuê phòng đã được tạo thành công.");

@@ -262,7 +262,7 @@ namespace DataAccess
                     //        ? $"User ID {userId} vừa + {amount} vào tài khoản."
                     //        : $"User ID {userId} vừa - {Math.Abs(amount)} khỏi tài khoản.",
                     //    Status = 0, // 0: trạng thái mặc định
-                    //    CreatedDate = DateTime.UtcNow
+                    //    CreatedDate = DateTime.Now
                     //};
 
                     //await context.InsiderTradings.AddAsync(transaction);
@@ -352,7 +352,7 @@ namespace DataAccess
                 Type = "BankAccount",
                 Message = $"Bạn đã thêm tài khoản ngân hàng thành công.",
                 RedirectUrl = "/bank-accounts",
-                CreatedDate = DateTime.UtcNow,
+                CreatedDate = DateTime.Now,
                 IsRead = false
             };
             await NotificationDAO.CreateNotificationAsync(notification);
@@ -399,7 +399,7 @@ namespace DataAccess
                     Type = "BankAccountStatusChange",
                     Message = $"Tài khoản ngân hàng \"{bankAccount.AccountNumber}\" đã được {statusText}.",
                     RedirectUrl = "/bank-accounts",
-                    CreatedDate = DateTime.UtcNow,
+                    CreatedDate = DateTime.Now,
                     IsRead = false
                 };
                 await NotificationDAO.CreateNotificationAsync(notification);
@@ -642,7 +642,7 @@ namespace DataAccess
                         Type = "AcceptRegisterUpRole",
                         Message = "Yêu cầu nâng cấp tài khoản Landlord đã được chấp nhận.",
                         RedirectUrl = "/",
-                        CreatedDate = DateTime.UtcNow,
+                        CreatedDate = DateTime.Now,
                         IsRead = false
                     };
                     await NotificationDAO.CreateNotificationAsync(notification);
@@ -680,7 +680,7 @@ namespace DataAccess
                         Type = "AcceptRegisterUpRole",
                         Message = "Yêu cầu nâng cấp tài khoản Service đã được chấp nhận.",
                         RedirectUrl = "/",
-                        CreatedDate = DateTime.UtcNow,
+                        CreatedDate = DateTime.Now,
                         IsRead = false
                     };
                     await NotificationDAO.CreateNotificationAsync(notification);
