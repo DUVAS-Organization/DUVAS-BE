@@ -167,7 +167,7 @@ namespace API.Controllers.UserAPI
 
             // Gửi thông báo uprole
             var message = $"Bạn đã gửi thành công yêu cầu đăng ký làm chủ dịch vụ.";
-            var redirectUrl = $"";
+            var redirectUrl = $"/ViewUpRole";
             await NotificationDAO.CreateNotificationAsync(new Notification
             {
                 UserId = serviceLicense.UserId,
@@ -178,15 +178,15 @@ namespace API.Controllers.UserAPI
                 IsRead = false
             });
 
-            await NotificationDAO.CreateNotificationAsync(new Notification
-            {
-                UserId = _adminId,
-                Type = "UpdateRole",
-                Message = $"Vừa có đơn đăng ký làm chủ dịch vụ từ User: #{serviceLicense.UserId}",
-                RedirectUrl = redirectUrl,
-                CreatedDate = DateTime.Now,
-                IsRead = false
-            });
+            //await NotificationDAO.CreateNotificationAsync(new Notification
+            //{
+            //    UserId = _adminId,
+            //    Type = "UpdateRole",
+            //    Message = $"Vừa có đơn đăng ký làm chủ dịch vụ từ User: #{serviceLicense.UserId}",
+            //    RedirectUrl = redirectUrl,
+            //    CreatedDate = DateTime.Now,
+            //    IsRead = false
+            //});
             return CreatedAtAction(nameof(SaveServiceLicense), new { id = serviceLicense.ServiceLicenseId }, serviceLicense);
         }
 
