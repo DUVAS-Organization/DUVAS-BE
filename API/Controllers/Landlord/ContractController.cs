@@ -26,11 +26,13 @@ namespace GITHUB_ACTIONS.Controllers
         public ContractController(
             IAuthorizationContractRepository authorizationContractRepository,
             PdfService pdfService,
-            CloudinaryService cloudinaryService)
+            CloudinaryService cloudinaryService,
+            IRoomRepository roomRepository)
         {
             _authorizationContractRepository = authorizationContractRepository;
             _pdfService = pdfService;
             _cloudinaryService = cloudinaryService;
+            _roomRepository = roomRepository;
         }
 
         [HttpPost("generate-authorization")]
@@ -128,6 +130,7 @@ namespace GITHUB_ACTIONS.Controllers
                 PdfUrl = contract.PdfUrl,
                 CreatedById = contract.CreatedById,
                 CreatedAt = contract.CreatedAt,
+                status = contract.status,
                 RoomList = contract.RoomList,
             };
 
@@ -143,18 +146,19 @@ namespace GITHUB_ACTIONS.Controllers
                 //var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 //if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
                 //    return Unauthorized("User not authenticated or invalid user ID");
-
+                if (request == null)
+                {
+                    return BadRequest("Request body không hợp lệ.");
+                }
                 // Kiểm tra danh sách roomIds hợp lệ
                 if (request.RoomIds == null || !request.RoomIds.Any())
                     return BadRequest("Danh sách RoomIds không được để trống.");
-
+                
                 // Cập nhật Authorization cho từng phòng
                 foreach (var roomId in request.RoomIds)
                 {
                     // Kiểm tra quyền của người dùng đối với phòng (nếu cần)
-                    //var room = await _roomRepository.GetRoomEntityByIdForLandlordAsync(roomId, userId);
-                    //if (room == null)
-                    //    return Forbid($"Bạn không có quyền cập nhật phòng với ID {roomId} hoặc phòng không tồn tại.");
+                   
 
                     await _roomRepository.UpdateAuthorizationAsync(roomId, request.Authorization);
                 }
@@ -163,6 +167,7 @@ namespace GITHUB_ACTIONS.Controllers
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Error in UpdateRoomsAuthorization: {ex.Message}\n{ex.StackTrace}");
                 return StatusCode(500, new { Message = $"Lỗi khi cập nhật Authorization: {ex.Message}" });
             }
         }
