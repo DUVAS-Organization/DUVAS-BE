@@ -80,7 +80,7 @@ namespace DataAccess
                     Comment = userFeedback.Comment,
                     Star = userFeedback.Star,
                     Image = userFeedback.Image,
-                    CreatedDate = DateTime.UtcNow,
+                    CreatedDate = DateTime.Now,
                     RoomId = userFeedback.RoomId,
                 };
                 _context.UserFeedbacks.Add(feedback);
@@ -92,7 +92,7 @@ namespace DataAccess
                     Type = "UserFeedback",
                     Message = $"Bạn đã gửi đánh giá với {userFeedback.Star} sao.",
                     RedirectUrl = "/feedbacks", // hoặc /rooms/{RoomId} nếu muốn trỏ đến phòng
-                    CreatedDate = DateTime.UtcNow,
+                    CreatedDate = DateTime.Now,
                     IsRead = false
                 };
 

@@ -27,7 +27,7 @@ namespace API.Controllers.UserAPI
         [HttpPost]
         public async Task<IActionResult> AddMessage([FromBody] Message message)
         {
-            message.DateTime = DateTime.UtcNow;
+            message.DateTime = DateTime.Now;
             message.Status = 0;
 
             await _messageRepository.AddMessageAsync(message);
@@ -47,7 +47,7 @@ namespace API.Controllers.UserAPI
                 Type = "message",
                 Message = messages,
                 RedirectUrl = redirectUrl,
-                CreatedDate = DateTime.UtcNow,
+                CreatedDate = DateTime.Now,
                 IsRead = false
             });
 

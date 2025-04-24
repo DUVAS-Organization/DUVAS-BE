@@ -52,7 +52,7 @@ namespace API.Controllers.UserAPI
                 var rooms = await _roomRepository.GetRoomsByLandlordAsync(landlordId);
                 var rentedRooms = rooms.Where(r => r.status == 3).ToList();
 
-                var currentDate = DateTime.UtcNow; // Lấy ngày hiện tại
+                var currentDate = DateTime.Now; // Lấy ngày hiện tại
                 var insiderTradings = await _insiderTradingRepository.GetInsiderTradingsAsync(); // Lấy tất cả giao dịch
 
                 var result = new List<object>();
@@ -113,7 +113,7 @@ namespace API.Controllers.UserAPI
                 // Lọc các rental list có ContractId không null
                 var validRentalLists = rentalLists.Where(rl => rl.ContractId.HasValue).ToList();
 
-                var currentDate = DateTime.UtcNow; // Lấy ngày hiện tại
+                var currentDate = DateTime.Now; // Lấy ngày hiện tại
                 var insiderTradings = await _insiderTradingRepository.GetInsiderTradingsAsync(); // Lấy tất cả giao dịch
 
                 var result = new List<object>();
@@ -183,7 +183,7 @@ namespace API.Controllers.UserAPI
                     ? await _contractRepository.GetContractByIdAsync(rentalList.ContractId.Value)
                     : null;
 
-                var currentDate = DateTime.UtcNow; // Lấy ngày hiện tại
+                var currentDate = DateTime.Now; // Lấy ngày hiện tại
                 // Tính ngày đến hạn thanh toán của tháng hiện tại
                 var paymentDueDate = contract != null
                     ? new DateTime(currentDate.Year, currentDate.Month, contract.RentalDateTimeStart.Day)
@@ -255,7 +255,7 @@ namespace API.Controllers.UserAPI
                 var renter = await _userRepository.GetUserByIdAsync(rentalList.RenterID);
                 if (renter == null) return BadRequest("Không tìm thấy người thuê");
 
-                var currentDate = DateTime.UtcNow; // Lấy ngày hiện tại
+                var currentDate = DateTime.Now; // Lấy ngày hiện tại
                 // Tính ngày đến hạn thanh toán của tháng hiện tại
                 var paymentDueDate = new DateTime(currentDate.Year, currentDate.Month, contract.RentalDateTimeStart.Day);
                 if (currentDate < paymentDueDate) paymentDueDate = paymentDueDate.AddMonths(-1);
@@ -306,7 +306,7 @@ namespace API.Controllers.UserAPI
                     RoomId = roomId,
                     Status = 0, // Chưa thanh toán
                     Type = "MonthlyPayment",
-                    CreatedDate = DateTime.UtcNow,
+                    CreatedDate = DateTime.Now,
                     HoldUntil = 0 // Hạn chót là 5 ngày sau ngày đến hạn
                 };
 

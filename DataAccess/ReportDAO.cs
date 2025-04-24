@@ -86,7 +86,7 @@ namespace DataAccess
                         Type = "NewReport",
                         Message = $"Báo cáo mới đã được gửi.",
                         RedirectUrl = "/reports",
-                        CreatedDate = DateTime.UtcNow,
+                        CreatedDate = DateTime.Now,
                         IsRead = false
                     };
 

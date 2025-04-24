@@ -94,7 +94,7 @@ namespace DataAccess
                         throw new Exception("CategoryPriorityPackageRoom không tồn tại.");
 
                     // Cập nhật giá trị StartDate, EndDate, Price
-                    package.StartDate = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"));
+                    package.StartDate = TimeZoneInfo.ConvertTimeFromUtc(DateTime.Now, TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"));
                     package.EndDate = package.StartDate.AddDays(category.CategoryPriorityPackageRoomValue);
                     package.Price = category.Price;
 
