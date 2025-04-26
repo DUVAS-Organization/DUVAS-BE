@@ -697,11 +697,14 @@ namespace DataAccess
             {
                 using (var context = new ApplicationDbContext())
                 {
+                    searchTerm = searchTerm.Trim().ToLower();
+
                     var rooms = await context.Rooms
                         .AsNoTracking()
-                        .Where(r => r.Title.ToLower().Contains(searchTerm.ToLower())
-                                    || r.Description.ToLower().Contains(searchTerm.ToLower())
-                                    || r.LocationDetail.ToLower().Contains(searchTerm.ToLower()))
+                        .Where(r =>
+                            r.Title.ToLower().Contains(searchTerm) ||
+                            r.Description.ToLower().Contains(searchTerm) ||
+                            r.LocationDetail.ToLower().Contains(searchTerm))
                         .Select(r => new RoomDTO
                         {
                             RoomId = r.RoomId,
@@ -725,6 +728,47 @@ namespace DataAccess
                         })
                         .ToListAsync();
 
+                    // Nếu tìm không ra → fallback bằng cách tách từ ra và tìm theo từng từ
+                    if (!rooms.Any())
+                    {
+                        var keywords = searchTerm.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+                        foreach (var keyword in keywords)
+                        {
+                            var partialRooms = await context.Rooms
+                                .AsNoTracking()
+                                .Where(r =>
+                                    r.Title.ToLower().Contains(keyword) ||
+                                    r.Description.ToLower().Contains(keyword) ||
+                                    r.LocationDetail.ToLower().Contains(keyword))
+                                .Select(r => new RoomDTO
+                                {
+                                    RoomId = r.RoomId,
+                                    BuildingId = r.BuildingId,
+                                    UserId = r.UserId,
+                                    UserName = r.User.UserName,
+                                    Title = r.Title,
+                                    Description = r.Description,
+                                    LocationDetail = r.LocationDetail,
+                                    Acreage = r.Acreage,
+                                    Furniture = r.Furniture,
+                                    NumberOfBathroom = r.NumberOfBathroom,
+                                    NumberOfBedroom = r.NumberOfBedroom,
+                                    Garret = r.Garret,
+                                    Price = r.Price,
+                                    CategoryRoomId = r.CategoryRoomId,
+                                    CategoryName = r.CategoryRoom.CategoryName,
+                                    Image = r.Image,
+                                    Note = r.Note,
+                                    IsPermission = r.IsPermission
+                                })
+                                .ToListAsync();
+
+                            // Ghép kết quả không trùng nhau
+                            rooms.AddRange(partialRooms.Where(x => !rooms.Any(r => r.RoomId == x.RoomId)));
+                        }
+                    }
+
                     return rooms;
                 }
             }
@@ -733,6 +777,7 @@ namespace DataAccess
                 throw new Exception($"Lỗi khi tìm kiếm phòng: {ex.Message}");
             }
         }
+
 
 
 

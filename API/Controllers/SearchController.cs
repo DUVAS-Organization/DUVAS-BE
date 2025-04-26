@@ -9,7 +9,6 @@ namespace DUVAS.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [EnableCors("AllowLocalhost3000")] // Bật CORS với policy
     public class SearchController : ControllerBase
     {
         private readonly ApplicationDbContext _context;

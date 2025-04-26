@@ -2,6 +2,7 @@
 using DTO;
 using DUVAS;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Repositories.IRepository;
 using Repository;
@@ -13,6 +14,7 @@ namespace API.Controllers.ServiceOwner
 {
     [Route("api/landlord/[controller]")]
     [ApiController]
+    [EnableCors("AllowLocalhost3000")]
     public class ServiceManagementController : ControllerBase
     {
         private readonly IServicePostRepository _servicePostRepository;

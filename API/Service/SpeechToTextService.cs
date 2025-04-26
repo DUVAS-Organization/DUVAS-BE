@@ -1,35 +1,36 @@
-﻿using System.Net.Http.Headers; // For MediaTypeHeaderValue
-using System.Net.Http; // For HttpClient
-using System.Threading.Tasks;
-using Newtonsoft.Json;
-using DTO;
+﻿using Microsoft.Extensions.Configuration;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.IO;
-using Microsoft.Extensions.Configuration;
-using System.Linq;
+using System.Threading.Tasks;
+using DTO;
+using Newtonsoft.Json;
 
 namespace API.Service
 {
     public class SpeechToTextService
     {
         private readonly IConfiguration _configuration;
+        private readonly IHttpClientFactory _httpClientFactory;
 
-        public SpeechToTextService(IConfiguration configuration)
+        public SpeechToTextService(IConfiguration configuration, IHttpClientFactory httpClientFactory)
         {
             _configuration = configuration;
+            _httpClientFactory = httpClientFactory;
         }
 
-        public async Task<string> ConvertSpeechToTextAsync(IFormFile audioFile)
+        public async Task<(bool Success, object Result, string ErrorMessage)> ConvertSpeechToTextAsync(FileUploadDTO audioFile)
         {
-            var file = audioFile;
+            var file = audioFile.File;
             if (file == null || file.Length == 0)
             {
-                throw new Exception("No file uploaded");
+                return (false, null, "No file uploaded");
             }
 
             var allowedTypes = new[] { "audio/wav", "audio/mpeg", "audio/mp3", "audio/ogg", "audio/webm" };
             if (!allowedTypes.Contains(file.ContentType))
             {
-                throw new Exception("Unsupported file type.");
+                return (false, null, "Unsupported file type.");
             }
 
             try
@@ -38,45 +39,37 @@ namespace API.Service
                 var byteArray = await FileToByteArray(file);
                 var fileContent = new ByteArrayContent(byteArray);
                 fileContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
-                content.Add(fileContent, "file", file.FileName);
+                content.Add(fileContent, "File", file.FileName);
 
+                // Get API key and URL from appsettings.json
                 string apiKey = _configuration["FPTAI:ApiKey"];
                 string apiUrl = _configuration["FPTAI:ApiUrl"];
 
                 using (var stream = file.OpenReadStream())
                 {
-                    var client = new HttpClient();
+                    // Create HttpClient using IHttpClientFactory
+                    var httpClient = _httpClientFactory.CreateClient();
                     var request = new HttpRequestMessage(HttpMethod.Post, apiUrl);
                     request.Headers.Add("username", ""); // You can put the username here if needed
                     request.Headers.Add("api_key", apiKey); // Use the API key from appsettings.json
                     request.Content = new StreamContent(stream);
 
-                    var response = await client.SendAsync(request);
+                    var response = await httpClient.SendAsync(request);
                     response.EnsureSuccessStatusCode();
                     var result = await response.Content.ReadAsStringAsync();
 
                     // Deserialize the response into the DTO
                     var speechToTextResponse = JsonConvert.DeserializeObject<SpeechToTextResponse>(result);
 
-                    // Check if Hypotheses is not null and has at least one element
-                    if (speechToTextResponse?.Hypotheses?.Any() == true)
-                    {
-                        // Assuming Hypothesis has a 'Text' property that contains the actual text
-                        return speechToTextResponse.Hypotheses[0].Text;  // Return the 'Text' from the first hypothesis
-                    }
-                    else
-                    {
-                        throw new Exception("No speech-to-text hypotheses returned.");
-                    }
+                    // Return the first hypothesis
+                    return (true, speechToTextResponse.Hypotheses[0], null);
                 }
             }
             catch (Exception ex)
             {
-                throw new Exception($"Error while converting speech to text: {ex.Message}");
+                return (false, null, $"Internal server error: {ex.Message}");
             }
         }
-
-
 
         private async Task<byte[]> FileToByteArray(IFormFile file)
         {

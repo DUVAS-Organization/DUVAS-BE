@@ -112,6 +112,10 @@ namespace API
                 options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
             });
 
+            // Add IHttpClientFactory for SpeechToTextService
+            builder.Services.AddHttpClient();
+            builder.Services.AddScoped<SpeechToTextService>();
+
             //// Add repositories
             builder.Services.AddScoped<IBuildingRepository, BuildingRepository>();
             builder.Services.AddScoped<ICategoryRoomRepository, CategoryRoomRepository>();
@@ -139,8 +143,6 @@ namespace API
 
             builder.Services.AddScoped<UserDAO>();
             builder.Services.AddScoped<CloudinaryService>();
-            builder.Services.AddScoped<SpeechToTextService>();
-
 
             // Add CORS policy for React app
             builder.Services.AddCors(options =>
@@ -172,7 +174,7 @@ namespace API
             }
 
             app.UseHttpsRedirection();
-            app.UseCors("AllowReactApp");
+            app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:3000"));
             app.UseRouting();
             app.UseAuthorization();
 
