@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using API.Service;
 using DUVAS;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -208,9 +208,11 @@ namespace API
             var app = builder.Build();
 
             // Configure the HTTP request pipeline
-           
+            if (app.Environment.IsDevelopment())
+            {
                 app.UseSwagger();
                 app.UseSwaggerUI();
+            }
 
             app.UseHttpsRedirection();
 
