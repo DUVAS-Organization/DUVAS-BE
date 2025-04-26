@@ -3,6 +3,7 @@ using DUVAS;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -39,6 +40,7 @@ namespace DataAccess
                             Address = p.Address,
                             GiayPhepKinhDoanh = p.GiayPhepKinhDoanh,
                             GiayPhepChuyenMon = p.GiayPhepChuyenMon,
+                            Status = p.Status,
                         })
                         .ToListAsync();
 
@@ -75,8 +77,15 @@ namespace DataAccess
         {
             try
             {
+               
                 using (var context = new ApplicationDbContext())
                 {
+   //                 var existing = await _context.ServiceLicenses
+   //.FirstOrDefaultAsync(l => l.UserId == serviceLicense.UserId);
+   //                 if (existing != null)
+   //                 {
+   //                     throw new Exception("Người dùng đã có yêu cầu đang chờ xử lý.");
+   //                 }
                     await context.ServiceLicenses.AddAsync(serviceLicense);
                     await context.SaveChangesAsync();
                 }
@@ -122,6 +131,35 @@ namespace DataAccess
                 throw new Exception(ex.Message);
             }
         }
+        public static async Task<bool> IsCCCDExistsAsync(string cccd)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    return await context.ServiceLicenses.AnyAsync(s => s.CCCD == cccd);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Lỗi khi kiểm tra CCCD: " + ex.Message);
+            }
+        }
 
+        public static async Task<ServiceLicense?> GetByUserIdAsync(int userId)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    return await context.ServiceLicenses
+                        .SingleOrDefaultAsync(s => s.UserId == userId);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Lỗi khi tìm ServiceLicense theo UserId: " + ex.Message);
+            }
+        }
     }
 }

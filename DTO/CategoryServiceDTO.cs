@@ -14,5 +14,6 @@ namespace DTO
 
         [Required]
         public string CategoryServiceName { get; set; }
+        public int? Status { get; set; }
     }
 }

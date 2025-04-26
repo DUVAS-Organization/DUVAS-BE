@@ -163,13 +163,19 @@ namespace API
             builder.Services.AddScoped<CloudinaryService>();
             builder.Services.AddScoped<IInsiderTradingRepository, InsiderTradingRepository>();
             builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
-
+            builder.Services.AddScoped<FPTAIService>();
             // Add SignalR
             builder.Services.AddSignalR();
             builder.Services.AddHostedService<CheckExpiredContractsService>();
             builder.Services.AddScoped<IAuthorizationContractRepository, AuthorizationContractRepository>();
             builder.Services.AddScoped<PdfService>();
-
+            builder.Services.Configure<AzureImageServiceOptions>(
+            builder.Configuration.GetSection("AzureImageService"));
+            builder.Services.AddSingleton<AzureImageService>(sp =>
+            {
+                var options = sp.GetRequiredService<IOptions<AzureImageServiceOptions>>().Value;
+                return new AzureImageService(options.Endpoint, options.ApiKey);
+            });
             // Add Hangfire
             builder.Services.AddHangfire(configuration => configuration
                 .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)

@@ -9,6 +9,7 @@ using DUVAS;
 using Microsoft.AspNetCore.OData.Routing.Controllers;
 using Microsoft.AspNetCore.OData.Query;
 using Repositories.IRepository;
+using DTO;
 
 namespace API.Controllers.Admin
 {
@@ -43,12 +44,7 @@ namespace API.Controllers.Admin
             try
             {
                 var lockedRooms = await _roomRepository.GetListRoomLockAsync();
-                if (lockedRooms == null || lockedRooms.Count == 0)
-                {
-                    return NotFound("Không có phòng nào đang bị khóa.");
-                }
-
-                return Ok(lockedRooms);
+                return Ok(lockedRooms ?? new List<RoomDTO>());
             }
             catch (Exception ex)
             {
@@ -268,6 +264,15 @@ namespace API.Controllers.Admin
             }
 
             return Ok(roomContract);
+        }
+        [HttpGet("room-authorization")]
+        public async Task<IActionResult> GetRoomAuthorizationAsync([FromQuery] int? userId)
+        {
+            var result = await _roomRepository.GetRoomAuthorizationAsync(userId);
+            if (result == null || result.Count == 0)
+                return NotFound("Không tìm thấy phòng nào có Authorization = 1 phù hợp.");
+
+            return Ok(result);
         }
 
     }

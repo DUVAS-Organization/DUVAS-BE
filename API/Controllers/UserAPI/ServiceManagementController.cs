@@ -33,7 +33,7 @@ namespace API.Controllers.UserAPI
             }
 
             rentalRequest.RentalServiceStatus = 0; // New rental request
-            rentalRequest.CreationDateTime = DateTime.UtcNow;
+            rentalRequest.CreationDateTime = DateTime.Now;
             await _rentalServiceListRepository.SaveRentalServiceListAsync(rentalRequest);
             return Ok("Service rental request created successfully.");
         }

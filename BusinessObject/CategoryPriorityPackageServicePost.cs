@@ -15,6 +15,7 @@ namespace BusinessObject
         [Required]
         public int CategoryPriorityPackageServicePostValue { get; set; }
         public decimal Price { get; set; }
+        public int Status { get; set; } = 1;
 
         public virtual ICollection<PriorityPackageServicePost>? PriorityPackageServicePosts { get; set; }
     }

@@ -1,9 +1,11 @@
 ﻿using DTO;
 using DUVAS;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -57,6 +59,7 @@ namespace DataAccess
                             BuildingName = p.Building != null ? p.Building.BuildingName : null,
                             CategoryName = p.CategoryRoom.CategoryName,
                             IsPermission = p.IsPermission,
+                            Authorization = p.Authorization,
                             //CategoryName = p.Category.CategoryName,
                             //CategoryId = p.CategoryId,                            
 
@@ -109,7 +112,9 @@ namespace DataAccess
                         ChiPhiKhac = p.ChiPhiKhac,
                         BuildingName = p.Building != null ? p.Building.BuildingName : null,
                         CategoryName = p.CategoryRoom.CategoryName,
-                        IsPermission = p.IsPermission
+                        IsPermission = p.IsPermission,
+                        status = p.status,
+                        Authorization = p.Authorization,
                     })
                     .ToListAsync();
             }
@@ -148,7 +153,9 @@ namespace DataAccess
                         ChiPhiKhac = p.ChiPhiKhac,
                         BuildingName = p.Building != null ? p.Building.BuildingName : null,
                         CategoryName = p.CategoryRoom.CategoryName,
-                        IsPermission = p.IsPermission
+                        IsPermission = p.IsPermission,
+                        status = p.status,
+                        Authorization = p.Authorization,
                     })
                     .ToListAsync();
             }
@@ -190,6 +197,7 @@ namespace DataAccess
                     BuildingName = r.Building != null ? r.Building.BuildingName : null,
                     CategoryName = r.CategoryRoom.CategoryName,
                     IsPermission = r.IsPermission,
+                    Authorization = r.Authorization,
                 })
                 .ToListAsync();
 
@@ -233,6 +241,7 @@ namespace DataAccess
                         BuildingName = p.Building != null ? p.Building.BuildingName : null,
                         CategoryName = p.CategoryRoom.CategoryName,
                         IsPermission = p.IsPermission,
+                        Authorization = p.Authorization,
                     })
                     .ToListAsync();
             }
@@ -278,6 +287,7 @@ namespace DataAccess
                         BuildingName = p.Building != null ? p.Building.BuildingName : null,
                         CategoryName = p.CategoryRoom.CategoryName,
                         IsPermission = p.IsPermission,
+                        Authorization = p.Authorization,
                     })
                     .FirstOrDefaultAsync();
             }
@@ -336,6 +346,7 @@ namespace DataAccess
                         BuildingName = p.Building != null ? p.Building.BuildingName : null,
                         CategoryName = p.CategoryRoom.CategoryName,
                         IsPermission = p.IsPermission,
+                        Authorization = p.Authorization,
                     })
                     .ToListAsync();
             }
@@ -463,6 +474,7 @@ namespace DataAccess
                             BuildingName = p.Building != null ? p.Building.BuildingName : null,
                             CategoryName = p.CategoryRoom.CategoryName,
                             IsPermission = p.IsPermission,
+                            Authorization = p.Authorization,
                         })
                         .ToListAsync();
 
@@ -511,6 +523,7 @@ namespace DataAccess
                         BuildingName = p.Building != null ? p.Building.BuildingName : null,
                         CategoryName = p.CategoryRoom.CategoryName,
                         IsPermission = p.IsPermission,
+                        Authorization = p.Authorization,
                     })
                     .ToListAsync();
             }
@@ -562,6 +575,7 @@ namespace DataAccess
                     ChiPhiKhac = room.ChiPhiKhac,
                     IsPermission = room.IsPermission,
                     reputation = room.reputation,
+                    Authorization = room.Authorization,
                     RentalLists = room.status == 2 && room.RentalLists != null ? room.RentalLists
                         .Select(rl => new RentalListDTO
                         {
@@ -611,7 +625,9 @@ namespace DataAccess
                     ChiPhiKhac = r.ChiPhiKhac,
                     BuildingName = r.Building != null ? r.Building.BuildingName : null,
                     CategoryName = r.CategoryRoom.CategoryName,
-                    IsPermission = r.IsPermission
+                    IsPermission = r.IsPermission,
+                    status = r.status,
+                    Authorization = r.Authorization,
                 })
                 .ToListAsync();
 
@@ -726,7 +742,22 @@ namespace DataAccess
                 throw new Exception($"Lỗi khi lấy Room entity: {ex.Message}");
             }
         }
-        public static async Task<bool> CheckRoomIsDuplicatedAsync(int userId, string title, string locationDetail, string description)
+        public static async Task<Room?> GetRoomEntityByIdAsync(int roomId)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    return await context.Rooms
+                        .FirstOrDefaultAsync(r => r.RoomId == roomId);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi lấy Room entity: {ex.Message}");
+            }
+        }
+        public static async Task<bool> CheckRoomIsDuplicatedAsync(int userId, string title, string description)
         {
             try
             {
@@ -734,7 +765,7 @@ namespace DataAccess
                 return await context.Rooms
                     .AnyAsync(r => r.UserId == userId
                                 && r.Title.ToLower() == title.ToLower()
-                                && r.LocationDetail.ToLower() == locationDetail.ToLower()
+                                //&& r.LocationDetail.ToLower() == locationDetail.ToLower()
                                 && r.Description.ToLower() == description.ToLower()); // Kiểm tra Description
             }
             catch (Exception ex)
@@ -761,6 +792,81 @@ namespace DataAccess
             {
                 throw new Exception($"Lỗi khi kiểm tra LocationDetail trùng: {ex.Message}");
             }
+        }
+        public static async Task UpdateAuthorizationAsync(int roomId, int authorization)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var room = await context.Rooms.FirstOrDefaultAsync(r => r.RoomId == roomId);
+                    if (room == null)
+                    {
+                        throw new KeyNotFoundException($"Room với ID {roomId} không tồn tại.");
+                    }
+
+                    room.Authorization = authorization;
+                    context.Rooms.Update(room);
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi cập nhật Authorization: {ex.Message}");
+            }
+        }
+        public static async Task<List<RoomDTO>> GetRoomAuthorizationAsync(int? userId)
+        {
+            using var context = new ApplicationDbContext();
+
+            var query = context.Rooms
+                .Include(p => p.User)
+                .Include(p => p.Building)
+                .Include(p => p.CategoryRoom)
+                .Where(p => p.Authorization == 1)
+                .AsQueryable();
+
+            if (userId.HasValue)
+            {
+                query = query.Where(p => p.UserId == userId);
+            }
+
+            return await query
+                .AsNoTracking()
+                .Select(p => new RoomDTO
+                {
+                    RoomId = p.RoomId,
+                    BuildingId = p.BuildingId,
+                    UserId = p.UserId,
+                    UserName = p.User.UserName,
+                    Title = p.Title,
+                    Description = p.Description,
+                    LocationDetail = p.LocationDetail,
+                    Acreage = p.Acreage,
+                    Furniture = p.Furniture,
+                    NumberOfBathroom = p.NumberOfBathroom,
+                    NumberOfBedroom = p.NumberOfBedroom,
+                    Garret = p.Garret,
+                    Price = p.Price,
+                    CategoryRoomId = p.CategoryRoomId,
+                    Image = p.Image,
+                    Note = p.Note,
+                    status = p.status,
+                    reputation = p.reputation,
+                    Deposit = p.Deposit,
+                    Dien = p.Dien,
+                    Nuoc = p.Nuoc,
+                    Internet = p.Internet,
+                    Rac = p.Rac,
+                    GuiXe = p.GuiXe,
+                    QuanLy = p.QuanLy,
+                    ChiPhiKhac = p.ChiPhiKhac,
+                    BuildingName = p.Building != null ? p.Building.BuildingName : null,
+                    CategoryName = p.CategoryRoom.CategoryName,
+                    IsPermission = p.IsPermission,
+                    Authorization = p.Authorization
+                })
+                .ToListAsync();
         }
 
     }

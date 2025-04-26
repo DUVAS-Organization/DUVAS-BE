@@ -14,6 +14,7 @@ namespace DUVAS
         public string Location { get; set; }
         public bool? Verify { get; set; }
         public string Image { get; set; }
+        public int? Status { get; set; } = 1;
 
         public virtual ICollection<Room>? Rooms { get; set; }
     }

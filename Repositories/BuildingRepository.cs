@@ -18,6 +18,9 @@ namespace Repositories
         public async Task SaveBuildingAsync(Building b) => await BuildingDAO.SaveBuildingAsync(b);
         public async Task UpdateBuildingAsync(Building b) => await BuildingDAO.UpdateBuildingAsync(b);
         public async Task<List<BuildingDTO>> SearchBuildingsAsync(string searchTerm) => await BuildingDAO.SearchBuildingsAsync(searchTerm);
-
+        public async Task LockBuilding(int buildingId) => await BuildingDAO.LockBuilding(buildingId);
+        public async Task UnLockBuilding(int buildingId) => await BuildingDAO.UnLockBuilding(buildingId);
+        public async Task<List<BuildingDTO>> GetLockedBuildingsAsync() => await BuildingDAO.GetLockedBuildingsAsync();
+        public async Task<List<BuildingDTO>> GetActiveBuildingsAsync() => await BuildingDAO.GetActiveBuildingsAsync();
     }
 }

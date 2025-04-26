@@ -98,9 +98,13 @@ namespace Repositories
         {
             return await RoomDAO.GetRoomEntityByIdForLandlordAsync(roomId, landlordId);
         }
-        public async Task<bool> CheckRoomIsDuplicatedAsync(int userId, string title, string locationDetail, string description)
+        public async Task<Room?> GetRoomEntityByIdAsync(int roomId)
         {
-            return await RoomDAO.CheckRoomIsDuplicatedAsync(userId, title, locationDetail, description);
+            return await RoomDAO.GetRoomEntityByIdAsync(roomId);
+        }
+        public async Task<bool> CheckRoomIsDuplicatedAsync(int userId, string title, string description)
+        {
+            return await RoomDAO.CheckRoomIsDuplicatedAsync(userId, title, description);
         }
         public async Task<bool> CheckDescriptionExistsAsync(string description)
         {
@@ -109,6 +113,14 @@ namespace Repositories
         public async Task<bool> CheckLocationExistsAsync(string locationDetail)
         {
             return await RoomDAO.CheckLocationExistsAsync(locationDetail);
+        }
+        public async Task UpdateAuthorizationAsync(int roomId, int authorization)
+        {
+            await RoomDAO.UpdateAuthorizationAsync(roomId, authorization);
+        }
+        public async Task<List<RoomDTO>> GetRoomAuthorizationAsync(int? userId)
+        {
+            return await RoomDAO.GetRoomAuthorizationAsync(userId);
         }
     }
 }

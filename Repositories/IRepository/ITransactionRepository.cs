@@ -18,5 +18,13 @@ namespace Repositories.IRepository
         Task<List<Transaction>> GetTransactionsByUserId(int userId);
         Task<bool> DoesTransactionProcessedAsync(int cassoId);
         Task<bool> IsTransactionPaidAsync(string description);
+        Task<List<TransactionAdminDTO>> GetAllTransactionAdminView();
+        Task<List<TransactionAdminDTO>> GetAllDeposits();
+        Task<List<TransactionAdminDTO>> GetAllWithdrawals();
+        Task<decimal> GetTotalDeposits();
+        Task<decimal> GetTotalWithdrawals();
+        Task<decimal> GetTotalRevenue();
+        Task<Dictionary<string, decimal>> GetMonthlyRevenue();
+
     }
 }

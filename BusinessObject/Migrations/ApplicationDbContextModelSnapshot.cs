@@ -40,10 +40,6 @@ namespace BusinessObject.Migrations
                     b.Property<int>("CreatedById")
                         .HasColumnType("int");
 
-                    b.Property<string>("Date")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("PartyAId")
                         .HasColumnType("int");
 
@@ -53,6 +49,12 @@ namespace BusinessObject.Migrations
                     b.Property<string>("PdfUrl")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RoomList")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("status")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -77,6 +79,9 @@ namespace BusinessObject.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.HasKey("CategoryPriorityPackageRoomId");
 
                     b.ToTable("CategoryPriorityPackageRooms");
@@ -95,6 +100,9 @@ namespace BusinessObject.Migrations
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.HasKey("CategoryPriorityPackageServicePostId");
 
@@ -268,6 +276,9 @@ namespace BusinessObject.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("Status")
+                        .HasColumnType("int");
+
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
@@ -293,6 +304,9 @@ namespace BusinessObject.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("Status")
+                        .HasColumnType("int");
+
                     b.HasKey("CategoryRoomId");
 
                     b.ToTable("CategoryRooms");
@@ -309,6 +323,9 @@ namespace BusinessObject.Migrations
                     b.Property<string>("CategoryServiceName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("Status")
+                        .HasColumnType("int");
 
                     b.HasKey("CategoryServiceId");
 
@@ -327,6 +344,9 @@ namespace BusinessObject.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<decimal?>("DownPayment")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<DateTime>("RentalDateTimeEnd")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2");
@@ -334,6 +354,9 @@ namespace BusinessObject.Migrations
                     b.Property<DateTime>("RentalDateTimeStart")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("RenterID")
+                        .HasColumnType("int");
 
                     b.Property<int>("status")
                         .HasColumnType("int");
@@ -430,6 +453,9 @@ namespace BusinessObject.Migrations
 
                     b.Property<string>("Sex")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("Status")
+                        .HasColumnType("int");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
@@ -579,13 +605,7 @@ namespace BusinessObject.Migrations
                     b.Property<int?>("RoomId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("ServicePostId")
-                        .HasColumnType("int");
-
                     b.Property<int?>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("TransactionId")
                         .HasColumnType("int");
 
                     b.Property<int>("UserId")
@@ -594,10 +614,6 @@ namespace BusinessObject.Migrations
                     b.HasKey("ReportId");
 
                     b.HasIndex("RoomId");
-
-                    b.HasIndex("ServicePostId");
-
-                    b.HasIndex("TransactionId");
 
                     b.HasIndex("UserId");
 
@@ -614,6 +630,9 @@ namespace BusinessObject.Migrations
 
                     b.Property<double>("Acreage")
                         .HasColumnType("float");
+
+                    b.Property<int?>("Authorization")
+                        .HasColumnType("int");
 
                     b.Property<int?>("BuildingId")
                         .HasColumnType("int");
@@ -815,6 +834,9 @@ namespace BusinessObject.Migrations
 
                     b.Property<string>("Sex")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("Status")
+                        .HasColumnType("int");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
@@ -1309,16 +1331,6 @@ namespace BusinessObject.Migrations
                         .HasForeignKey("RoomId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("DUVAS.ServicePost", "ServicePost")
-                        .WithMany()
-                        .HasForeignKey("ServicePostId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("DUVAS.Transaction", "Transaction")
-                        .WithMany()
-                        .HasForeignKey("TransactionId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("DUVAS.User", "User")
                         .WithMany("Reports")
                         .HasForeignKey("UserId")
@@ -1326,10 +1338,6 @@ namespace BusinessObject.Migrations
                         .IsRequired();
 
                     b.Navigation("Room");
-
-                    b.Navigation("ServicePost");
-
-                    b.Navigation("Transaction");
 
                     b.Navigation("User");
                 });

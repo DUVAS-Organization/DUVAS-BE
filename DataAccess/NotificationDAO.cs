@@ -174,5 +174,20 @@ namespace DataAccess
                 throw new Exception($"Lỗi khi đếm thông báo chưa đọc: {ex.Message}");
             }
         }
+        public static async Task CreateNotificationAsync(Notification notification)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    await context.Notifications.AddAsync(notification);
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi tạo thông báo: {ex.Message}");
+            }
+        }
     }
 }

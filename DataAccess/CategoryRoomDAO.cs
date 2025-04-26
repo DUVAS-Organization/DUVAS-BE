@@ -29,6 +29,57 @@ namespace DataAccess
                         {
                             CategoryRoomId = p.CategoryRoomId,
                             CategoryName = p.CategoryName,
+                            Status = p.Status,
+                        })
+                        .ToListAsync();
+
+                    return categoryRooms;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+        public static async Task<List<CategoryRoomDTO>> GetCategoryLockedRoomsAsync()
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var categoryRooms = await context.CategoryRooms
+                        .AsNoTracking()
+                        .Where(u => u.Status == 0)
+                        .Select(p => new CategoryRoomDTO
+                        {
+                            CategoryRoomId = p.CategoryRoomId,
+                            CategoryName = p.CategoryName,
+                            Status = p.Status,
+                        })
+                        .ToListAsync();
+
+                    return categoryRooms;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+        public static async Task<List<CategoryRoomDTO>> GetCategoryActiveRoomsAsync()
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var categoryRooms = await context.CategoryRooms
+                        .AsNoTracking()
+                        .Where(u => u.Status == 1)
+                        .Select(p => new CategoryRoomDTO
+                        {
+                            CategoryRoomId = p.CategoryRoomId,
+                            CategoryName = p.CategoryName,
+                            Status = p.Status,
                         })
                         .ToListAsync();
 
@@ -65,6 +116,7 @@ namespace DataAccess
             {
                 using (var context = new ApplicationDbContext())
                 {
+                    categoryRoom.Status = 1;
                     await context.CategoryRooms.AddAsync(categoryRoom);
                     await context.SaveChangesAsync();
                 }
@@ -81,6 +133,7 @@ namespace DataAccess
             {
                 using (var context = new ApplicationDbContext())
                 {
+                    categoryRoom.Status = 1;
                     context.Entry(categoryRoom).State = EntityState.Modified;
                     await context.SaveChangesAsync();
                 }
@@ -110,6 +163,49 @@ namespace DataAccess
                 throw new Exception(ex.Message);
             }
         }
+        public static async Task LockCategoryRoom(int categoryRoomId)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var categoryRoom = await context.CategoryRooms.FirstOrDefaultAsync(u => u.CategoryRoomId == categoryRoomId);
+                    if (categoryRoom == null)
+                    {
+                        throw new KeyNotFoundException($"Room với ID {categoryRoomId} không tồn tại.");
+                    }
 
+                    categoryRoom.Status = 0;
+                    context.CategoryRooms.Update(categoryRoom);
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi khóa Room: {ex.Message}");
+            }
+        }
+        public static async Task UnLockCategoryRoom(int categoryRoomId)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var categoryRoom = await context.CategoryRooms.FirstOrDefaultAsync(u => u.CategoryRoomId == categoryRoomId);
+                    if (categoryRoom == null)
+                    {
+                        throw new KeyNotFoundException($"Room với ID {categoryRoomId} không tồn tại.");
+                    }
+
+                    categoryRoom.Status = 1;
+                    context.CategoryRooms.Update(categoryRoom);
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi mở khóa Room: {ex.Message}");
+            }
+        }
     }
 }

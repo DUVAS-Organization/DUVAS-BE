@@ -23,12 +23,14 @@ namespace DataAccess
                         {
                             Id = p.Id,
                             ContractNumber = p.ContractNumber,
-                            Date = p.Date,
+                            //Date = p.Date,
                             PartyAId = p.PartyAId,
                             PartyBId = p.PartyBId,
                             PdfUrl = p.PdfUrl,
                             CreatedById = p.CreatedById,
-                            CreatedAt = p.CreatedAt
+                            CreatedAt = p.CreatedAt,
+                            status = p.status,
+                            RoomList = p.RoomList,
                         })
                         .ToListAsync();
 
@@ -54,12 +56,14 @@ namespace DataAccess
                         {
                             Id = p.Id,
                             ContractNumber = p.ContractNumber,
-                            Date = p.Date,
+                            //Date = p.Date,
                             PartyAId = p.PartyAId,
                             PartyBId = p.PartyBId,
                             PdfUrl = p.PdfUrl,
+                            RoomList = p.RoomList,
                             CreatedById = p.CreatedById,
-                            CreatedAt = p.CreatedAt
+                            CreatedAt = p.CreatedAt,
+                            status = p.status
                         })
                         .ToListAsync();
 
@@ -96,15 +100,27 @@ namespace DataAccess
             {
                 using (var context = new ApplicationDbContext())
                 {
+                    // Tìm các phòng do PartyA sở hữu
+                    var relatedRooms = await context.Rooms
+                        .Where(r => r.UserId == contract.PartyAId)
+                        .ToListAsync();
+
+                    // Set Authorization = 2 cho các phòng đó
+                    foreach (var room in relatedRooms)
+                    {
+                        room.Authorization = 2;
+                    }
+
                     await context.AuthorizationContracts.AddAsync(contract);
                     await context.SaveChangesAsync();
                 }
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                throw new Exception($"Lỗi khi lưu hợp đồng và cập nhật phòng: {ex.Message}");
             }
         }
+
 
         public static async Task UpdateAuthorizationContractAsync(AuthorizationContract contract)
         {
@@ -140,6 +156,28 @@ namespace DataAccess
             catch (Exception ex)
             {
                 throw new Exception(ex.Message);
+            }
+        }
+        public static async Task UpdateStatusAsync(int id, int status)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var contract = await context.AuthorizationContracts.FirstOrDefaultAsync(c => c.Id == id);
+                    if (contract == null)
+                    {
+                        throw new KeyNotFoundException($"Hợp đồng ủy quyền với ID {id} không tồn tại.");
+                    }
+
+                    contract.status = status;
+                    context.AuthorizationContracts.Update(contract);
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi cập nhật status: {ex.Message}");
             }
         }
     }

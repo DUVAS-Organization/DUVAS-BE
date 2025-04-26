@@ -17,5 +17,10 @@ namespace Repositories
         public async Task<List<CategoryServiceDTO>> GetCategoryServicesAsync() => await CategoryServiceDAO.GetCategoryServicesAsync();
         public async Task SaveCategoryServiceAsync(CategoryService b) => await CategoryServiceDAO.SaveCategoryServiceAsync(b);
         public async Task UpdateCategoryServiceAsync(CategoryService b) => await CategoryServiceDAO.UpdateCategoryServiceAsync(b);
+        public async Task LockCategoryService(int categoryServiceId) => await CategoryServiceDAO.LockCategoryService(categoryServiceId);
+        public async Task UnLockCategoryService(int categoryServiceId) => await CategoryServiceDAO.UnLockCategoryService(categoryServiceId);
+        public async Task<List<CategoryServiceDTO>> GetCategoryLockedServicesAsync() => await CategoryServiceDAO.GetCategoryLockedServicesAsync();
+        public async Task<List<CategoryServiceDTO>> GetCategoryActiveServicesAsync() => await CategoryServiceDAO.GetCategoryActiveServicesAsync();
+
     }
 }

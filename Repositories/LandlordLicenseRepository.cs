@@ -1,6 +1,7 @@
 ﻿using DataAccess;
 using DTO;
 using DUVAS;
+using Microsoft.EntityFrameworkCore;
 using Repositories.IRepository;
 using System;
 using System.Collections.Generic;
@@ -17,5 +18,22 @@ namespace Repositories
         public async Task<List<LandlordLicenseDTO>> GetLandlordLicensesAsync() => await LandlordLicenseDAO.GetLandlordLicensesAsync();
         public async Task SaveLandlordLicenseAsync(LandlordLicense b) => await LandlordLicenseDAO.SaveLandlordLicenseAsync(b);
         public async Task UpdateLandlordLicenseAsync(LandlordLicense b) => await LandlordLicenseDAO.UpdateLandlordLicenseAsync(b);
+        //public async Task<bool> IsCCCDExistsAsync(string cccd)
+        //                => await LandlordLicenseDAO.IsCCCDExistsAsync(cccd);
+
+        public async Task<LandlordLicense?> GetByUserIdAsync(int userId)
+            => await LandlordLicenseDAO.GetByUserIdAsync(userId);
+        public async Task<bool> IsCCCDExistsAsync(string cccd)
+        {
+            try
+            {
+                return await LandlordLicenseDAO.IsCCCDExistsAsync(cccd);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Lỗi khi kiểm tra CCCD: " + ex.Message);
+            }
+        }
+
     }
 }

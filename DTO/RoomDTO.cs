@@ -46,6 +46,11 @@ namespace DTO
         public decimal? ChiPhiKhac { get; set; }
         public int? status { get; set; }
         public int? reputation { get; set; }
+        public int? Authorization { get; set; }
+        //0: Mac dinh
+        //1: Co uy quyen
+        //2: Dang cho admin duyet
+        //3: Da duoc admin duyet
         public List<RentalListDTO>? RentalLists { get; set; }
 
         //public Building? Building { get; set; }

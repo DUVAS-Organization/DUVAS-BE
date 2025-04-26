@@ -93,7 +93,46 @@ namespace API.Controllers.Admin
             await _categoryPriorityPackageServicePostRepository.DeleteCategoryPriorityPackageServicePostAsync(categoryPriorityPackageServicePost);
             return NoContent();
         }
+        [HttpPut("lock/{id}")]
+        public async Task<IActionResult> LockCategoryPriorityPackageServicePost(int id)
+        {
+            var categoryPriorityPackageServicePosts = await _categoryPriorityPackageServicePostRepository.GetCategoryPriorityPackageServicePostByIdAsync(id);
+            if (categoryPriorityPackageServicePosts == null)
+            {
+                return NotFound("PriorityPackageServicePost không tồn tại.");
+            }
 
+            try
+            {
+                await _categoryPriorityPackageServicePostRepository.LockCategoryPriorityPackageServicePost(id);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi khóa PriorityPackageServicePost: {ex.Message}");
+            }
+
+            return NoContent();
+        }
+        [HttpPut("unlock/{id}")]
+        public async Task<IActionResult> UnLockCategoryPriorityPackageServicePost(int id)
+        {
+            var categoryPriorityPackageServicePosts = await _categoryPriorityPackageServicePostRepository.GetCategoryPriorityPackageServicePostByIdAsync(id);
+            if (categoryPriorityPackageServicePosts == null)
+            {
+                return NotFound("PriorityPackageServicePost không tồn tại.");
+            }
+
+            try
+            {
+                await _categoryPriorityPackageServicePostRepository.UnLockCategoryPriorityPackageServicePost(id);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi khóa PriorityPackageServicePost: {ex.Message}");
+            }
+
+            return NoContent();
+        }
         private async Task<bool> CategoryPriorityPackageServicePostExists(int id)
         {
             var categoryPriorityPackageServicePost = await _categoryPriorityPackageServicePostRepository.GetCategoryPriorityPackageServicePostByIdAsync(id);

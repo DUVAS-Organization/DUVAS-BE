@@ -9,6 +9,7 @@ using DUVAS;
 using Microsoft.AspNetCore.OData.Query;
 using Microsoft.AspNetCore.OData.Routing.Controllers;
 using Repositories.IRepository;
+using DTO;
 
 namespace API.Controllers.Admin
 {
@@ -120,6 +121,58 @@ namespace API.Controllers.Admin
 
             await _buildingRepository.DeleteBuildingAsync(building);
             return NoContent();
+        }
+        [HttpPut("lock/{id}")]
+        public async Task<IActionResult> LockBuilding(int id)
+        {
+            var Buildings = await _buildingRepository.GetBuildingByIdAsync(id);
+            if (Buildings == null)
+            {
+                return NotFound("Building không tồn tại.");
+            }
+
+            try
+            {
+                await _buildingRepository.LockBuilding(id);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi khóa Building: {ex.Message}");
+            }
+
+            return NoContent();
+        }
+        [HttpPut("unlock/{id}")]
+        public async Task<IActionResult> UnLockBuilding(int id)
+        {
+            var Buildings = await _buildingRepository.GetBuildingByIdAsync(id);
+            if (Buildings == null)
+            {
+                return NotFound("Building không tồn tại.");
+            }
+
+            try
+            {
+                await _buildingRepository.UnLockBuilding(id);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi khóa Building: {ex.Message}");
+            }
+
+            return NoContent();
+        }
+        [HttpGet("Locked")]
+        public async Task<ActionResult<IEnumerable<BuildingDTO>>> GetLockedBuildingsAsync()
+        {
+            var buildings = await _buildingRepository.GetLockedBuildingsAsync();
+            return Ok(buildings);
+        }
+        [HttpGet("Active")]
+        public async Task<ActionResult<IEnumerable<BuildingDTO>>> GetActiveBuildingsAsync()
+        {
+            var buildings = await _buildingRepository.GetActiveBuildingsAsync();
+            return Ok(buildings);
         }
         private async Task<bool> BuildingExists(int id)
         {

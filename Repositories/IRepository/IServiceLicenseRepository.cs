@@ -15,5 +15,7 @@ namespace Repositories.IRepository
         Task DeleteServiceLicenseAsync(ServiceLicense b);
         Task UpdateServiceLicenseAsync(ServiceLicense b);
         Task<List<ServiceLicenseDTO>> GetServiceLicensesAsync();
+        Task<bool> IsCCCDExistsAsync(string cccd); // Thêm để kiểm tra CCCD
+        Task<ServiceLicense?> GetByUserIdAsync(int userId); // Thêm để kiểm tra đơn đang chờ
     }
 }

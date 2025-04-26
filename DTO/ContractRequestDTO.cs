@@ -18,6 +18,7 @@ namespace DTO
         public decimal? Deposit { get; set; }
         public decimal? Price { get; set; }
         public required int RoomId { get; set; }
+        public int RenterID { get; set; }
 
     }
 }

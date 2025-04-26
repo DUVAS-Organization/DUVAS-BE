@@ -1,4 +1,5 @@
 ﻿using API.Service;
+using BusinessObject;
 using DataAccess;
 using DTO;
 using DUVAS;
@@ -16,13 +17,17 @@ namespace API.Controllers.UserAPI
         private readonly ILandlordLicenseRepository _landlordLicenseRepository;
         private readonly IServiceLicenseRepository _serviceLicenseRepository;
         private readonly IUserRepository _userRepository;
+        private readonly int _adminId;
 
-
-        public UpdateRoleController(ILandlordLicenseRepository landlordLicenseRepository, IUserRepository userRepository, IServiceLicenseRepository serviceLicenseRepository)
+        public UpdateRoleController(ILandlordLicenseRepository landlordLicenseRepository,
+            IUserRepository userRepository,
+            IServiceLicenseRepository serviceLicenseRepository,
+            IConfiguration configuration)
         {
             _landlordLicenseRepository = landlordLicenseRepository;
             _userRepository = userRepository;
             _serviceLicenseRepository = serviceLicenseRepository;
+            _adminId = configuration.GetValue<int>("AdminId"); 
         }
 
 
@@ -33,7 +38,38 @@ namespace API.Controllers.UserAPI
             {
                 return BadRequest("Invalid data.");
             }
+            // Validate CCCD format (e.g., max length 12 as per model)
+            if (string.IsNullOrEmpty(dto.CCCD) || dto.CCCD.Length > 12)
+            {
+                return BadRequest("Invalid CCCD.");
+            }
+            Console.WriteLine($"Checking CCCD: {dto.CCCD}");
+            // Check if CCCD already exists in LandlordLicense or ServiceLicense
+            var existingLandlordLicense = await _landlordLicenseRepository.IsCCCDExistsAsync(dto.CCCD);
+            Console.WriteLine($"CCCD exists in ServiceLicenses: {existingLandlordLicense}");
+            if (existingLandlordLicense != false)
+            {
+                return Conflict("A license with this CCCD already exists.");
+            }
+            
+            var user = await _userRepository.GetUserByIdAsync(dto.UserId);
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
 
+            // Check if user already has an approved LandlordLicense
+            if (user.RoleLandlord == 1)
+            {
+                return Conflict("User already has an approved Landlord License.");
+            }
+
+            // Check if user has a pending LandlordLicense
+            var pendingLandlordLicense = await _landlordLicenseRepository.GetByUserIdAsync(dto.UserId);
+            if (pendingLandlordLicense != null)
+            {
+                return Conflict("User already has a pending Landlord License.");
+            }
             var landlordLicense = new LandlordLicense
             {
                 UserId = dto.UserId,
@@ -48,6 +84,29 @@ namespace API.Controllers.UserAPI
             };
 
             await _landlordLicenseRepository.SaveLandlordLicenseAsync(landlordLicense);
+
+            // Gửi thông báo uprole
+            var message = $"Bạn đã gửi thành công yêu cầu đăng ký làm chủ nhà.";
+            var redirectUrl = $"";
+            await NotificationDAO.CreateNotificationAsync(new Notification
+            {
+                UserId = landlordLicense.UserId,
+                Type = "UpdateRole",
+                Message = message,
+                RedirectUrl = redirectUrl,
+                CreatedDate = DateTime.Now,
+                IsRead = false
+            });
+
+            await NotificationDAO.CreateNotificationAsync(new Notification
+            {
+                UserId = _adminId,
+                Type = "UpdateRole",
+                Message = $"Vừa có đơn đăng ký làm chủ nhà từ User: #{landlordLicense.UserId}",
+                RedirectUrl = redirectUrl,
+                CreatedDate = DateTime.Now,
+                IsRead = false
+            });
             return CreatedAtAction(nameof(SaveLandlordLicense), new { id = landlordLicense.LandlordLicenseId }, landlordLicense);
         }
 
@@ -58,7 +117,38 @@ namespace API.Controllers.UserAPI
             {
                 return BadRequest("Invalid data.");
             }
+            // Validate CCCD format (e.g., max length 12 as per model)
+            if (string.IsNullOrEmpty(dto.CCCD) || dto.CCCD.Length > 12)
+            {
+                return BadRequest("Invalid CCCD.");
+            }
 
+            // Check if CCCD already exists in LandlordLicense or ServiceLicense
+            var existingServiceLicense = await _serviceLicenseRepository.IsCCCDExistsAsync(dto.CCCD);
+            if (existingServiceLicense != false)
+            {
+                return Conflict("A license with this CCCD already exists.");
+            }
+
+            // Check if user exists and their RoleService status
+            var user = await _userRepository.GetUserByIdAsync(dto.UserId);
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            // Check if user already has an approved ServiceLicense
+            if (user.RoleService == 1)
+            {
+                return Conflict("User already has an approved Service License.");
+            }
+
+            // Check if user has a pending ServiceLicense
+            var pendingServiceLicense = await _serviceLicenseRepository.GetByUserIdAsync(dto.UserId);
+            if (pendingServiceLicense != null)
+            {
+                return Conflict("User already has a pending Service License.");
+            }
             var serviceLicense = new ServiceLicense
             {
                 UserId = dto.UserId,
@@ -74,6 +164,29 @@ namespace API.Controllers.UserAPI
             };
 
             await _serviceLicenseRepository.SaveServiceLicenseAsync(serviceLicense);
+
+            // Gửi thông báo uprole
+            var message = $"Bạn đã gửi thành công yêu cầu đăng ký làm chủ dịch vụ.";
+            var redirectUrl = $"/ViewUpRole";
+            await NotificationDAO.CreateNotificationAsync(new Notification
+            {
+                UserId = serviceLicense.UserId,
+                Type = "ConfirmUpdateRole",
+                Message = message,
+                RedirectUrl = redirectUrl,
+                CreatedDate = DateTime.Now,
+                IsRead = false
+            });
+
+            //await NotificationDAO.CreateNotificationAsync(new Notification
+            //{
+            //    UserId = _adminId,
+            //    Type = "UpdateRole",
+            //    Message = $"Vừa có đơn đăng ký làm chủ dịch vụ từ User: #{serviceLicense.UserId}",
+            //    RedirectUrl = redirectUrl,
+            //    CreatedDate = DateTime.Now,
+            //    IsRead = false
+            //});
             return CreatedAtAction(nameof(SaveServiceLicense), new { id = serviceLicense.ServiceLicenseId }, serviceLicense);
         }
 
@@ -188,7 +301,7 @@ namespace API.Controllers.UserAPI
         {
             if (license == null)
                 return BadRequest("Invalid data.");
-
+           
             await _serviceLicenseRepository.SaveServiceLicenseAsync(license);
             return StatusCode(201, "Service License created successfully.");
         }

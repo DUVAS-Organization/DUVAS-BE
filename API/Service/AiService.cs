@@ -34,9 +34,9 @@ namespace API.Service
             {
                 model = "mistral-small", // Chỉ định model bạn muốn sử dụng
                 messages = new[]
-                {
-                    new { role = "system", content = "Bạn là một AI giúp tạo tiêu đề và mô tả phòng." },
-                    new { role = "user", content = $"Hãy tạo tiêu đề và mô tả đầy đủ cho phòng dựa trên thông tin sau: {roomInfo}. Mô tả phải chi tiết và ít nhất 100 từ." }
+               {
+                    new { role = "system", content = "Bạn là một AI chuyên tạo tiêu đề và mô tả phòng cho thuê bằng tiếng Việt. Trả về kết quả gồm hai phần: dòng đầu tiên là tiêu đề, các dòng tiếp theo là mô tả chi tiết ít nhất 100 từ. Tiêu đề phải ngắn gọn, hấp dẫn, thu hút người đọc, không chỉ liệt kê thông tin mà cần nhấn mạnh lợi ích hoặc điểm nổi bật của phòng (ví dụ: vị trí, tiện nghi, giá tốt). Tuyệt đối không thêm bất kỳ nhãn nào như 'Tiêu đề: ', 'Mô tả: ', 'tiêu đề: ', 'mô tả: ' hoặc bất kỳ từ khóa tương tự trước nội dung. Chỉ trả về nội dung thuần túy, không có định dạng thừa như dấu hai chấm hay từ khóa không cần thiết." },
+                    new { role = "user", content = $"Dựa trên thông tin sau: {roomInfo}, tạo tiêu đề và mô tả chi tiết cho phòng cho thuê. Mô tả phải dài ít nhất 100 từ, nêu rõ các tiện ích, vị trí, và lý do nên thuê phòng này. Đó là một phòng cho thuê, không phải phòng tắm cho thuê mà là một phòng để sống, những thông tin được cung cấp chỉ là những thứ để mô tả về thông tin của phòng đó." }
                 },
                 max_tokens = 1000 // Tăng giá trị này để đảm bảo đủ token cho output
             };

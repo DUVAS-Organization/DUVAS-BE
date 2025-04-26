@@ -12,7 +12,7 @@ namespace DUVAS
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public DateTime RentalDateTimeEnd { get; set; }
 
-
+        public decimal? DownPayment { get; set; }
 
         public string ContractFile { get; set; }
 
@@ -21,7 +21,7 @@ namespace DUVAS
         // 2: Đã bị hủy
         // 3: Het han
         // 4: pending
-
+        public int RenterID { get; set; }
         public virtual ICollection<RentalList>? RentalLists { get; set; }
     }
 }

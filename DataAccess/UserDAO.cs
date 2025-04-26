@@ -9,6 +9,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using BusinessObject.Enums;
+using BusinessObject;
 
 namespace DataAccess
 {
@@ -344,6 +345,18 @@ namespace DataAccess
 
             _context.BankAccounts.Add(newBankAccount);
             await _context.SaveChangesAsync();
+            // ✅ Tạo thông báo khi thêm tài khoản ngân hàng
+            var notification = new Notification
+            {
+                UserId = userId,
+                Type = "BankAccount",
+                Message = $"Bạn đã thêm tài khoản ngân hàng thành công.",
+                RedirectUrl = "/bank-accounts",
+                CreatedDate = DateTime.Now,
+                IsRead = false
+            };
+            await NotificationDAO.CreateNotificationAsync(notification);
+
 
             return newBankAccount;
         }
@@ -378,6 +391,18 @@ namespace DataAccess
                 _context.BankAccounts.Update(bankAccount);
                 await _context.SaveChangesAsync();
 
+                // ✅ Tạo thông báo
+                var statusText = active ? "kích hoạt" : "vô hiệu hóa";
+                var notification = new Notification
+                {
+                    UserId = userId,
+                    Type = "BankAccountStatusChange",
+                    Message = $"Tài khoản ngân hàng \"{bankAccount.AccountNumber}\" đã được {statusText}.",
+                    RedirectUrl = "/bank-accounts",
+                    CreatedDate = DateTime.Now,
+                    IsRead = false
+                };
+                await NotificationDAO.CreateNotificationAsync(notification);
                 return true;
             }
             catch (Exception e)
@@ -447,7 +472,7 @@ namespace DataAccess
             {
                 using (var context = new ApplicationDbContext())
                 {
-                    var lockedUsers = await context.Users
+                    var activeUsers = await context.Users
                         .AsNoTracking()
                         .Where(u => u.RoleUser == 1)
                         .Select(p => new UserDTO
@@ -468,12 +493,12 @@ namespace DataAccess
                         })
                         .ToListAsync();
 
-                    return lockedUsers;
+                    return activeUsers;
                 }
             }
             catch (Exception ex)
             {
-                throw new Exception($"Lỗi khi lấy danh sách User bị khóa: {ex.Message}");
+                throw new Exception($"Lỗi khi lấy danh sách User activeUsers: {ex.Message}");
             }
         }
         public static async Task<List<UserDTO>> GetListUpRoleLandLord()
@@ -601,10 +626,26 @@ namespace DataAccess
                     {
                         throw new KeyNotFoundException($"User với ID {userId} không tồn tại.");
                     }
-
+                    var userLicense = await context.LandlordLicenses.FirstOrDefaultAsync(ll => ll.UserId == userId);
+                    if (userLicense != null)
+                    {
+                        userLicense.Status = 1;
+                    }
                     user.RoleLandlord = 1;
                     context.Users.Update(user);
                     await context.SaveChangesAsync();
+
+                    // Add Notification
+                    var notification = new Notification
+                    {
+                        UserId = userId,
+                        Type = "AcceptRegisterUpRole",
+                        Message = "Yêu cầu nâng cấp tài khoản Landlord đã được chấp nhận.",
+                        RedirectUrl = "/",
+                        CreatedDate = DateTime.Now,
+                        IsRead = false
+                    };
+                    await NotificationDAO.CreateNotificationAsync(notification);
                 }
             }
             catch (Exception ex)
@@ -623,10 +664,26 @@ namespace DataAccess
                     {
                         throw new KeyNotFoundException($"User với ID {userId} không tồn tại.");
                     }
-
+                    var userLicense = await context.ServiceLicenses.FirstOrDefaultAsync(ll => ll.UserId == userId);
+                    if (userLicense != null)
+                    {
+                        userLicense.Status = 1;
+                    }
                     user.RoleService = 1;
                     context.Users.Update(user);
                     await context.SaveChangesAsync();
+
+                    // Add Notification
+                    var notification = new Notification
+                    {
+                        UserId = userId,
+                        Type = "AcceptRegisterUpRole",
+                        Message = "Yêu cầu nâng cấp tài khoản Service đã được chấp nhận.",
+                        RedirectUrl = "/",
+                        CreatedDate = DateTime.Now,
+                        IsRead = false
+                    };
+                    await NotificationDAO.CreateNotificationAsync(notification);
                 }
             }
             catch (Exception ex)
@@ -648,7 +705,7 @@ namespace DataAccess
                     var userLicense = await context.LandlordLicenses.FirstOrDefaultAsync(ll => ll.UserId == userId);
                     if (userLicense != null)
                     {
-                        context.LandlordLicenses.Remove(userLicense);
+                        userLicense.Status = 2;
                     }
 
                     user.RoleLandlord = 0;
@@ -675,10 +732,10 @@ namespace DataAccess
                     var userLicense = await context.ServiceLicenses.FirstOrDefaultAsync(sl => sl.UserId == userId);
                     if (userLicense != null)
                     {
-                        context.ServiceLicenses.Remove(userLicense);
+                        userLicense.Status = 2;
                     }
 
-                    user.RoleLandlord = 0;
+                    user.RoleService = 0;
                     context.Users.Update(user);
                     await context.SaveChangesAsync();
                 }
@@ -687,6 +744,71 @@ namespace DataAccess
             {
                 throw new Exception($"Lỗi khi Cancel UpRole Service: {ex.Message}");
             }
+        }
+        public static async Task<LandlordLicenseDTO> GetOneLicensesByUserIdAsync(int userId)
+        {
+            using var context = new ApplicationDbContext();
+            return await context.LandlordLicenses
+                .Include(l => l.User)
+                .Where(l => l.UserId == userId)
+                .Select(license => new LandlordLicenseDTO
+                {
+                    LandlordLicenseId = license.LandlordLicenseId,
+                    UserId = license.UserId,
+                    Name = license.Name,
+                    CCCD = license.CCCD,
+                    Sex = license.Sex,
+                    Address = license.Address,
+                    GiayPhepKinhDoanh = license.GiayPhepKinhDoanh,
+                    Status = license.Status,
+                    AnhCCCDMatTruoc = license.AnhCCCDMatTruoc,
+                    AnhCCCDMatSau = license.AnhCCCDMatSau,
+                    dateOfBirth = license.dateOfBirth
+                }).FirstOrDefaultAsync();
+        }
+        public static async Task<List<LandlordLicenseDTO>> GetLandlordLicensesByUserIdAsync(int userId)
+        {
+            using var context = new ApplicationDbContext();
+            return await context.LandlordLicenses
+                .Include(l => l.User)
+                .Where(l => l.UserId == userId)
+                .Select(license => new LandlordLicenseDTO
+                {
+                    LandlordLicenseId = license.LandlordLicenseId,
+                    UserId = license.UserId,
+                    Name = license.Name,
+                    CCCD = license.CCCD,
+                    Sex = license.Sex,
+                    Address = license.Address,
+                    GiayPhepKinhDoanh = license.GiayPhepKinhDoanh,
+                    Status = license.Status,
+                    AnhCCCDMatTruoc = license.AnhCCCDMatTruoc,
+                    AnhCCCDMatSau = license.AnhCCCDMatSau,
+                    dateOfBirth = license.dateOfBirth
+                }).ToListAsync();
+        }
+
+        public static async Task<List<ServiceLicenseDTO>> GetServiceLicensesByUserIdAsync(int userId)
+        {
+            using var context = new ApplicationDbContext();
+            return await context.ServiceLicenses
+                .Include(s => s.User)
+                .Where(s => s.UserId == userId)
+                .Select(license => new ServiceLicenseDTO
+                {
+                    ServiceLicenseId = license.ServiceLicenseId,
+                    UserId = license.UserId,
+                    Name = license.Name,
+                    CCCD = license.CCCD,
+                    Sex = license.Sex,
+                    Address = license.Address,
+                    GiayPhepKinhDoanh = license.GiayPhepKinhDoanh,
+                    GiayPhepChuyenMon = license.GiayPhepChuyenMon,
+                    Status = license.Status,
+                    AnhCCCDMatTruoc = license.AnhCCCDMatTruoc,
+                    AnhCCCDMatSau = license.AnhCCCDMatSau,
+                    dateOfBirth = license.dateOfBirth
+                }).ToListAsync();
         }
     }
 }

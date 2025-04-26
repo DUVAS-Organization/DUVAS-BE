@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Repositories.IRepository;
 using System.Collections.Generic;
+using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -162,7 +163,7 @@ namespace API.Controllers.Landlord
             bool isDuplicate = await _roomRepository.CheckRoomIsDuplicatedAsync(
                 landlordId,
                 roomDto.Title.Trim(),
-                roomDto.LocationDetail.Trim(),
+                //roomDto.LocationDetail.Trim(),
                 roomDto.Description.Trim() // Kiểm tra cả mô tả
             );
 
@@ -170,7 +171,7 @@ namespace API.Controllers.Landlord
             {
                 return Conflict(new
                 {
-                    message = "Phòng với tiêu đề, địa chỉ và mô tả này đã được đăng. Vui lòng kiểm tra lại để tránh trùng lặp."
+                    message = "Tiêu đề và Mô tả này đã được đăng. Vui lòng kiểm tra lại để tránh trùng lặp."
                 });
             }
 
@@ -185,14 +186,14 @@ namespace API.Controllers.Landlord
                 });
             }
             // ✅ Check locationDetail trùng toàn hệ thống
-            bool isLocationUsedGlobally = await _roomRepository.CheckLocationExistsAsync(roomDto.LocationDetail.Trim());
-            if (isLocationUsedGlobally)
-            {
-                return Conflict(new
-                {
-                    message = "Địa chỉ phòng đã từng được sử dụng trên hệ thống. Vui lòng kiểm tra lại."
-                });
-            }
+            //bool isLocationUsedGlobally = await _roomRepository.CheckLocationExistsAsync(roomDto.LocationDetail.Trim());
+            //if (isLocationUsedGlobally)
+            //{
+            //    return Conflict(new
+            //    {
+            //        message = "Địa chỉ phòng đã từng được sử dụng trên hệ thống. Vui lòng kiểm tra lại."
+            //    });
+            //}
 
 
             // ✅ Sử dụng AI để phát hiện nội dung mô tả phòng có bị spam hoặc lặp
@@ -231,7 +232,7 @@ namespace API.Controllers.Landlord
                     BuildingId = roomDto.BuildingId,
                     CategoryRoomId = roomDto.CategoryRoomId,
                     status = roomDto.status ?? 1, //Còn trống
-                    Deposit = roomDto.Deposit,  // Thêm giá trị tiền đặt cọc
+                    Deposit = roomDto.Deposit,
                     Garret = roomDto.Garret,
                     reputation = roomDto.reputation ?? 0, //không tích xanh
                     Dien = roomDto.Dien,
@@ -241,6 +242,7 @@ namespace API.Controllers.Landlord
                     GuiXe = roomDto.GuiXe,
                     QuanLy = roomDto.QuanLy,
                     ChiPhiKhac = roomDto.ChiPhiKhac,
+                    Authorization = roomDto.Authorization ?? 0,
                 };
 
                 await _roomRepository.SaveRoomAsync(room);
@@ -259,7 +261,7 @@ namespace API.Controllers.Landlord
 
         // PUT: api/landlord/RoomManagement/{id}
         [HttpPut("{id}")]
-        [Authorize]
+        //[Authorize]
         public async Task<IActionResult> UpdateRoom(int id, [FromBody] RoomDTO roomDto)
         {
             int landlordId = GetLandlordId();

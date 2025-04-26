@@ -1,4 +1,5 @@
 ﻿using API.Utils;
+using BusinessObject;
 using DataAccess;
 using DTO;
 using DUVAS;
@@ -235,6 +236,18 @@ namespace API.Controllers.Landlord
             // **🔥 Cập nhật trạng thái phòng thành Pending (2)**
             room.status = 2;
             await _roomRepository.UpdateRoomAsync(room);
+
+            //Thông báo
+            await NotificationDAO.CreateNotificationAsync(new Notification
+            {
+                UserId = rentalList.RenterID,
+                Type = "ConfirmReservation",
+                Message = $"Chủ nhà vừa đồng ý yêu cầu thuê của bạn",
+                RedirectUrl = $"/RentalList",
+                CreatedDate = DateTime.Now,
+                IsRead = false
+            });
+
             return Ok("Hợp đồng đã được tạo và yêu cầu thuê đã được xác nhận.");
         }
 
@@ -310,8 +323,20 @@ namespace API.Controllers.Landlord
             room.status = 1;
             await _roomRepository.UpdateRoomAsync(room);
 
+            //Thông báo
+            await NotificationDAO.CreateNotificationAsync(new Notification
+            {
+                UserId = rentalList.RenterID,
+                Type = "ConfirmReservation",
+                Message = $"Chủ nhà vừa từ chối yêu cầu thuê của bạn",
+                RedirectUrl = $"/RentalList",
+                CreatedDate = DateTime.Now,
+                IsRead = false
+            });
+
             return Ok("Yêu cầu thuê phòng đã được hủy, phòng đã được mở lại để cho thuê.");
         }
+
         [HttpPost("check-balance")]
         [Authorize]
         public async Task<IActionResult> CheckUserBalance([FromBody] CheckBalanceDTO request)
@@ -463,6 +488,35 @@ namespace API.Controllers.Landlord
             return Ok(new { Message = "Scheduled action canceled successfully." });
         }
 
+        [HttpGet("my-insider-trading")]
+        public async Task<IActionResult> GetMyInsiderTrading()
+        {
+            // Lấy UserId từ Claims
+            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId");
+            if (userIdClaim == null)
+            {
+                return BadRequest("UserId claim not found.");
+            }
+            if (!int.TryParse(userIdClaim.Value, out int userId))
+            {
+                return BadRequest("Invalid UserId format.");
+            }
+            var contracts = await _insiderTradingRepository.GetInsiderTradingsAsync();
+
+            // Lọc các InsiderTrading có Remitter bằng userId
+            var filteredContracts = contracts.Where(c => c.Remitter == userId || c.Receiver == userId).ToList();
+
+            // Kiểm tra nếu không có bản ghi nào
+            if (!filteredContracts.Any())
+            {
+                return NotFound("User hông có insider trading nào");
+            }
+
+            // Trả về danh sách đã lọc
+            return Ok(filteredContracts);
+        }
+
+
         [NonAction]
         public async Task ExecuteScheduledAction(DateTime actionDate, int landlordId, decimal money, int insiderTradingId)
         {
@@ -473,6 +527,18 @@ namespace API.Controllers.Landlord
 
             await _insiderTradingRepository.UpdateInsiderTradingStatusAsync(insiderTradingId, 1);
             await _userRepository.UpdateUserMoneyAsync(landlordId, money);
+
+            //Thông báo
+            await NotificationDAO.CreateNotificationAsync(new Notification
+            {
+                UserId = landlordId,
+                Type = "InsiderTrading",
+                Message = $"Bạn vừa nhận được #{money} vnđ",
+                RedirectUrl = $"/Transaction",
+                CreatedDate = DateTime.Now,
+                IsRead = false
+            });
+
             Console.WriteLine($"Executing scheduled action for {actionDate}...");
         }
 
