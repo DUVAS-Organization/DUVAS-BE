@@ -32,12 +32,13 @@ jobs:
 
       - name: Publish dotnet
         run: |
-          dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp" --no-restore --no-build --no-self-contained
+          dotnet publish API/API.csproj -c Release -o "${{env.DOTNET_ROOT}}/myapp" --no-restore --no-build --no-self-contained
           # Loại bỏ file không cần thiết
           del "${{env.DOTNET_ROOT}}/myapp/*.pdb"
-          # Kiểm tra kích thước và file lớn
-          dir "${{env.DOTNET_ROOT}}/myapp" | findstr "File(s)"
-          dir "${{env.DOTNET_ROOT}}/myapp" /s /a:-D | findstr /E "\.dll \.exe \.json \.pdb"
+          # Kiểm tra số lượng file
+          (dir "${{env.DOTNET_ROOT}}/myapp" -Recurse -File).Count
+          # Liệt kê file .dll, .exe, .json, .pdb
+          dir "${{env.DOTNET_ROOT}}/myapp" -Recurse -File | Where-Object { $_.Extension -match "\.dll|\.exe|\.json|\.pdb" } | ForEach-Object { $_.FullName }
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
