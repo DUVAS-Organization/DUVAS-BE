@@ -128,7 +128,7 @@ namespace API.Controllers.Admin
                 return NotFound("Bạn hiện không có phòng nào trong hệ thống.");
             }
 
-            return Ok(new { Message = "Danh sách tất cả phòng của bạn.", Rooms = rooms });
+            return Ok(new { Message = "Danh sách tất cả phòng của bạn. ", Rooms = rooms });
         }
 
         [HttpGet("rooms")]
