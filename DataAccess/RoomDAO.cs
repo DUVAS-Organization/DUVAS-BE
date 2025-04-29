@@ -742,6 +742,21 @@ namespace DataAccess
                 throw new Exception($"Lỗi khi lấy Room entity: {ex.Message}");
             }
         }
+        public static async Task<Room?> GetRoomEntityByIdAsync(int roomId)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    return await context.Rooms
+                        .FirstOrDefaultAsync(r => r.RoomId == roomId);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi lấy Room entity: {ex.Message}");
+            }
+        }
         public static async Task<bool> CheckRoomIsDuplicatedAsync(int userId, string title, string description)
         {
             try

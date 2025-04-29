@@ -16,6 +16,7 @@ namespace DTO
         public int PartyAId { get; set; }
         public int PartyBId { get; set; }
         public string PdfUrl { get; set; }
+        public string? RoomList { get; set; }
         public int CreatedById { get; set; }
         public DateTime CreatedAt { get; set; }
         public int? status { get; set; }

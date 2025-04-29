@@ -15,7 +15,7 @@ namespace GITHUB_ACTIONS.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
     public class ContractController : ControllerBase
     {
         private readonly IAuthorizationContractRepository _authorizationContractRepository;
@@ -26,11 +26,13 @@ namespace GITHUB_ACTIONS.Controllers
         public ContractController(
             IAuthorizationContractRepository authorizationContractRepository,
             PdfService pdfService,
-            CloudinaryService cloudinaryService)
+            CloudinaryService cloudinaryService,
+            IRoomRepository roomRepository)
         {
             _authorizationContractRepository = authorizationContractRepository;
             _pdfService = pdfService;
             _cloudinaryService = cloudinaryService;
+            _roomRepository = roomRepository;
         }
 
         [HttpPost("generate-authorization")]
@@ -45,6 +47,13 @@ namespace GITHUB_ACTIONS.Controllers
             {
                 return BadRequest(ModelState);
             }
+            // Validate SelectedRoom (nếu cần)
+            //if (details.SelectedRoom == null || !details.SelectedRoom.Any())
+            //{
+            //    return BadRequest("No rooms selected.");
+            //}
+            var roomListString = string.Join(",", details.SelectedRoom);
+
             // Tạo file PDF
             var pdfBytes = _pdfService.GenerateAuthorizationContractPdf(details);
 
@@ -61,38 +70,39 @@ namespace GITHUB_ACTIONS.Controllers
                 PartyBId = details.PartyBId,
                 PdfUrl = pdfUrl,
                 CreatedById = details.PartyAId,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
                 status = 2,
+                RoomList = roomListString
             };
 
             await _authorizationContractRepository.SaveAuthorizationContractAsync(contract);
 
             return Ok(new { ContractId = contract.Id, PdfUrl = pdfUrl });
         }
-        [HttpGet("all-authorization-contract")]
-        public async Task<IActionResult> GetAllAuthorizationContracts()
+
+       
+
+        [HttpGet("authorization")]
+        public async Task<IActionResult> GetAllAuthorizationContract()
         {
-            try
-            {
-                var contracts = await AuthorizationContractDAO.GetAuthorizationContractsAsync();
-                if (contracts == null || !contracts.Any())
-                {
-                    return NotFound("Không tìm thấy hợp đồng ủy quyền nào.");
-                }
-                return Ok(contracts);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Lỗi khi lấy danh sách hợp đồng ủy quyền: {ex.Message}");
-            }
+            var contract = await _authorizationContractRepository.GetAuthorizationContractsAsync();
+            if (contract == null)
+                return NotFound("Không có Author Contract nào");
+            return Ok(contract);
         }
+
         [HttpGet("my-authorization-contracts")]
-        public async Task<IActionResult> GetMyAuthorizationContracts(int userId)
+        public async Task<IActionResult> GetMyAuthorizationContracts()
         {
             //var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             //if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
             //    return Unauthorized("User not authenticated or invalid user ID");
-
+            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId");
+            if (userIdClaim == null)
+            {
+                return BadRequest("UserId claim not found.");
+            }
+            int.TryParse(userIdClaim.Value, out int userId);
             var contracts = await _authorizationContractRepository.GetAuthorizationContractsByUserAsync(userId);
             return Ok(contracts);
         }
@@ -110,7 +120,6 @@ namespace GITHUB_ACTIONS.Controllers
 
             //if (contract.CreatedById != userId)
             //    return Forbid("You are not authorized to view this contract");
-
             var contractDTO = new AuthorizationContractDTO
             {
                 Id = contract.Id,
@@ -120,7 +129,9 @@ namespace GITHUB_ACTIONS.Controllers
                 PartyBId = contract.PartyBId,
                 PdfUrl = contract.PdfUrl,
                 CreatedById = contract.CreatedById,
-                CreatedAt = contract.CreatedAt
+                CreatedAt = contract.CreatedAt,
+                status = contract.status,
+                RoomList = contract.RoomList,
             };
 
             return Ok(contractDTO);
@@ -135,18 +146,19 @@ namespace GITHUB_ACTIONS.Controllers
                 //var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 //if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
                 //    return Unauthorized("User not authenticated or invalid user ID");
-
+                if (request == null)
+                {
+                    return BadRequest("Request body không hợp lệ.");
+                }
                 // Kiểm tra danh sách roomIds hợp lệ
                 if (request.RoomIds == null || !request.RoomIds.Any())
                     return BadRequest("Danh sách RoomIds không được để trống.");
-
+                
                 // Cập nhật Authorization cho từng phòng
                 foreach (var roomId in request.RoomIds)
                 {
                     // Kiểm tra quyền của người dùng đối với phòng (nếu cần)
-                    //var room = await _roomRepository.GetRoomEntityByIdForLandlordAsync(roomId, userId);
-                    //if (room == null)
-                    //    return Forbid($"Bạn không có quyền cập nhật phòng với ID {roomId} hoặc phòng không tồn tại.");
+                   
 
                     await _roomRepository.UpdateAuthorizationAsync(roomId, request.Authorization);
                 }
@@ -155,6 +167,7 @@ namespace GITHUB_ACTIONS.Controllers
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Error in UpdateRoomsAuthorization: {ex.Message}\n{ex.StackTrace}");
                 return StatusCode(500, new { Message = $"Lỗi khi cập nhật Authorization: {ex.Message}" });
             }
         }

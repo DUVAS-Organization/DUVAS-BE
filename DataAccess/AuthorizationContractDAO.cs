@@ -29,7 +29,8 @@ namespace DataAccess
                             PdfUrl = p.PdfUrl,
                             CreatedById = p.CreatedById,
                             CreatedAt = p.CreatedAt,
-                            status = p.status
+                            status = p.status,
+                            RoomList = p.RoomList,
                         })
                         .ToListAsync();
 
@@ -59,6 +60,7 @@ namespace DataAccess
                             PartyAId = p.PartyAId,
                             PartyBId = p.PartyBId,
                             PdfUrl = p.PdfUrl,
+                            RoomList = p.RoomList,
                             CreatedById = p.CreatedById,
                             CreatedAt = p.CreatedAt,
                             status = p.status

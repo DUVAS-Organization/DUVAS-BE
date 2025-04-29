@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using API.Hubs;
+using BusinessObject;
+using DataAccess;
 
 namespace API.Controllers.UserAPI
 {
@@ -35,6 +37,19 @@ namespace API.Controllers.UserAPI
                 .SendAsync("ReceiveMessage", message);
             await _hubContext.Clients.Group($"user-{message.UserSendID}")
                 .SendAsync("ReceiveMessage", message);
+
+            // Gửi thông báo
+            var messages = $"Bạn vừa có tin nhắn mới từ #{message.UserSendID}";
+            var redirectUrl = $"";
+            await NotificationDAO.CreateNotificationAsync(new Notification
+            {
+                UserId = message.UserGetID,
+                Type = "message",
+                Message = messages,
+                RedirectUrl = redirectUrl,
+                CreatedDate = DateTime.Now,
+                IsRead = false
+            });
 
             return Ok(message);
         }

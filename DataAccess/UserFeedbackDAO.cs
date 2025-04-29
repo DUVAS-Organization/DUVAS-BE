@@ -1,4 +1,5 @@
-﻿using DTO;
+﻿using BusinessObject;
+using DTO;
 using DUVAS;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -84,6 +85,18 @@ namespace DataAccess
                 };
                 _context.UserFeedbacks.Add(feedback);
                 await _context.SaveChangesAsync();
+                // ✅ Gửi thông báo (cho admin hoặc người đăng phòng tuỳ logic)
+                var notification = new Notification
+                {
+                    UserId = userFeedback.UserId, // hoặc ID chủ phòng nếu bạn muốn họ nhận thông báo
+                    Type = "UserFeedback",
+                    Message = $"Bạn đã gửi đánh giá với {userFeedback.Star} sao.",
+                    RedirectUrl = "/feedbacks", // hoặc /rooms/{RoomId} nếu muốn trỏ đến phòng
+                    CreatedDate = DateTime.Now,
+                    IsRead = false
+                };
+
+                await NotificationDAO.CreateNotificationAsync(notification);
 
             }
             catch (Exception ex)

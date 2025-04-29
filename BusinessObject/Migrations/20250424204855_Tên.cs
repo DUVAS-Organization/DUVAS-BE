@@ -79,7 +79,8 @@ namespace BusinessObject.Migrations
                     RentalDateTimeEnd = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DownPayment = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     ContractFile = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    status = table.Column<int>(type: "int", nullable: false)
+                    status = table.Column<int>(type: "int", nullable: false),
+                    RenterID = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -122,6 +123,7 @@ namespace BusinessObject.Migrations
                     PartyBId = table.Column<int>(type: "int", nullable: false),
                     PdfUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedById = table.Column<int>(type: "int", nullable: false),
+                    RoomList = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     status = table.Column<int>(type: "int", nullable: true)
                 },

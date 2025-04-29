@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using BusinessObject.Enums;
+using BusinessObject;
 
 namespace DataAccess
 {
@@ -87,9 +88,30 @@ namespace DataAccess
         public async Task<bool> IsTransactionPaidAsync(string description)
         {
             var transaction = await _context.Transactions
+                  .Include(t => t.User)
                 .FirstOrDefaultAsync(t => t.Description != null && t.Description.ToLower() == description.ToLower());
+            if (transaction != null && transaction.Status == TransactionStatus.Paid)
+            {
+                // ✅ Chỉ tạo thông báo nếu là giao dịch nạp tiền
+                if (transaction.Amount > 0)
+                {
+                    var notification = new Notification
+                    {
+                        UserId = transaction.UserId,
+                        Type = "TransactionPaid",
+                        Message = $"Giao dịch của bạn với mô tả \"{transaction.Description}\" đã được xác nhận thành công.",
+                        RedirectUrl = "/transactions",
+                        CreatedDate = DateTime.Now,
+                        IsRead = false
+                    };
+                    await NotificationDAO.CreateNotificationAsync(notification);
+                }
 
-            return transaction != null && transaction.Status == TransactionStatus.Paid;
+                return true;
+            }
+
+            return false;
+            //return transaction != null && transaction.Status == TransactionStatus.Paid;
         }
         public async Task<List<TransactionAdminDTO>> GetAllTransactionAdminView()
         {

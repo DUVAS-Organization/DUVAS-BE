@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BusinessObject.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250418132143_Tên")]
+    [Migration("20250424204855_Tên")]
     partial class Tên
     {
         /// <inheritdoc />
@@ -51,6 +51,9 @@ namespace BusinessObject.Migrations
 
                     b.Property<string>("PdfUrl")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RoomList")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("status")
@@ -354,6 +357,9 @@ namespace BusinessObject.Migrations
                     b.Property<DateTime>("RentalDateTimeStart")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("RenterID")
+                        .HasColumnType("int");
 
                     b.Property<int>("status")
                         .HasColumnType("int");
