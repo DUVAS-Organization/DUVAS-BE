@@ -31,7 +31,8 @@ namespace DataAccess
                         {
                             CategoryPriorityPackageRoomId = p.CategoryPriorityPackageRoomId,
                             CategoryPriorityPackageRoomValue = p.CategoryPriorityPackageRoomValue,
-                            Price = p.Price
+                            Price = p.Price,
+                            Status = p.Status,
                         })
                         .ToListAsync();
 
