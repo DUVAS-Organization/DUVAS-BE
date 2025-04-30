@@ -745,7 +745,7 @@ namespace DataAccess
                 throw new Exception($"Lỗi khi Cancel UpRole Service: {ex.Message}");
             }
         }
-        public static async Task<LandlordLicenseDTO> GetOneLicensesByUserIdAsync(int userId)
+        public static async Task<LandlordLicenseDTO?> GetOneLicensesByUserIdAsync(int userId)
         {
             using var context = new ApplicationDbContext();
             return await context.LandlordLicenses
@@ -761,11 +761,10 @@ namespace DataAccess
                     Address = license.Address,
                     GiayPhepKinhDoanh = license.GiayPhepKinhDoanh,
                     Status = license.Status,
-                    AnhCCCDMatTruoc = license.AnhCCCDMatTruoc,
-                    AnhCCCDMatSau = license.AnhCCCDMatSau,
                     dateOfBirth = license.dateOfBirth
                 }).FirstOrDefaultAsync();
         }
+
         public static async Task<List<LandlordLicenseDTO>> GetLandlordLicensesByUserIdAsync(int userId)
         {
             using var context = new ApplicationDbContext();
@@ -782,8 +781,6 @@ namespace DataAccess
                     Address = license.Address,
                     GiayPhepKinhDoanh = license.GiayPhepKinhDoanh,
                     Status = license.Status,
-                    AnhCCCDMatTruoc = license.AnhCCCDMatTruoc,
-                    AnhCCCDMatSau = license.AnhCCCDMatSau,
                     dateOfBirth = license.dateOfBirth
                 }).ToListAsync();
         }
@@ -805,8 +802,6 @@ namespace DataAccess
                     GiayPhepKinhDoanh = license.GiayPhepKinhDoanh,
                     GiayPhepChuyenMon = license.GiayPhepChuyenMon,
                     Status = license.Status,
-                    AnhCCCDMatTruoc = license.AnhCCCDMatTruoc,
-                    AnhCCCDMatSau = license.AnhCCCDMatSau,
                     dateOfBirth = license.dateOfBirth
                 }).ToListAsync();
         }

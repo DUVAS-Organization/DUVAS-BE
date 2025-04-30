@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace DataAccess
@@ -17,122 +16,102 @@ namespace DataAccess
         {
             _context = context;
         }
-        public static async Task<List<LandlordLicenseDTO>> GetLandlordLicensesAsync()
-        {
 
-            try
-            {
-                using (var context = new ApplicationDbContext())
-                {
-                    var landlordLicenses = await context.LandlordLicenses
-                        .AsNoTracking()
-                        .Select(p => new LandlordLicenseDTO
-                        {
-                            LandlordLicenseId = p.LandlordLicenseId,
-                            UserId = p.UserId,
-                            AnhCCCDMatTruoc = p.AnhCCCDMatTruoc,
-                            AnhCCCDMatSau = p.AnhCCCDMatSau,
-                            CCCD = p.CCCD,
-                            Name = p.Name,
-                            dateOfBirth = p.dateOfBirth,
-                            Sex = p.Sex,
-                            Address = p.Address,
-                            GiayPhepKinhDoanh = p.GiayPhepKinhDoanh,
-                            Status = p.Status,
-                            //CategoryName = p.Category.CategoryName,
-                            //CategoryId = p.CategoryId,                            
-
-                        })
-                        .ToListAsync();
-
-
-                    return landlordLicenses;
-                }
-
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-
-        }
-
-        public static async Task<LandlordLicense> FindLandlordLicenseByIdAsync(int landlordLicenseId)
-        {
-            LandlordLicense landlordLicense = null;
-            try
-            {
-                using (var context = new ApplicationDbContext())
-                {
-                    landlordLicense = await context.LandlordLicenses.SingleOrDefaultAsync(x => x.LandlordLicenseId == landlordLicenseId);
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-            return landlordLicense;
-        }
-
-        public static async Task SaveLandlordLicenseAsync(LandlordLicense landlordLicense)
+        public async Task<List<LandlordLicenseDTO>> GetLandlordLicensesAsync()
         {
             try
             {
-                using (var context = new ApplicationDbContext())
-                {
-                    await context.LandlordLicenses.AddAsync(landlordLicense);
-                    await context.SaveChangesAsync();
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
-        public static async Task UpdateLandlordLicenseAsync(LandlordLicense landlordLicense)
-        {
-            try
-            {
-                using (var context = new ApplicationDbContext())
-                {
-                    context.Entry(landlordLicense).State = EntityState.Modified;
-                    await context.SaveChangesAsync();
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
-        public static async Task DeleteLandlordLicenseAsync(LandlordLicense landlordLicense)
-        {
-            try
-            {
-                using (var context = new ApplicationDbContext())
-                {
-                    var existingLandlordLicense = await context.LandlordLicenses.SingleOrDefaultAsync(c => c.LandlordLicenseId == landlordLicense.LandlordLicenseId);
-                    if (existingLandlordLicense != null)
+                var landlordLicenses = await _context.LandlordLicenses
+                    .AsNoTracking()
+                    .Select(p => new LandlordLicenseDTO
                     {
-                        context.LandlordLicenses.Remove(existingLandlordLicense);
-                        await context.SaveChangesAsync();
-                    }
+                        LandlordLicenseId = p.LandlordLicenseId,
+                        UserId = p.UserId,
+                        Name = p.Name,
+                        dateOfBirth = p.dateOfBirth,
+                        Sex = p.Sex,
+                        Address = p.Address,
+                        GiayPhepKinhDoanh = p.GiayPhepKinhDoanh,
+                        Status = p.Status
+                    })
+                    .ToListAsync();
+                return landlordLicenses;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Lỗi khi lấy danh sách LandlordLicense: " + ex.Message);
+            }
+        }
+
+        public async Task<LandlordLicense> FindLandlordLicenseByIdAsync(int landlordLicenseId)
+        {
+            try
+            {
+                return await _context.LandlordLicenses
+                    .SingleOrDefaultAsync(x => x.LandlordLicenseId == landlordLicenseId);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Lỗi khi tìm LandlordLicense: " + ex.Message);
+            }
+        }
+
+        public async Task SaveLandlordLicenseAsync(LandlordLicense landlordLicense)
+        {
+            try
+            {
+                var existing = await _context.LandlordLicenses
+                    .FirstOrDefaultAsync(l => l.UserId == landlordLicense.UserId);
+                if (existing != null)
+                {
+                    throw new Exception("Người dùng đã có yêu cầu đang chờ xử lý.");
+                }
+
+                await _context.LandlordLicenses.AddAsync(landlordLicense);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Lỗi khi lưu LandlordLicense: " + ex.Message);
+            }
+        }
+
+        public async Task UpdateLandlordLicenseAsync(LandlordLicense landlordLicense)
+        {
+            try
+            {
+                _context.Entry(landlordLicense).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Lỗi khi cập nhật LandlordLicense: " + ex.Message);
+            }
+        }
+
+        public async Task DeleteLandlordLicenseAsync(LandlordLicense landlordLicense)
+        {
+            try
+            {
+                var existingLandlordLicense = await _context.LandlordLicenses
+                    .SingleOrDefaultAsync(c => c.LandlordLicenseId == landlordLicense.LandlordLicenseId);
+                if (existingLandlordLicense != null)
+                {
+                    _context.LandlordLicenses.Remove(existingLandlordLicense);
+                    await _context.SaveChangesAsync();
                 }
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                throw new Exception("Lỗi khi xóa LandlordLicense: " + ex.Message);
             }
         }
-        public static async Task<bool> IsCCCDExistsAsync(string cccd)
+
+        public async Task<bool> IsCCCDExistsAsync(string cccd)
         {
             try
             {
-                using (var context = new ApplicationDbContext())
-                {
-                    return await context.LandlordLicenses.AnyAsync(l => l.CCCD == cccd.Trim());
-                }
+                return await _context.LandlordLicenses.AnyAsync(l => l.CCCD == cccd);
             }
             catch (Exception ex)
             {
@@ -140,15 +119,12 @@ namespace DataAccess
             }
         }
 
-        public static async Task<LandlordLicense?> GetByUserIdAsync(int userId)
+        public async Task<LandlordLicense?> GetByUserIdAsync(int userId)
         {
             try
             {
-                using (var context = new ApplicationDbContext())
-                {
-                    return await context.LandlordLicenses
-                        .SingleOrDefaultAsync(l => l.UserId == userId);
-                }
+                return await _context.LandlordLicenses
+                    .SingleOrDefaultAsync(l => l.UserId == userId);
             }
             catch (Exception ex)
             {

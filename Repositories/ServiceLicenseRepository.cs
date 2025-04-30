@@ -5,34 +5,47 @@ using Microsoft.EntityFrameworkCore;
 using Repositories.IRepository;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Repositories
 {
     public class ServiceLicenseRepository : IServiceLicenseRepository
     {
-        public async Task DeleteServiceLicenseAsync(ServiceLicense b) => await ServiceLicenseDAO.DeleteServiceLicenseAsync(b);
-        public async Task<ServiceLicense> GetServiceLicenseByIdAsync(int id) => await ServiceLicenseDAO.FindServiceLicenseByIdAsync(id);
-        public async Task<List<ServiceLicenseDTO>> GetServiceLicensesAsync() => await ServiceLicenseDAO.GetServiceLicensesAsync();
-        public async Task SaveServiceLicenseAsync(ServiceLicense b) => await ServiceLicenseDAO.SaveServiceLicenseAsync(b);
-        public async Task UpdateServiceLicenseAsync(ServiceLicense b) => await ServiceLicenseDAO.UpdateServiceLicenseAsync(b);
-        //public async Task<bool> IsCCCDExistsAsync(string cccd)
-        //       => await ServiceLicenseDAO.IsCCCDExistsAsync(cccd);
+        private readonly ServiceLicenseDAO _dao;
+
+        public ServiceLicenseRepository(ServiceLicenseDAO dao)
+        {
+            _dao = dao;
+        }
+
+        public async Task DeleteServiceLicenseAsync(ServiceLicense b)
+            => await _dao.DeleteServiceLicenseAsync(b);
+
+        public async Task<ServiceLicense> GetServiceLicenseByIdAsync(int id)
+            => await _dao.FindServiceLicenseByIdAsync(id);
+
+        public async Task<List<ServiceLicenseDTO>> GetServiceLicensesAsync()
+            => await _dao.GetServiceLicensesAsync();
+
+        public async Task SaveServiceLicenseAsync(ServiceLicense b)
+            => await _dao.SaveServiceLicenseAsync(b);
+
+        public async Task UpdateServiceLicenseAsync(ServiceLicense b)
+            => await _dao.UpdateServiceLicenseAsync(b);
+
         public async Task<bool> IsCCCDExistsAsync(string cccd)
         {
             try
             {
-                return await ServiceLicenseDAO.IsCCCDExistsAsync(cccd);
+                return await _dao.IsCCCDExistsAsync(cccd);
             }
             catch (Exception ex)
             {
-                throw new Exception("Lỗi khi kiểm tra CCCD: " + ex.Message);
+                throw new Exception($"Lỗi khi kiểm tra CCCD: {ex.Message}");
             }
         }
-        public async Task<ServiceLicense?> GetByUserIdAsync(int userId)
-            => await ServiceLicenseDAO.GetByUserIdAsync(userId);
 
+        public async Task<ServiceLicense?> GetByUserIdAsync(int userId)
+            => await _dao.GetByUserIdAsync(userId);
     }
 }

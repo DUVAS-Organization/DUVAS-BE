@@ -1,12 +1,13 @@
-﻿using API.Service;
-using BusinessObject;
+﻿using BusinessObject;
 using DataAccess;
 using DTO;
 using DUVAS;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using NuGet.Protocol.Core.Types;
 using Repositories.IRepository;
+using System;
 using System.Threading.Tasks;
+using BusinessObject.Service;
 
 namespace API.Controllers.UserAPI
 {
@@ -17,60 +18,63 @@ namespace API.Controllers.UserAPI
         private readonly ILandlordLicenseRepository _landlordLicenseRepository;
         private readonly IServiceLicenseRepository _serviceLicenseRepository;
         private readonly IUserRepository _userRepository;
+        private readonly EncryptionService _encryptionService;
         private readonly int _adminId;
 
-        public UpdateRoleController(ILandlordLicenseRepository landlordLicenseRepository,
-            IUserRepository userRepository,
+        public UpdateRoleController(
+            ILandlordLicenseRepository landlordLicenseRepository,
             IServiceLicenseRepository serviceLicenseRepository,
-            IConfiguration configuration)
+            IUserRepository userRepository,
+            IConfiguration configuration,
+            EncryptionService encryptionService)
         {
             _landlordLicenseRepository = landlordLicenseRepository;
-            _userRepository = userRepository;
             _serviceLicenseRepository = serviceLicenseRepository;
-            _adminId = configuration.GetValue<int>("AdminId"); 
+            _userRepository = userRepository;
+            _adminId = configuration.GetValue<int>("AdminId");
+            _encryptionService = encryptionService;
         }
 
+        // LandlordLicense Endpoints
 
         [HttpPost("Create-LandlordLicence")]
-        public async Task<IActionResult> SaveLandlordLicense([FromBody] LandlordLicenseDTO dto)
+        [Authorize]
+        public async Task<IActionResult> SaveLandlordLicense([FromBody] CreateLandlordLicenseDTO dto)
         {
             if (dto == null)
             {
-                return BadRequest("Invalid data.");
+                return BadRequest("Dữ liệu không hợp lệ.");
             }
-            // Validate CCCD format (e.g., max length 12 as per model)
+
             if (string.IsNullOrEmpty(dto.CCCD) || dto.CCCD.Length > 12)
             {
-                return BadRequest("Invalid CCCD.");
+                return BadRequest("CCCD không hợp lệ (tối đa 12 ký tự).");
             }
-            Console.WriteLine($"Checking CCCD: {dto.CCCD}");
-            // Check if CCCD already exists in LandlordLicense or ServiceLicense
-            var existingLandlordLicense = await _landlordLicenseRepository.IsCCCDExistsAsync(dto.CCCD);
-            Console.WriteLine($"CCCD exists in ServiceLicenses: {existingLandlordLicense}");
-            if (existingLandlordLicense != false)
+
+            if (await _landlordLicenseRepository.IsCCCDExistsAsync(dto.CCCD) ||
+                await _serviceLicenseRepository.IsCCCDExistsAsync(dto.CCCD))
             {
-                return Conflict("A license with this CCCD already exists.");
+                return Conflict("CCCD đã được sử dụng trong một giấy phép khác.");
             }
-            
+
             var user = await _userRepository.GetUserByIdAsync(dto.UserId);
             if (user == null)
             {
-                return NotFound("User not found.");
+                return NotFound("Người dùng không tồn tại.");
             }
 
-            // Check if user already has an approved LandlordLicense
             if (user.RoleLandlord == 1)
             {
-                return Conflict("User already has an approved Landlord License.");
+                return Conflict("Người dùng đã có giấy phép chủ nhà được phê duyệt.");
             }
 
-            // Check if user has a pending LandlordLicense
             var pendingLandlordLicense = await _landlordLicenseRepository.GetByUserIdAsync(dto.UserId);
             if (pendingLandlordLicense != null)
             {
-                return Conflict("User already has a pending Landlord License.");
+                return Conflict("Người dùng đã có một giấy phép chủ nhà đang chờ xử lý.");
             }
-            var landlordLicense = new LandlordLicense
+
+            var landlordLicense = new LandlordLicense(_encryptionService)
             {
                 UserId = dto.UserId,
                 AnhCCCDMatTruoc = dto.AnhCCCDMatTruoc,
@@ -85,9 +89,8 @@ namespace API.Controllers.UserAPI
 
             await _landlordLicenseRepository.SaveLandlordLicenseAsync(landlordLicense);
 
-            // Gửi thông báo uprole
-            var message = $"Bạn đã gửi thành công yêu cầu đăng ký làm chủ nhà.";
-            var redirectUrl = $"";
+            var message = "Bạn đã gửi thành công yêu cầu đăng ký làm chủ nhà.";
+            var redirectUrl = "";
             await NotificationDAO.CreateNotificationAsync(new Notification
             {
                 UserId = landlordLicense.UserId,
@@ -107,49 +110,198 @@ namespace API.Controllers.UserAPI
                 CreatedDate = DateTime.Now,
                 IsRead = false
             });
-            return CreatedAtAction(nameof(SaveLandlordLicense), new { id = landlordLicense.LandlordLicenseId }, landlordLicense);
+
+            return CreatedAtAction(nameof(SaveLandlordLicense), new { id = landlordLicense.LandlordLicenseId }, new { Message = "Đăng ký thành công.", LandlordLicenseId = landlordLicense.LandlordLicenseId });
         }
 
+        [HttpGet("LandlordLicenses")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetLandlordLicenses()
+        {
+            try
+            {
+                var result = await _landlordLicenseRepository.GetLandlordLicensesAsync();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi lấy danh sách giấy phép chủ nhà: {ex.Message}");
+            }
+        }
+
+        [HttpGet("LandlordLicense/{id}")]
+        [Authorize]
+        public async Task<IActionResult> GetLandlordLicenseById(int id)
+        {
+            try
+            {
+                var landlordLicense = await _landlordLicenseRepository.GetLandlordLicenseByIdAsync(id);
+                if (landlordLicense == null)
+                {
+                    return NotFound("Giấy phép chủ nhà không tồn tại.");
+                }
+
+                var userIdClaim = int.Parse(User.FindFirst("UserId")?.Value ?? "0");
+                if (userIdClaim != landlordLicense.UserId && !User.IsInRole("Admin"))
+                {
+                    return Forbid("Bạn không có quyền xem giấy phép này.");
+                }
+
+                var dto = new LandlordLicenseDTO
+                {
+                    LandlordLicenseId = landlordLicense.LandlordLicenseId,
+                    UserId = landlordLicense.UserId,
+                    CCCD = landlordLicense.CCCD,
+                    Name = landlordLicense.Name,
+                    dateOfBirth = landlordLicense.dateOfBirth,
+                    Sex = landlordLicense.Sex,
+                    Address = landlordLicense.Address,
+                    GiayPhepKinhDoanh = landlordLicense.GiayPhepKinhDoanh,
+                    Status = landlordLicense.Status
+                };
+
+                return Ok(dto);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi lấy giấy phép chủ nhà: {ex.Message}");
+            }
+        }
+
+        [HttpGet("LandlordLicense/ByUser/{userId}")]
+        [Authorize]
+        public async Task<IActionResult> GetLandlordLicenseByUserId(int userId)
+        {
+            try
+            {
+                var userIdClaim = int.Parse(User.FindFirst("UserId")?.Value ?? "0");
+                if (userIdClaim != userId && !User.IsInRole("Admin"))
+                {
+                    return Forbid("Bạn không có quyền xem giấy phép này.");
+                }
+
+                var landlordLicense = await _landlordLicenseRepository.GetByUserIdAsync(userId);
+                if (landlordLicense == null)
+                {
+                    return NotFound("Người dùng này chưa có giấy phép chủ nhà.");
+                }
+
+                var dto = new LandlordLicenseDTO
+                {
+                    LandlordLicenseId = landlordLicense.LandlordLicenseId,
+                    UserId = landlordLicense.UserId,
+                    CCCD = landlordLicense.CCCD,
+                    Name = landlordLicense.Name,
+                    dateOfBirth = landlordLicense.dateOfBirth,
+                    Sex = landlordLicense.Sex,
+                    Address = landlordLicense.Address,
+                    GiayPhepKinhDoanh = landlordLicense.GiayPhepKinhDoanh,
+                    Status = landlordLicense.Status
+                };
+
+                return Ok(dto);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi lấy giấy phép chủ nhà: {ex.Message}");
+            }
+        }
+
+        [HttpPut("LandlordLicense/{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateLandlordLicense(int id, [FromBody] LandlordLicenseDTO dto)
+        {
+            try
+            {
+                if (id != dto.LandlordLicenseId)
+                {
+                    return BadRequest("ID không khớp.");
+                }
+
+                var existingLicense = await _landlordLicenseRepository.GetLandlordLicenseByIdAsync(id);
+                if (existingLicense == null)
+                {
+                    return NotFound("Giấy phép chủ nhà không tồn tại.");
+                }
+
+                existingLicense.CCCD = dto.CCCD;
+                existingLicense.Name = dto.Name;
+                existingLicense.dateOfBirth = dto.dateOfBirth;
+                existingLicense.Sex = dto.Sex;
+                existingLicense.Address = dto.Address;
+                existingLicense.GiayPhepKinhDoanh = dto.GiayPhepKinhDoanh;
+                existingLicense.Status = dto.Status;
+
+                await _landlordLicenseRepository.UpdateLandlordLicenseAsync(existingLicense);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi cập nhật giấy phép chủ nhà: {ex.Message}");
+            }
+        }
+
+        [HttpDelete("LandlordLicense/{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeleteLandlordLicense(int id)
+        {
+            try
+            {
+                var existingLicense = await _landlordLicenseRepository.GetLandlordLicenseByIdAsync(id);
+                if (existingLicense == null)
+                {
+                    return NotFound("Giấy phép chủ nhà không tồn tại.");
+                }
+
+                await _landlordLicenseRepository.DeleteLandlordLicenseAsync(existingLicense);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi xóa giấy phép chủ nhà: {ex.Message}");
+            }
+        }
+
+        // ServiceLicense Endpoints
+
         [HttpPost("Create-ServiceLicence")]
-        public async Task<IActionResult> SaveServiceLicense([FromBody] ServiceLicenseDTO dto)
+        [Authorize]
+        public async Task<IActionResult> SaveServiceLicense([FromBody] CreateServiceLicenseDTO dto)
         {
             if (dto == null)
             {
-                return BadRequest("Invalid data.");
+                return BadRequest("Dữ liệu không hợp lệ.");
             }
-            // Validate CCCD format (e.g., max length 12 as per model)
+
             if (string.IsNullOrEmpty(dto.CCCD) || dto.CCCD.Length > 12)
             {
-                return BadRequest("Invalid CCCD.");
+                return BadRequest("CCCD không hợp lệ (tối đa 12 ký tự).");
             }
 
-            // Check if CCCD already exists in LandlordLicense or ServiceLicense
-            var existingServiceLicense = await _serviceLicenseRepository.IsCCCDExistsAsync(dto.CCCD);
-            if (existingServiceLicense != false)
+            if (await _landlordLicenseRepository.IsCCCDExistsAsync(dto.CCCD) ||
+                await _serviceLicenseRepository.IsCCCDExistsAsync(dto.CCCD))
             {
-                return Conflict("A license with this CCCD already exists.");
+                return Conflict("CCCD đã được sử dụng trong một giấy phép khác.");
             }
 
-            // Check if user exists and their RoleService status
             var user = await _userRepository.GetUserByIdAsync(dto.UserId);
             if (user == null)
             {
-                return NotFound("User not found.");
+                return NotFound("Người dùng không tồn tại.");
             }
 
-            // Check if user already has an approved ServiceLicense
             if (user.RoleService == 1)
             {
-                return Conflict("User already has an approved Service License.");
+                return Conflict("Người dùng đã có giấy phép dịch vụ được phê duyệt.");
             }
 
-            // Check if user has a pending ServiceLicense
             var pendingServiceLicense = await _serviceLicenseRepository.GetByUserIdAsync(dto.UserId);
             if (pendingServiceLicense != null)
             {
-                return Conflict("User already has a pending Service License.");
+                return Conflict("Người dùng đã có một giấy phép dịch vụ đang chờ xử lý.");
             }
-            var serviceLicense = new ServiceLicense
+
+            var serviceLicense = new ServiceLicense(_encryptionService)
             {
                 UserId = dto.UserId,
                 AnhCCCDMatTruoc = dto.AnhCCCDMatTruoc,
@@ -165,9 +317,8 @@ namespace API.Controllers.UserAPI
 
             await _serviceLicenseRepository.SaveServiceLicenseAsync(serviceLicense);
 
-            // Gửi thông báo uprole
-            var message = $"Bạn đã gửi thành công yêu cầu đăng ký làm chủ dịch vụ.";
-            var redirectUrl = $"";
+            var message = "Bạn đã gửi thành công yêu cầu đăng ký làm chủ dịch vụ.";
+            var redirectUrl = "";
             await NotificationDAO.CreateNotificationAsync(new Notification
             {
                 UserId = serviceLicense.UserId,
@@ -187,144 +338,217 @@ namespace API.Controllers.UserAPI
                 CreatedDate = DateTime.Now,
                 IsRead = false
             });
-            return CreatedAtAction(nameof(SaveServiceLicense), new { id = serviceLicense.ServiceLicenseId }, serviceLicense);
+
+            return CreatedAtAction(nameof(SaveServiceLicense), new { id = serviceLicense.ServiceLicenseId }, new { Message = "Đăng ký thành công.", ServiceLicenseId = serviceLicense.ServiceLicenseId });
         }
 
-        [HttpPut("{id}/UpdateRoleLandlord")]
-        public async Task<IActionResult> UpdateRoleLandlord(int id, [FromBody] User updateRoleLandlord)
-        {
-            if (id != updateRoleLandlord.UserId)
-            {
-                return BadRequest("ID không khớp.");
-            }
-
-            var user = await _userRepository.GetUserByIdAsync(id);
-            if (user == null)
-            {
-                return NotFound("User không tồn tại.");
-            }
-
-            user.RoleLandlord = 2;
-
-            await _userRepository.UpdateUserAsync(user);
-
-            return NoContent();
-        }
-
-        [HttpPut("{id}/UpdateRoleService")]
-        public async Task<IActionResult> UpdateRoleService(int id, [FromBody] User updateRoleService)
-        {
-            if (id != updateRoleService.UserId)
-            {
-                return BadRequest("ID không khớp.");
-            }
-
-            var user = await _userRepository.GetUserByIdAsync(id);
-            if (user == null)
-            {
-                return NotFound("User không tồn tại.");
-            }
-
-            user.RoleLandlord = 2;
-
-            await _userRepository.UpdateUserAsync(user);
-
-            return NoContent();
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> GetLandlordLicenses()
-        {
-            var result = await _landlordLicenseRepository.GetLandlordLicensesAsync();
-            return Ok(result);
-        }
-
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetLandlordLicenseById(int id)
-        {
-            var result = await _landlordLicenseRepository.GetLandlordLicenseByIdAsync(id);
-            if (result == null)
-                return NotFound("License not found.");
-            return Ok(result);
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> CreateLandlordLicense([FromBody] LandlordLicense license)
-        {
-            if (license == null)
-                return BadRequest("Invalid data.");
-
-            await _landlordLicenseRepository.SaveLandlordLicenseAsync(license);
-            return StatusCode(201, "License created successfully.");
-        }
-
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateLandlordLicense(int id, [FromBody] LandlordLicense license)
-        {
-            if (id != license.LandlordLicenseId)
-                return BadRequest("ID mismatch.");
-
-            await _landlordLicenseRepository.UpdateLandlordLicenseAsync(license);
-            return NoContent();
-        }
-
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteLandlordLicense(int id)
-        {
-            var existingLicense = await _landlordLicenseRepository.GetLandlordLicenseByIdAsync(id);
-            if (existingLicense == null)
-                return NotFound("License not found.");
-
-            await _landlordLicenseRepository.DeleteLandlordLicenseAsync(existingLicense);
-            return NoContent();
-        }
-
-        // Service License API
-        [HttpGet("service")]
+        [HttpGet("ServiceLicenses")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetServiceLicenses()
         {
-            var result = await _serviceLicenseRepository.GetServiceLicensesAsync();
-            return Ok(result);
+            try
+            {
+                var result = await _serviceLicenseRepository.GetServiceLicensesAsync();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi lấy danh sách giấy phép dịch vụ: {ex.Message}");
+            }
         }
 
-        [HttpGet("service/{id}")]
+        [HttpGet("ServiceLicense/{id}")]
+        [Authorize]
         public async Task<IActionResult> GetServiceLicenseById(int id)
         {
-            var result = await _serviceLicenseRepository.GetServiceLicenseByIdAsync(id);
-            if (result == null)
-                return NotFound("Service License not found.");
-            return Ok(result);
+            try
+            {
+                var serviceLicense = await _serviceLicenseRepository.GetServiceLicenseByIdAsync(id);
+                if (serviceLicense == null)
+                {
+                    return NotFound("Giấy phép dịch vụ không tồn tại.");
+                }
+
+                var userIdClaim = int.Parse(User.FindFirst("UserId")?.Value ?? "0");
+                if (userIdClaim != serviceLicense.UserId && !User.IsInRole("Admin"))
+                {
+                    return Forbid("Bạn không có quyền xem giấy phép này.");
+                }
+
+                var dto = new ServiceLicenseDTO
+                {
+                    ServiceLicenseId = serviceLicense.ServiceLicenseId,
+                    UserId = serviceLicense.UserId,
+                    CCCD = serviceLicense.CCCD,
+                    Name = serviceLicense.Name,
+                    dateOfBirth = serviceLicense.dateOfBirth,
+                    Sex = serviceLicense.Sex,
+                    Address = serviceLicense.Address,
+                    GiayPhepKinhDoanh = serviceLicense.GiayPhepKinhDoanh,
+                    GiayPhepChuyenMon = serviceLicense.GiayPhepChuyenMon,
+                    Status = serviceLicense.Status
+                };
+
+                return Ok(dto);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi lấy giấy phép dịch vụ: {ex.Message}");
+            }
         }
 
-        [HttpPost("service")]
-        public async Task<IActionResult> CreateServiceLicense([FromBody] ServiceLicense license)
+        [HttpGet("ServiceLicense/ByUser/{userId}")]
+        [Authorize]
+        public async Task<IActionResult> GetServiceLicenseByUserId(int userId)
         {
-            if (license == null)
-                return BadRequest("Invalid data.");
-           
-            await _serviceLicenseRepository.SaveServiceLicenseAsync(license);
-            return StatusCode(201, "Service License created successfully.");
+            try
+            {
+                var userIdClaim = int.Parse(User.FindFirst("UserId")?.Value ?? "0");
+                if (userIdClaim != userId && !User.IsInRole("Admin"))
+                {
+                    return Forbid("Bạn không có quyền xem giấy phép này.");
+                }
+
+                var serviceLicense = await _serviceLicenseRepository.GetByUserIdAsync(userId);
+                if (serviceLicense == null)
+                {
+                    return NotFound("Người dùng này chưa có giấy phép dịch vụ.");
+                }
+
+                var dto = new ServiceLicenseDTO
+                {
+                    ServiceLicenseId = serviceLicense.ServiceLicenseId,
+                    UserId = serviceLicense.UserId,
+                    CCCD = serviceLicense.CCCD,
+                    Name = serviceLicense.Name,
+                    dateOfBirth = serviceLicense.dateOfBirth,
+                    Sex = serviceLicense.Sex,
+                    Address = serviceLicense.Address,
+                    GiayPhepKinhDoanh = serviceLicense.GiayPhepKinhDoanh,
+                    GiayPhepChuyenMon = serviceLicense.GiayPhepChuyenMon,
+                    Status = serviceLicense.Status
+                };
+
+                return Ok(dto);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi lấy giấy phép dịch vụ: {ex.Message}");
+            }
         }
 
-        [HttpPut("service/{id}")]
-        public async Task<IActionResult> UpdateServiceLicense(int id, [FromBody] ServiceLicense license)
+        [HttpPut("ServiceLicense/{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateServiceLicense(int id, [FromBody] ServiceLicenseDTO dto)
         {
-            if (id != license.ServiceLicenseId)
-                return BadRequest("ID mismatch.");
+            try
+            {
+                if (id != dto.ServiceLicenseId)
+                {
+                    return BadRequest("ID không khớp.");
+                }
 
-            await _serviceLicenseRepository.UpdateServiceLicenseAsync(license);
-            return NoContent();
+                var existingLicense = await _serviceLicenseRepository.GetServiceLicenseByIdAsync(id);
+                if (existingLicense == null)
+                {
+                    return NotFound("Giấy phép dịch vụ không tồn tại.");
+                }
+
+                existingLicense.CCCD = dto.CCCD;
+                existingLicense.Name = dto.Name;
+                existingLicense.dateOfBirth = dto.dateOfBirth;
+                existingLicense.Sex = dto.Sex;
+                existingLicense.Address = dto.Address;
+                existingLicense.GiayPhepKinhDoanh = dto.GiayPhepKinhDoanh;
+                existingLicense.GiayPhepChuyenMon = dto.GiayPhepChuyenMon;
+                existingLicense.Status = dto.Status;
+
+                await _serviceLicenseRepository.UpdateServiceLicenseAsync(existingLicense);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi cập nhật giấy phép dịch vụ: {ex.Message}");
+            }
         }
 
-        [HttpDelete("service/{id}")]
+        [HttpDelete("ServiceLicense/{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteServiceLicense(int id)
         {
-            var existingLicense = await _serviceLicenseRepository.GetServiceLicenseByIdAsync(id);
-            if (existingLicense == null)
-                return NotFound("Service License not found.");
+            try
+            {
+                var existingLicense = await _serviceLicenseRepository.GetServiceLicenseByIdAsync(id);
+                if (existingLicense == null)
+                {
+                    return NotFound("Giấy phép dịch vụ không tồn tại.");
+                }
 
-            await _serviceLicenseRepository.DeleteServiceLicenseAsync(existingLicense);
-            return NoContent();
+                await _serviceLicenseRepository.DeleteServiceLicenseAsync(existingLicense);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi xóa giấy phép dịch vụ: {ex.Message}");
+            }
+        }
+
+        // Update Role Endpoints
+
+        [HttpPut("UpdateRoleLandlord/{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateRoleLandlord(int id, [FromBody] User updateRoleLandlord)
+        {
+            try
+            {
+                if (id != updateRoleLandlord.UserId)
+                {
+                    return BadRequest("ID không khớp.");
+                }
+
+                var user = await _userRepository.GetUserByIdAsync(id);
+                if (user == null)
+                {
+                    return NotFound("Người dùng không tồn tại.");
+                }
+
+                user.RoleLandlord = updateRoleLandlord.RoleLandlord;
+                await _userRepository.UpdateUserAsync(user);
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi cập nhật vai trò chủ nhà: {ex.Message}");
+            }
+        }
+
+        [HttpPut("UpdateRoleService/{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateRoleService(int id, [FromBody] User updateRoleService)
+        {
+            try
+            {
+                if (id != updateRoleService.UserId)
+                {
+                    return BadRequest("ID không khớp.");
+                }
+
+                var user = await _userRepository.GetUserByIdAsync(id);
+                if (user == null)
+                {
+                    return NotFound("Người dùng không tồn tại.");
+                }
+
+                user.RoleService = updateRoleService.RoleService;
+                await _userRepository.UpdateUserAsync(user);
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi khi cập nhật vai trò dịch vụ: {ex.Message}");
+            }
         }
     }
 }

@@ -5,35 +5,47 @@ using Microsoft.EntityFrameworkCore;
 using Repositories.IRepository;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Repositories
 {
     public class LandlordLicenseRepository : ILandlordLicenseRepository
     {
-        public async Task DeleteLandlordLicenseAsync(LandlordLicense b) => await LandlordLicenseDAO.DeleteLandlordLicenseAsync(b);
-        public async Task<LandlordLicense> GetLandlordLicenseByIdAsync(int id) => await LandlordLicenseDAO.FindLandlordLicenseByIdAsync(id);
-        public async Task<List<LandlordLicenseDTO>> GetLandlordLicensesAsync() => await LandlordLicenseDAO.GetLandlordLicensesAsync();
-        public async Task SaveLandlordLicenseAsync(LandlordLicense b) => await LandlordLicenseDAO.SaveLandlordLicenseAsync(b);
-        public async Task UpdateLandlordLicenseAsync(LandlordLicense b) => await LandlordLicenseDAO.UpdateLandlordLicenseAsync(b);
-        //public async Task<bool> IsCCCDExistsAsync(string cccd)
-        //                => await LandlordLicenseDAO.IsCCCDExistsAsync(cccd);
+        private readonly LandlordLicenseDAO _dao;
 
-        public async Task<LandlordLicense?> GetByUserIdAsync(int userId)
-            => await LandlordLicenseDAO.GetByUserIdAsync(userId);
+        public LandlordLicenseRepository(LandlordLicenseDAO dao)
+        {
+            _dao = dao;
+        }
+
+        public async Task DeleteLandlordLicenseAsync(LandlordLicense b)
+            => await _dao.DeleteLandlordLicenseAsync(b);
+
+        public async Task<LandlordLicense> GetLandlordLicenseByIdAsync(int id)
+            => await _dao.FindLandlordLicenseByIdAsync(id);
+
+        public async Task<List<LandlordLicenseDTO>> GetLandlordLicensesAsync()
+            => await _dao.GetLandlordLicensesAsync();
+
+        public async Task SaveLandlordLicenseAsync(LandlordLicense b)
+            => await _dao.SaveLandlordLicenseAsync(b);
+
+        public async Task UpdateLandlordLicenseAsync(LandlordLicense b)
+            => await _dao.UpdateLandlordLicenseAsync(b);
+
         public async Task<bool> IsCCCDExistsAsync(string cccd)
         {
             try
             {
-                return await LandlordLicenseDAO.IsCCCDExistsAsync(cccd);
+                return await _dao.IsCCCDExistsAsync(cccd);
             }
             catch (Exception ex)
             {
-                throw new Exception("Lỗi khi kiểm tra CCCD: " + ex.Message);
+                throw new Exception($"Lỗi khi kiểm tra CCCD: {ex.Message}");
             }
         }
 
+        public async Task<LandlordLicense?> GetByUserIdAsync(int userId)
+            => await _dao.GetByUserIdAsync(userId);
     }
 }

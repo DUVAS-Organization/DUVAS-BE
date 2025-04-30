@@ -24,6 +24,7 @@ using Hangfire;
 using Hangfire.SqlServer;
 using Microsoft.AspNetCore.Diagnostics; // Thêm cho UseExceptionHandler
 using Microsoft.Extensions.Logging; // Thêm cho ILogger
+using BusinessObject.Service;
 
 namespace API
 {
@@ -179,6 +180,13 @@ namespace API
             {
                 var options = sp.GetRequiredService<IOptions<AzureImageServiceOptions>>().Value;
                 return new AzureImageService(options.Endpoint, options.ApiKey);
+            });
+
+            // Đăng ký EncryptionService
+            builder.Services.AddSingleton<EncryptionService>(sp =>
+            {
+                var configuration = sp.GetRequiredService<IConfiguration>();
+                return new EncryptionService(configuration["Encryption:Key"]);
             });
 
             // Add Hangfire
