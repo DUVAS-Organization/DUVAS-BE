@@ -7,10 +7,10 @@ namespace DTO
     {
         public int PriorityPackageServicePostId { get; set; }
         public int UserId { get; set; }
-        public int ServicePostId { get; set; }
+        public int? ServicePostId { get; set; }
         public int CategoryPriorityPackageServicePostId { get; set; }
-        public string StartDate { get; set; } = string.Empty;
-        public string EndDate { get; set; } = string.Empty;
+        public DateTime StartDate { get; set; } 
+        public DateTime EndDate { get; set; }
         public decimal Price { get; set; }
 
         public PriorityPackageServicePostDTO() { }  // Constructor không tham số
@@ -21,8 +21,8 @@ namespace DTO
             UserId = package.UserId;
             ServicePostId = package.ServicePostId;
             CategoryPriorityPackageServicePostId = package.CategoryPriorityPackageServicePostId;
-            StartDate = package.StartDate.ToString("HH:mm - dd/MM/yyyy");
-            EndDate = package.EndDate.ToString("HH:mm - dd/MM/yyyy");
+            StartDate = package.StartDate;
+            EndDate = package.EndDate;
             Price = package.Price;
         }
     }

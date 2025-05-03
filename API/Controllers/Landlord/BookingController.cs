@@ -355,7 +355,7 @@ namespace API.Controllers.Landlord
             }
             else
             {
-                return BadRequest("Bạn không đủ tiền.");
+                return BadRequest("Bạn không đủ tiền để thực hiện giao dịch này.");
             }
         }
 

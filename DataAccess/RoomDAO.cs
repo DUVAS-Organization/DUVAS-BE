@@ -1,4 +1,5 @@
-﻿using DTO;
+﻿using BusinessObject;
+using DTO;
 using DUVAS;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -27,6 +28,7 @@ namespace DataAccess
                 using (var context = new ApplicationDbContext())
                 {
                     var rooms = await context.Rooms
+                         .Include(r => r.PriorityPackageRooms)
                         .AsNoTracking()
                         .Select(p => new RoomDTO
                         {
@@ -60,10 +62,16 @@ namespace DataAccess
                             CategoryName = p.CategoryRoom.CategoryName,
                             IsPermission = p.IsPermission,
                             Authorization = p.Authorization,
-                            //CategoryName = p.Category.CategoryName,
-                            //CategoryId = p.CategoryId,                            
-
-
+                            PriorityPackageRooms = p.PriorityPackageRooms.Select(pr => new PriorityPackageRoomDTO
+                            {
+                                PriorityPackageRoomId = pr.PriorityPackageRoomId,
+                                RoomId = pr.RoomId,
+                                CategoryPriorityPackageRoomId = pr.CategoryPriorityPackageRoomId,
+                                StartDate = pr.StartDate,
+                                EndDate = pr.EndDate,
+                                Price = pr.Price,
+                                UserId = pr.UserId,
+                            }).ToList()
                         })
                         .ToListAsync();
 
@@ -208,6 +216,7 @@ namespace DataAccess
             using (var context = new ApplicationDbContext())
             {
                 return await context.Rooms
+                     .Include(r => r.PriorityPackageRooms)
                     .Where(r => r.UserId == userId)
                     .AsNoTracking()
                     .Select(p => new RoomDTO
@@ -242,6 +251,16 @@ namespace DataAccess
                         CategoryName = p.CategoryRoom.CategoryName,
                         IsPermission = p.IsPermission,
                         Authorization = p.Authorization,
+                        PriorityPackageRooms = p.PriorityPackageRooms.Select(pr => new PriorityPackageRoomDTO
+                        {
+                            PriorityPackageRoomId = pr.PriorityPackageRoomId,
+                            RoomId = pr.RoomId,
+                            CategoryPriorityPackageRoomId = pr.CategoryPriorityPackageRoomId,
+                            StartDate = pr.StartDate,
+                            EndDate = pr.EndDate,
+                            Price = pr.Price,
+                            UserId = pr.UserId,
+                        }).ToList()
                     })
                     .ToListAsync();
             }
@@ -254,6 +273,7 @@ namespace DataAccess
                 List<Room> room = context.Rooms.Where(r => r.RoomId == roomId && r.UserId == landlordId).ToList();
 
                 return await context.Rooms
+                    .Include(r => r.PriorityPackageRooms)
                     .Where(r => r.RoomId == roomId && r.UserId == landlordId) // Lọc theo RoomId và LandlordId
                     .AsNoTracking()
                     .Select(p => new RoomDTO
@@ -288,6 +308,16 @@ namespace DataAccess
                         CategoryName = p.CategoryRoom.CategoryName,
                         IsPermission = p.IsPermission,
                         Authorization = p.Authorization,
+                        PriorityPackageRooms = p.PriorityPackageRooms.Select(pr => new PriorityPackageRoomDTO
+                        {
+                            PriorityPackageRoomId = pr.PriorityPackageRoomId,
+                            RoomId = pr.RoomId,
+                            CategoryPriorityPackageRoomId = pr.CategoryPriorityPackageRoomId,
+                            StartDate = pr.StartDate,
+                            EndDate = pr.EndDate,
+                            Price = pr.Price,
+                            UserId = pr.UserId,
+                        }).ToList()
                     })
                     .FirstOrDefaultAsync();
             }
@@ -314,6 +344,7 @@ namespace DataAccess
             using (var context = new ApplicationDbContext())
             {
                 return await context.Rooms
+                    .Include(r => r.PriorityPackageRooms)
                     .Where(p => p.UserId == landlordId && p.status == status)
                     .Select(p => new RoomDTO
                     {
@@ -347,6 +378,16 @@ namespace DataAccess
                         CategoryName = p.CategoryRoom.CategoryName,
                         IsPermission = p.IsPermission,
                         Authorization = p.Authorization,
+                        PriorityPackageRooms = p.PriorityPackageRooms.Select(pr => new PriorityPackageRoomDTO
+                        {
+                            PriorityPackageRoomId = pr.PriorityPackageRoomId,
+                            RoomId = pr.RoomId,
+                            CategoryPriorityPackageRoomId = pr.CategoryPriorityPackageRoomId,
+                            StartDate = pr.StartDate,
+                            EndDate = pr.EndDate,
+                            Price = pr.Price,
+                            UserId = pr.UserId,
+                        }).ToList()
                     })
                     .ToListAsync();
             }
@@ -491,6 +532,7 @@ namespace DataAccess
             using (var context = new ApplicationDbContext())
             {
                 return await context.Rooms
+                     .Include(r => r.PriorityPackageRooms)
                     .Where(p => p.status == 1 && p.IsPermission == 1)
                     .Select(p => new RoomDTO
                     {
@@ -524,6 +566,16 @@ namespace DataAccess
                         CategoryName = p.CategoryRoom.CategoryName,
                         IsPermission = p.IsPermission,
                         Authorization = p.Authorization,
+                        PriorityPackageRooms = p.PriorityPackageRooms.Select(pr => new PriorityPackageRoomDTO
+                        {
+                            PriorityPackageRoomId = pr.PriorityPackageRoomId,
+                            RoomId = pr.RoomId,
+                            CategoryPriorityPackageRoomId = pr.CategoryPriorityPackageRoomId,
+                            StartDate = pr.StartDate,
+                            EndDate = pr.EndDate,
+                            Price = pr.Price,
+                            UserId = pr.UserId,
+                        }).ToList()
                     })
                     .ToListAsync();
             }
