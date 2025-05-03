@@ -172,6 +172,7 @@ namespace API
             builder.Services.AddHostedService<CheckExpiredContractsService>();
             builder.Services.AddScoped<IAuthorizationContractRepository, AuthorizationContractRepository>();
             builder.Services.AddScoped<PdfService>();
+            builder.Services.AddScoped<EncryptionService>();
 
             // Thêm cấu hình AzureImageService từ file thứ hai
             builder.Services.Configure<AzureImageServiceOptions>(
@@ -183,11 +184,11 @@ namespace API
             });
 
             // Đăng ký EncryptionService
-            builder.Services.AddSingleton<EncryptionService>(sp =>
-            {
-                var configuration = sp.GetRequiredService<IConfiguration>();
-                return new EncryptionService(configuration["Encryption:Key"]);
-            });
+            //builder.Services.AddSingleton<EncryptionService>(sp =>
+            //{
+            //    var configuration = sp.GetRequiredService<IConfiguration>();
+            //    return new EncryptionService(configuration["Encryption:Key"]);
+            //});
 
             // Add Hangfire
             builder.Services.AddHangfire(configuration => configuration
@@ -219,6 +220,17 @@ namespace API
             });
 
             var app = builder.Build();
+
+            // Configure the HTTP request pipeline.
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
+            else
+            {
+                app.UseExceptionHandler("/Error");
+                app.UseHsts();
+            }
 
             app.UseSwagger();
             app.UseSwaggerUI(c =>
