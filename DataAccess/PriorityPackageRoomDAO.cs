@@ -33,8 +33,8 @@ namespace DataAccess
                             UserId = p.UserId,
                             RoomId = p.RoomId,
                             CategoryPriorityPackageRoomId = p.CategoryPriorityPackageRoomId,
-                            StartDate = p.StartDate.ToString("HH:mm - dd/MM/yyyy"),
-                            EndDate = p.EndDate.ToString("HH:mm - dd/MM/yyyy"),
+                            StartDate = p.StartDate ,
+                            EndDate = p.EndDate ,
                             Price = p.Price
                         })
                         .ToListAsync();
@@ -63,8 +63,8 @@ namespace DataAccess
                             UserId = p.UserId,
                             RoomId = p.RoomId,
                             CategoryPriorityPackageRoomId = p.CategoryPriorityPackageRoomId,
-                            StartDate = p.StartDate.ToString("HH:mm - dd/MM/yyyy"),
-                            EndDate = p.EndDate.ToString("HH:mm - dd/MM/yyyy"),
+                            StartDate = p.StartDate ,
+                            EndDate = p.EndDate ,
                             Price = p.Price
                         })
                         .FirstOrDefaultAsync();
@@ -121,6 +121,10 @@ namespace DataAccess
                     if (existingPackage == null)
                         throw new Exception("PriorityPackageRoom không tồn tại.");
 
+                    // Kiểm tra dữ liệu đầu vào
+                    if (package.UserId <= 0 || package.RoomId == null || package.CategoryPriorityPackageRoomId <= 0 || package.StartDate == DateTime.MinValue)
+                        throw new Exception("Dữ liệu đầu vào không hợp lệ.");
+
                     var category = await context.CategoryPriorityPackageRooms
                         .Where(c => c.CategoryPriorityPackageRoomId == package.CategoryPriorityPackageRoomId)
                         .Select(c => new { c.CategoryPriorityPackageRoomValue, c.Price })
@@ -129,12 +133,18 @@ namespace DataAccess
                     if (category == null)
                         throw new Exception("CategoryPriorityPackageRoom không tồn tại.");
 
-                    // Cập nhật giá trị EndDate và Price
+                    // Cập nhật các trường cần thiết
+                    existingPackage.UserId = package.UserId;
+                    existingPackage.RoomId = package.RoomId;
+                    existingPackage.CategoryPriorityPackageRoomId = package.CategoryPriorityPackageRoomId;
                     existingPackage.StartDate = package.StartDate;
                     existingPackage.EndDate = package.StartDate.AddDays(category.CategoryPriorityPackageRoomValue);
                     existingPackage.Price = category.Price;
 
+                    // Đánh dấu entity là đã thay đổi
                     context.Entry(existingPackage).State = EntityState.Modified;
+
+                    // Lưu thay đổi
                     await context.SaveChangesAsync();
                 }
             }

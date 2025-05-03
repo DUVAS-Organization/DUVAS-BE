@@ -38,20 +38,22 @@ namespace API.Controllers.UserAPI
             {
                 return BadRequest("Invalid data.");
             }
+
             // Validate CCCD format (e.g., max length 12 as per model)
             if (string.IsNullOrEmpty(dto.CCCD) || dto.CCCD.Length > 12)
             {
                 return BadRequest("Invalid CCCD.");
             }
+
             Console.WriteLine($"Checking CCCD: {dto.CCCD}");
-            // Check if CCCD already exists in LandlordLicense or ServiceLicense
+            // Check if CCCD already exists in LandlordLicense
             var existingLandlordLicense = await _landlordLicenseRepository.IsCCCDExistsAsync(dto.CCCD);
-            Console.WriteLine($"CCCD exists in ServiceLicenses: {existingLandlordLicense}");
-            if (existingLandlordLicense != false)
+            Console.WriteLine($"CCCD exists in LandlordLicenses: {existingLandlordLicense}");
+            if (existingLandlordLicense)
             {
-                return Conflict("A license with this CCCD already exists.");
+                return Conflict("A license with this CCCD already exists for Landlord role.");
             }
-            
+
             var user = await _userRepository.GetUserByIdAsync(dto.UserId);
             if (user == null)
             {
@@ -70,6 +72,7 @@ namespace API.Controllers.UserAPI
             {
                 return Conflict("User already has a pending Landlord License.");
             }
+
             var landlordLicense = new LandlordLicense
             {
                 UserId = dto.UserId,
@@ -85,28 +88,53 @@ namespace API.Controllers.UserAPI
 
             await _landlordLicenseRepository.SaveLandlordLicenseAsync(landlordLicense);
 
-            // Gửi thông báo uprole
-            var message = $"Bạn đã gửi thành công yêu cầu đăng ký làm chủ nhà.";
-            var redirectUrl = $"";
-            await NotificationDAO.CreateNotificationAsync(new Notification
+            // Gửi thông báo cho người dùng
+            try
             {
-                UserId = landlordLicense.UserId,
-                Type = "UpdateRole",
-                Message = message,
-                RedirectUrl = redirectUrl,
-                CreatedDate = DateTime.Now,
-                IsRead = false
-            });
+                var message = $"Bạn đã gửi thành công yêu cầu đăng ký làm chủ nhà.";
+                var redirectUrl = "";
+                await NotificationDAO.CreateNotificationAsync(new Notification
+                {
+                    UserId = landlordLicense.UserId,
+                    Type = "UpdateRole",
+                    Message = message,
+                    RedirectUrl = redirectUrl,
+                    CreatedDate = DateTime.UtcNow,
+                    IsRead = false
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Lỗi khi tạo thông báo cho người dùng: {ex.Message}");
+            }
 
-            await NotificationDAO.CreateNotificationAsync(new Notification
+            // Gửi thông báo cho admin (kiểm tra _adminId hợp lệ)
+            try
             {
-                UserId = _adminId,
-                Type = "UpdateRole",
-                Message = $"Vừa có đơn đăng ký làm chủ nhà từ User: #{landlordLicense.UserId}",
-                RedirectUrl = redirectUrl,
-                CreatedDate = DateTime.Now,
-                IsRead = false
-            });
+                if (_adminId <= 0)
+                {
+                    Console.WriteLine("AdminId không hợp lệ, bỏ qua thông báo cho admin.");
+                }
+                else
+                {
+                    var adminMessage = $"Vừa có đơn đăng ký làm chủ nhà từ User: #{landlordLicense.UserId}";
+                    var redirectUrl = "";
+                    await NotificationDAO.CreateNotificationAsync(new Notification
+                    {
+                        UserId = _adminId,
+                        Type = "UpdateRole",
+                        Message = adminMessage,
+                        RedirectUrl = redirectUrl,
+                        CreatedDate = DateTime.UtcNow,
+                        IsRead = false
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Lỗi khi tạo thông báo cho admin: {ex.Message}");
+            }
+
             return CreatedAtAction(nameof(SaveLandlordLicense), new { id = landlordLicense.LandlordLicenseId }, landlordLicense);
         }
 
@@ -117,20 +145,20 @@ namespace API.Controllers.UserAPI
             {
                 return BadRequest("Invalid data.");
             }
+
             // Validate CCCD format (e.g., max length 12 as per model)
             if (string.IsNullOrEmpty(dto.CCCD) || dto.CCCD.Length > 12)
             {
                 return BadRequest("Invalid CCCD.");
             }
 
-            // Check if CCCD already exists in LandlordLicense or ServiceLicense
+            // Check if CCCD already exists in ServiceLicense
             var existingServiceLicense = await _serviceLicenseRepository.IsCCCDExistsAsync(dto.CCCD);
-            if (existingServiceLicense != false)
+            if (existingServiceLicense)
             {
-                return Conflict("A license with this CCCD already exists.");
+                return Conflict("A license with this CCCD already exists for Service role.");
             }
 
-            // Check if user exists and their RoleService status
             var user = await _userRepository.GetUserByIdAsync(dto.UserId);
             if (user == null)
             {
@@ -149,6 +177,7 @@ namespace API.Controllers.UserAPI
             {
                 return Conflict("User already has a pending Service License.");
             }
+
             var serviceLicense = new ServiceLicense
             {
                 UserId = dto.UserId,
@@ -165,31 +194,55 @@ namespace API.Controllers.UserAPI
 
             await _serviceLicenseRepository.SaveServiceLicenseAsync(serviceLicense);
 
-            // Gửi thông báo uprole
-            var message = $"Bạn đã gửi thành công yêu cầu đăng ký làm chủ dịch vụ.";
-            var redirectUrl = $"/ViewUpRole";
-            await NotificationDAO.CreateNotificationAsync(new Notification
+            // Gửi thông báo cho người dùng
+            try
             {
-                UserId = serviceLicense.UserId,
-                Type = "ConfirmUpdateRole",
-                Message = message,
-                RedirectUrl = redirectUrl,
-                CreatedDate = DateTime.Now,
-                IsRead = false
-            });
+                var message = $"Bạn đã gửi thành công yêu cầu đăng ký làm chủ dịch vụ.";
+                var redirectUrl = $"/ViewUpRole";
+                await NotificationDAO.CreateNotificationAsync(new Notification
+                {
+                    UserId = serviceLicense.UserId,
+                    Type = "ConfirmUpdateRole",
+                    Message = message,
+                    RedirectUrl = redirectUrl,
+                    CreatedDate = DateTime.UtcNow,
+                    IsRead = false
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Lỗi khi tạo thông báo cho người dùng: {ex.Message}");
+            }
 
-            //await NotificationDAO.CreateNotificationAsync(new Notification
-            //{
-            //    UserId = _adminId,
-            //    Type = "UpdateRole",
-            //    Message = $"Vừa có đơn đăng ký làm chủ dịch vụ từ User: #{serviceLicense.UserId}",
-            //    RedirectUrl = redirectUrl,
-            //    CreatedDate = DateTime.Now,
-            //    IsRead = false
-            //});
+            // Gửi thông báo cho admin (kiểm tra _adminId hợp lệ)
+            try
+            {
+                if (_adminId <= 0)
+                {
+                    Console.WriteLine("AdminId không hợp lệ, bỏ qua thông báo cho admin.");
+                }
+                else
+                {
+                    var adminMessage = $"Vừa có đơn đăng ký làm chủ dịch vụ từ User: #{serviceLicense.UserId}";
+                    var redirectUrl = $"/ViewUpRole";
+                    await NotificationDAO.CreateNotificationAsync(new Notification
+                    {
+                        UserId = _adminId,
+                        Type = "UpdateRole",
+                        Message = adminMessage,
+                        RedirectUrl = redirectUrl,
+                        CreatedDate = DateTime.UtcNow,
+                        IsRead = false
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Lỗi khi tạo thông báo cho admin: {ex.Message}");
+            }
+
             return CreatedAtAction(nameof(SaveServiceLicense), new { id = serviceLicense.ServiceLicenseId }, serviceLicense);
         }
-
         [HttpPut("{id}/UpdateRoleLandlord")]
         public async Task<IActionResult> UpdateRoleLandlord(int id, [FromBody] User updateRoleLandlord)
         {

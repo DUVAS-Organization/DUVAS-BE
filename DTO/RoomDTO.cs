@@ -52,7 +52,7 @@ namespace DTO
         //2: Dang cho admin duyet
         //3: Da duoc admin duyet
         public List<RentalListDTO>? RentalLists { get; set; }
-
+        public List<PriorityPackageRoomDTO> PriorityPackageRooms { get; set; }
         //public Building? Building { get; set; }
         //public bool IsPermission { get; set; }
     }
