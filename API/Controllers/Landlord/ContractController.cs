@@ -22,17 +22,23 @@ namespace GITHUB_ACTIONS.Controllers
         private readonly PdfService _pdfService;
         private readonly CloudinaryService _cloudinaryService;
         private readonly IRoomRepository _roomRepository;
+        private readonly EmailService _emailService;
+        private readonly IUserRepository _userRepository;
 
         public ContractController(
             IAuthorizationContractRepository authorizationContractRepository,
             PdfService pdfService,
             CloudinaryService cloudinaryService,
-            IRoomRepository roomRepository)
+            IRoomRepository roomRepository,
+            EmailService emailService,
+            IUserRepository userRepository)
         {
             _authorizationContractRepository = authorizationContractRepository;
             _pdfService = pdfService;
             _cloudinaryService = cloudinaryService;
             _roomRepository = roomRepository;
+            _emailService = emailService;
+            _userRepository = userRepository;
         }
 
         [HttpPost("generate-authorization")]
@@ -80,7 +86,7 @@ namespace GITHUB_ACTIONS.Controllers
             return Ok(new { ContractId = contract.Id, PdfUrl = pdfUrl });
         }
 
-       
+
 
         [HttpGet("authorization")]
         public async Task<IActionResult> GetAllAuthorizationContract()
@@ -153,12 +159,12 @@ namespace GITHUB_ACTIONS.Controllers
                 // Kiểm tra danh sách roomIds hợp lệ
                 if (request.RoomIds == null || !request.RoomIds.Any())
                     return BadRequest("Danh sách RoomIds không được để trống.");
-                
+
                 // Cập nhật Authorization cho từng phòng
                 foreach (var roomId in request.RoomIds)
                 {
                     // Kiểm tra quyền của người dùng đối với phòng (nếu cần)
-                   
+
 
                     await _roomRepository.UpdateAuthorizationAsync(roomId, request.Authorization);
                 }
@@ -205,6 +211,36 @@ namespace GITHUB_ACTIONS.Controllers
             {
                 return StatusCode(500, new { Message = $"Lỗi khi cập nhật status: {ex.Message}" });
             }
+        }
+
+        [HttpPost("send-mail-to-landlord")]
+        public async Task<IActionResult> SendMailToLandlord([FromBody] int userId, int contractId)
+        {
+            var user = await _userRepository.GetUserByIdAsync(userId);
+            var contract = await _authorizationContractRepository.GetAuthorizationContractByIdAsync(contractId);
+            SendMailtoLanlord(user.Gmail, contract.CreatedAt, contract.PdfUrl);
+            return Ok(new { Message = "Email thông báo thanh toán đã được gửi thành công" });
+
+        }
+
+        public void SendMailtoLanlord(string userEmail, DateTime thoiGian1, string hopDong)
+        {
+            var subject = "Thông báo phê duyệt yêu cầu ủy quyền";
+
+            var body = $@"
+                <p>Chúng tôi xin thông báo rằng yêu cầu ủy quyền của quý vị đã được <b>admin</b> phê duyệt.</p>
+                <p><b>Thông tin chi tiết:</b></p>
+                <ul>
+                    <li><b>Thời gian gửi yêu cầu:</b> {thoiGian1:dd/MM/yyyy HH:mm}</li>
+                    <li><b>Hợp đồng liên quan:</b> {hopDong}</li>
+                </ul>
+                <p>Quý vị vui lòng đến văn phòng của chúng tôi tại địa chỉ <b></b> trong vòng <b>5 ngày</b> kể từ hôm nay để tiến hành ký kết hợp đồng.</p>
+                <p>Nếu có bất kỳ thắc mắc nào, xin vui lòng liên hệ trực tiếp với <b>admin</b> để được hỗ trợ.</p>
+                <p>Trân trọng,</p>
+                <p>DUVAS Team</p>";
+
+            // Gửi email cho người dùng
+            _emailService.SendEmail(userEmail, subject, body);
         }
     }
 }
