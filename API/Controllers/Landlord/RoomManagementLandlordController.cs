@@ -20,15 +20,40 @@ namespace API.Controllers.Landlord
         private readonly UserDAO _userDAO;
         private readonly CloudinaryService _cloudinaryService;
         private readonly AiService _aiService;
-
-        public RoomManagementLandlordController(IRoomRepository roomRepository, UserDAO userDAO, CloudinaryService cloudinaryService, AiService aiService)
+        private readonly SpeechToTextService _speechToTextService;
+        public RoomManagementLandlordController(IRoomRepository roomRepository, 
+            UserDAO userDAO
+            , CloudinaryService cloudinaryService,
+            AiService aiService,
+            SpeechToTextService speechToTextService)
         {
             _roomRepository = roomRepository;
             _userDAO = userDAO;
             _cloudinaryService = cloudinaryService; // Inject service upload ảnh
             _aiService = aiService;
+            _speechToTextService = speechToTextService;
         }
 
+        [HttpPost("search-rooms")]
+        public async Task<IActionResult> SearchRoomsByText([FromQuery] string searchTerm = null)
+        {
+            Console.WriteLine($"Received searchTerm: '{searchTerm}'");
+
+            if (string.IsNullOrWhiteSpace(searchTerm))
+            {
+                Console.WriteLine("searchTerm is null or empty, returning all rooms.");
+                var allRooms = await _roomRepository.GetRoomsAsync();
+                return Ok(allRooms);
+            }
+
+            var rooms = await _roomRepository.SearchRoomsByTermAsync(searchTerm);
+
+            if (rooms == null || !rooms.Any())
+            {
+                return Ok(new { message = "No rooms found matching your search." });
+            }
+            return Ok(new { message = "Rooms found.", rooms });
+        }
 
         private int GetLandlordId()
         {
@@ -44,6 +69,7 @@ namespace API.Controllers.Landlord
             Console.WriteLine($"UserId: {userId}, RoleLandlord: {user?.RoleLandlord}");
             return user?.RoleLandlord == 1;
         }
+
 
         // GET: api/landlord/RoomManagement
         [HttpGet]
@@ -101,6 +127,7 @@ namespace API.Controllers.Landlord
             return Ok(new { message = successMessage, rooms });
         }
 
+
         // GET: api/landlord/RoomManagement/{id}
         [HttpGet("{id}")]
         public async Task<IActionResult> GetRoom(int id)
@@ -118,36 +145,6 @@ namespace API.Controllers.Landlord
                 return NotFound("Room not found or access denied.");
             }
             return Ok(room);
-        }
-
-        // GET: api/landlord/RoomManagement/by-title/{title}
-        [HttpGet("by-title/{title}")]
-        public async Task<IActionResult> GetRoomByTitle(string title)
-        {
-            int landlordId = GetLandlordId();
-            // Kiểm tra quyền Landlord
-            if (!await IsLandlord(landlordId))
-            {
-                return Unauthorized("Bạn không phải Role Landlord nên không được sử dụng chức năng này.");
-            }
-
-            // Kiểm tra title không rỗng
-            if (string.IsNullOrWhiteSpace(title))
-            {
-                return BadRequest("Title không được để trống.");
-            }
-
-            var rooms = await _roomRepository.GetRoomsAsync();
-            var room = rooms
-                .Where(r => r.Title == title && r.UserId == landlordId)
-                .FirstOrDefault();
-
-            if (room == null)
-            {
-                return NotFound("Room không tồn tại hoặc bạn không có quyền truy cập.");
-            }
-
-            return Ok(room.RoomId);
         }
 
         // POST: api/landlord/RoomManagement
@@ -284,6 +281,9 @@ namespace API.Controllers.Landlord
             }
         }
 
+
+
+
         // PUT: api/landlord/RoomManagement/{id}
         [HttpPut("{id}")]
         //[Authorize]
@@ -351,6 +351,8 @@ namespace API.Controllers.Landlord
             }
         }
 
+
+
         // PATCH: api/landlord/RoomManagement/{id}/lock
         [HttpPatch("{id}/lock")]
         [Authorize]
@@ -383,7 +385,6 @@ namespace API.Controllers.Landlord
                 return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Lỗi khi khóa phòng.", error = ex.Message });
             }
         }
-        
         // GET: api/landlord/RoomManagement/{id}/is-locked
         [HttpGet("{id}/is-locked")]
         [Authorize]
@@ -412,7 +413,6 @@ namespace API.Controllers.Landlord
                 Message = isLocked ? "Phòng hiện đang bị khóa." : "Phòng đang hoạt động bình thường."
             });
         }
-        
         // PATCH: api/landlord/RoomManagement/{id}/unlock
         [HttpPatch("{id}/unlock")]
         [Authorize]
@@ -444,7 +444,6 @@ namespace API.Controllers.Landlord
                 return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Lỗi khi mở khóa phòng.", error = ex.Message });
             }
         }
-        
         // GET: api/landlord/RoomManagement/locked-rooms
         [HttpGet("locked-rooms")]
         [Authorize]
@@ -475,6 +474,9 @@ namespace API.Controllers.Landlord
                 rooms = lockedRooms
             });
         }
+
+
+
 
         // GET: api/landlord/RoomManagement/{id}/Reviews
         [HttpGet("{id}/Reviews")]
@@ -517,7 +519,6 @@ namespace API.Controllers.Landlord
 
             return Ok(new { Message = "Trạng thái phòng đã được cập nhật thành công." });
         }
-        
         [HttpPost("generate-description")]
         public async Task<IActionResult> GenerateRoomDescription([FromBody] RoomDTO roomDto)
         {

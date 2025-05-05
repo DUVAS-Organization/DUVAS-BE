@@ -46,10 +46,8 @@ namespace API.Controllers.UserAPI
         {
             try
             {
-                // Lấy danh sách báo cáo từ repository
                 var reports = await _reportRepository.GetReportsAsync();
 
-                // Ánh xạ từ Report sang ReportDTO
                 var reportDtos = reports.Select(report => new ReportDTO
                 {
                     ReportId = report.ReportId,

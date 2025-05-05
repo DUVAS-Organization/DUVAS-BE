@@ -1,4 +1,4 @@
-﻿﻿using DUVAS;
+﻿using DUVAS;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;

@@ -1,4 +1,5 @@
-﻿using DTO;
+﻿using BusinessObject;
+using DTO;
 using DUVAS;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -27,6 +28,7 @@ namespace DataAccess
                 using (var context = new ApplicationDbContext())
                 {
                     var rooms = await context.Rooms
+                         .Include(r => r.PriorityPackageRooms)
                         .AsNoTracking()
                         .Select(p => new RoomDTO
                         {
@@ -60,10 +62,16 @@ namespace DataAccess
                             CategoryName = p.CategoryRoom.CategoryName,
                             IsPermission = p.IsPermission,
                             Authorization = p.Authorization,
-                            //CategoryName = p.Category.CategoryName,
-                            //CategoryId = p.CategoryId,                            
-
-
+                            PriorityPackageRooms = p.PriorityPackageRooms.Select(pr => new PriorityPackageRoomDTO
+                            {
+                                PriorityPackageRoomId = pr.PriorityPackageRoomId,
+                                RoomId = pr.RoomId,
+                                CategoryPriorityPackageRoomId = pr.CategoryPriorityPackageRoomId,
+                                StartDate = pr.StartDate,
+                                EndDate = pr.EndDate,
+                                Price = pr.Price,
+                                UserId = pr.UserId,
+                            }).ToList()
                         })
                         .ToListAsync();
 
@@ -208,6 +216,7 @@ namespace DataAccess
             using (var context = new ApplicationDbContext())
             {
                 return await context.Rooms
+                     .Include(r => r.PriorityPackageRooms)
                     .Where(r => r.UserId == userId)
                     .AsNoTracking()
                     .Select(p => new RoomDTO
@@ -242,6 +251,16 @@ namespace DataAccess
                         CategoryName = p.CategoryRoom.CategoryName,
                         IsPermission = p.IsPermission,
                         Authorization = p.Authorization,
+                        PriorityPackageRooms = p.PriorityPackageRooms.Select(pr => new PriorityPackageRoomDTO
+                        {
+                            PriorityPackageRoomId = pr.PriorityPackageRoomId,
+                            RoomId = pr.RoomId,
+                            CategoryPriorityPackageRoomId = pr.CategoryPriorityPackageRoomId,
+                            StartDate = pr.StartDate,
+                            EndDate = pr.EndDate,
+                            Price = pr.Price,
+                            UserId = pr.UserId,
+                        }).ToList()
                     })
                     .ToListAsync();
             }
@@ -254,6 +273,7 @@ namespace DataAccess
                 List<Room> room = context.Rooms.Where(r => r.RoomId == roomId && r.UserId == landlordId).ToList();
 
                 return await context.Rooms
+                    .Include(r => r.PriorityPackageRooms)
                     .Where(r => r.RoomId == roomId && r.UserId == landlordId) // Lọc theo RoomId và LandlordId
                     .AsNoTracking()
                     .Select(p => new RoomDTO
@@ -288,6 +308,16 @@ namespace DataAccess
                         CategoryName = p.CategoryRoom.CategoryName,
                         IsPermission = p.IsPermission,
                         Authorization = p.Authorization,
+                        PriorityPackageRooms = p.PriorityPackageRooms.Select(pr => new PriorityPackageRoomDTO
+                        {
+                            PriorityPackageRoomId = pr.PriorityPackageRoomId,
+                            RoomId = pr.RoomId,
+                            CategoryPriorityPackageRoomId = pr.CategoryPriorityPackageRoomId,
+                            StartDate = pr.StartDate,
+                            EndDate = pr.EndDate,
+                            Price = pr.Price,
+                            UserId = pr.UserId,
+                        }).ToList()
                     })
                     .FirstOrDefaultAsync();
             }
@@ -314,6 +344,7 @@ namespace DataAccess
             using (var context = new ApplicationDbContext())
             {
                 return await context.Rooms
+                    .Include(r => r.PriorityPackageRooms)
                     .Where(p => p.UserId == landlordId && p.status == status)
                     .Select(p => new RoomDTO
                     {
@@ -347,6 +378,16 @@ namespace DataAccess
                         CategoryName = p.CategoryRoom.CategoryName,
                         IsPermission = p.IsPermission,
                         Authorization = p.Authorization,
+                        PriorityPackageRooms = p.PriorityPackageRooms.Select(pr => new PriorityPackageRoomDTO
+                        {
+                            PriorityPackageRoomId = pr.PriorityPackageRoomId,
+                            RoomId = pr.RoomId,
+                            CategoryPriorityPackageRoomId = pr.CategoryPriorityPackageRoomId,
+                            StartDate = pr.StartDate,
+                            EndDate = pr.EndDate,
+                            Price = pr.Price,
+                            UserId = pr.UserId,
+                        }).ToList()
                     })
                     .ToListAsync();
             }
@@ -491,6 +532,7 @@ namespace DataAccess
             using (var context = new ApplicationDbContext())
             {
                 return await context.Rooms
+                     .Include(r => r.PriorityPackageRooms)
                     .Where(p => p.status == 1 && p.IsPermission == 1)
                     .Select(p => new RoomDTO
                     {
@@ -524,6 +566,16 @@ namespace DataAccess
                         CategoryName = p.CategoryRoom.CategoryName,
                         IsPermission = p.IsPermission,
                         Authorization = p.Authorization,
+                        PriorityPackageRooms = p.PriorityPackageRooms.Select(pr => new PriorityPackageRoomDTO
+                        {
+                            PriorityPackageRoomId = pr.PriorityPackageRoomId,
+                            RoomId = pr.RoomId,
+                            CategoryPriorityPackageRoomId = pr.CategoryPriorityPackageRoomId,
+                            StartDate = pr.StartDate,
+                            EndDate = pr.EndDate,
+                            Price = pr.Price,
+                            UserId = pr.UserId,
+                        }).ToList()
                     })
                     .ToListAsync();
             }
@@ -867,6 +919,113 @@ namespace DataAccess
                     Authorization = p.Authorization
                 })
                 .ToListAsync();
+        }
+        public static async Task<Dictionary<int, List<int>>> GetRoomIdsGroupedByBuildingAsync(int userId)
+        {
+            using var context = new ApplicationDbContext();
+
+            var roomGroups = await context.Rooms
+                .Where(r => r.UserId == userId && r.BuildingId != null)
+                .GroupBy(r => r.BuildingId.Value)
+                .Select(g => new
+                {
+                    BuildingId = g.Key,
+                    RoomIds = g.Select(r => r.RoomId).ToList()
+                })
+                .ToListAsync();
+
+            return roomGroups.ToDictionary(g => g.BuildingId, g => g.RoomIds);
+        }
+        public static async Task<List<RoomDTO>> SearchRoomsByTermAsync(string searchTerm)
+        {
+            if (string.IsNullOrWhiteSpace(searchTerm))
+            {
+                return await GetRoomsAsync();
+            }
+
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    searchTerm = searchTerm.Trim().ToLower();
+
+                    var rooms = await context.Rooms
+                        .AsNoTracking()
+                        .Where(r =>
+                            r.Title.ToLower().Contains(searchTerm) ||
+                            r.Description.ToLower().Contains(searchTerm) ||
+                            r.LocationDetail.ToLower().Contains(searchTerm))
+                        .Select(r => new RoomDTO
+                        {
+                            RoomId = r.RoomId,
+                            BuildingId = r.BuildingId,
+                            UserId = r.UserId,
+                            UserName = r.User.UserName,
+                            Title = r.Title,
+                            Description = r.Description,
+                            LocationDetail = r.LocationDetail,
+                            Acreage = r.Acreage,
+                            Furniture = r.Furniture,
+                            NumberOfBathroom = r.NumberOfBathroom,
+                            NumberOfBedroom = r.NumberOfBedroom,
+                            Garret = r.Garret,
+                            Price = r.Price,
+                            CategoryRoomId = r.CategoryRoomId,
+                            CategoryName = r.CategoryRoom.CategoryName,
+                            Image = r.Image,
+                            Note = r.Note,
+                            IsPermission = r.IsPermission
+                        })
+                        .ToListAsync();
+
+                    // Nếu tìm không ra → fallback bằng cách tách từ ra và tìm theo từng từ
+                    if (!rooms.Any())
+                    {
+                        var keywords = searchTerm.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+                        foreach (var keyword in keywords)
+                        {
+                            var partialRooms = await context.Rooms
+                                .AsNoTracking()
+                                .Where(r =>
+                                    r.Title.ToLower().Contains(keyword) ||
+                                    r.Description.ToLower().Contains(keyword) ||
+                                    r.LocationDetail.ToLower().Contains(keyword))
+                                .Select(r => new RoomDTO
+                                {
+                                    RoomId = r.RoomId,
+                                    BuildingId = r.BuildingId,
+                                    UserId = r.UserId,
+                                    UserName = r.User.UserName,
+                                    Title = r.Title,
+                                    Description = r.Description,
+                                    LocationDetail = r.LocationDetail,
+                                    Acreage = r.Acreage,
+                                    Furniture = r.Furniture,
+                                    NumberOfBathroom = r.NumberOfBathroom,
+                                    NumberOfBedroom = r.NumberOfBedroom,
+                                    Garret = r.Garret,
+                                    Price = r.Price,
+                                    CategoryRoomId = r.CategoryRoomId,
+                                    CategoryName = r.CategoryRoom.CategoryName,
+                                    Image = r.Image,
+                                    Note = r.Note,
+                                    IsPermission = r.IsPermission
+                                })
+                                .ToListAsync();
+
+                            // Ghép kết quả không trùng nhau
+                            rooms.AddRange(partialRooms.Where(x => !rooms.Any(r => r.RoomId == x.RoomId)));
+                        }
+                    }
+
+                    return rooms;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi tìm kiếm phòng: {ex.Message}");
+            }
         }
 
     }

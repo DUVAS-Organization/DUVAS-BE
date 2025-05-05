@@ -6,21 +6,21 @@ using Microsoft.Extensions.Configuration;
 
 namespace API.Utils
 {
-    public static class EncryptionHelper
+    public static class EncryptionHelper2
     {
         private static readonly byte[] Key;
         private static readonly byte[] IV;
 
         // Đọc cấu hình từ appsettings.json khi lớp được khởi tạo
-        static EncryptionHelper()
+        static EncryptionHelper2()
         {
             var configuration = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json")
                 .Build();
 
-            Key = Encoding.UTF8.GetBytes(configuration["EncryptionSettings:Key"]);
-            IV = Encoding.UTF8.GetBytes(configuration["EncryptionSettings:IV"]);
+            Key = Encoding.UTF8.GetBytes(configuration["EncryptionSettings2:Key"]);
+            IV = Encoding.UTF8.GetBytes(configuration["EncryptionSettings2:IV"]);
         }
 
         // Phương thức mã hóa

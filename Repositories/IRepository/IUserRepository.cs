@@ -41,6 +41,6 @@ namespace Repositories.IRepository
         Task<List<LandlordLicenseDTO>> GetLandlordLicensesByUserIdAsync(int userId);
         Task<LandlordLicenseDTO> GetOneLicensesByUserIdAsync(int userId);
         Task<List<ServiceLicenseDTO>> GetServiceLicensesByUserIdAsync(int userId);
-        
+
     }
 }

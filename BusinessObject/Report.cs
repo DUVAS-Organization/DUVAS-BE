@@ -14,6 +14,7 @@ namespace DUVAS
         public Room? Room { get; set; }
         public string ReportContent { get; set; }
         public string Image { get; set; }
+        public DateTime CreatedTime { get; set; }
         public int? Status { get; set; }
         public string? Feedback {  get; set; }
     }

@@ -14,7 +14,7 @@ namespace API.Controllers
 {
     [Route("/api/[controller]")]
     [ApiController]
-    public class AuthController:ControllerBase
+    public class AuthController : ControllerBase
     {
         private readonly EmailService _emailService;
         private readonly OtpService _otpService;
@@ -78,7 +78,7 @@ namespace API.Controllers
             {
                 return BadRequest(new { Message = "Username is already taken." });
             }
-        
+
             if (registerDto.Password != registerDto.RePassword)
             {
                 return BadRequest(new { Message = "Passwords do not match." });
@@ -88,20 +88,29 @@ namespace API.Controllers
             {
                 return BadRequest(new { Message = "Password must have at least 8 character and 1 upper case letter." });
             }
-            var user = new User(emailOrPhone, registerDto.UserName, registerDto.Name, BCrypt.Net.BCrypt.HashPassword(registerDto.Password), registerDto.Address, registerDto.Sex, "", 0, 1);
+            var user = new User(
+                emailOrPhone,
+                registerDto.UserName,
+                registerDto.Name,
+                BCrypt.Net.BCrypt.HashPassword(registerDto.Password),
+                registerDto.Address,
+                registerDto.Sex,
+                "",
+                1 // roleUser set to 1 for new users
+            );
 
             try
             {
                 await _iuserRepository.SaveUserAsync(user);
                 _otpService.RemoveOtp(emailOrPhone);
-                return Ok(new {Message= "Register successful."});
+                return Ok(new { Message = "Register successful." });
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.ToString());
-                return StatusCode(500, new {Message= "Register fail."});
+                return StatusCode(500, new { Message = "Register fail." });
             }
-            
+
         }
 
         [HttpPost("verify")]
@@ -168,7 +177,7 @@ namespace API.Controllers
 
                 if (user == null)
                 {
-                    user = new User(name, email, avatar, 0); // Role mặc định là 0
+                    user = new User(name, email, avatar); // Role mặc định là 0
                     await _iuserRepository.SaveUserAsync(user);
                 }
 
@@ -218,7 +227,7 @@ namespace API.Controllers
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                return StatusCode(500, new {Message= "Server Error."});
+                return StatusCode(500, new { Message = "Server Error." });
             }
         }
 
@@ -260,7 +269,7 @@ namespace API.Controllers
 
             if (resetPassword.Password != resetPassword.RePassword)
             {
-                return BadRequest(new {Message= "Passwords don't match."});
+                return BadRequest(new { Message = "Passwords don't match." });
             }
             if (!Regex.IsMatch(resetPassword.Password, @"^(?=.*[A-Z]).{8,}$"))
             {
@@ -269,45 +278,44 @@ namespace API.Controllers
             if (_iuserRepository.UpdatePasswordAsync(emailOrPhone, BCrypt.Net.BCrypt.HashPassword(resetPassword.Password)).Result)
             {
                 _otpService.RemoveOtp(emailOrPhone);
-                return Ok(new {Message = "Password updated successfully."});
+                return Ok(new { Message = "Password updated successfully." });
             }
-            return StatusCode(500, new {Message= "Update password failed."});
+            return StatusCode(500, new { Message = "Update password failed." });
         }
 
         [HttpGet("authenticated")]
         [Authorize]
         public IActionResult Logout()
         {
-            return Ok(new {Message = "Authenticated endpoint"});
+            return Ok(new { Message = "Authenticated endpoint" });
         }
 
         [HttpGet("user")]
         [Authorize(Policy = "User")]
         public IActionResult GetUser()
         {
-            return Ok(new {Message = "Authenticated endpoint for User"});
+            return Ok(new { Message = "Authenticated endpoint for User" });
         }
-        
+
         [HttpGet("admin")]
         [Authorize(Policy = "Admin")]
         public IActionResult GetAdmin()
         {
-            return Ok(new {Message = "Authenticated endpoint for Admin"});
+            return Ok(new { Message = "Authenticated endpoint for Admin" });
         }
-        
+
         [HttpGet("landlord")]
         [Authorize(Policy = "Landlord")]
         public IActionResult GetLandlord()
         {
-            return Ok(new {Message = "Authenticated endpoint for Landlord"});
+            return Ok(new { Message = "Authenticated endpoint for Landlord" });
         }
-        
+
         [HttpGet("service")]
         [Authorize(Policy = "Service")]
         public IActionResult GetService()
         {
-            return Ok(new {Message = "Authenticated endpoint for Service"});
+            return Ok(new { Message = "Authenticated endpoint for Service" });
         }
     }
 }
-    

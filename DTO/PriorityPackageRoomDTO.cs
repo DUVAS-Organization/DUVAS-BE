@@ -9,8 +9,8 @@ namespace DTO
         public int UserId { get; set; }
         public int? RoomId { get; set; }
         public int CategoryPriorityPackageRoomId { get; set; }
-        public string StartDate { get; set; } = string.Empty;
-        public string EndDate { get; set; } = string.Empty;
+        public DateTime StartDate { get; set; } 
+        public DateTime EndDate { get; set; }
         public decimal Price { get; set; }
 
         public PriorityPackageRoomDTO() { }  // Constructor không tham số
@@ -21,8 +21,8 @@ namespace DTO
             UserId = package.UserId;
             RoomId = package.RoomId;
             CategoryPriorityPackageRoomId = package.CategoryPriorityPackageRoomId;
-            StartDate = package.StartDate.ToString("HH:mm - dd/MM/yyyy");
-            EndDate = package.EndDate.ToString("HH:mm - dd/MM/yyyy");
+            StartDate = package.StartDate;
+            EndDate = package.EndDate;
             Price = package.Price;
         }
     }

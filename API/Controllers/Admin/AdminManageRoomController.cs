@@ -1,10 +1,12 @@
 ﻿using API.Service;
+using BusinessObject;
 using DataAccess;
 using DTO;
 using DUVAS;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Repositories.IRepository;
 
 namespace API.Controllers.Admin
@@ -48,24 +50,25 @@ namespace API.Controllers.Admin
             Console.WriteLine($"UserId: {userId}, RoleAdmin: {user?.RoleAdmin}");
             return user?.RoleAdmin == 1;
         }
+
         [HttpGet("authorized-rooms")]
         public async Task<IActionResult> GetAuthorizedRooms()
         {
             try
             {
-                // Lấy danh sách hợp đồng ủy quyền đã hoàn thành (status = 3)
                 var contracts = _context.AuthorizationContracts
                     .Where(c => c.status == 3)
                     .Select(c => new { c.Id, c.CreatedById, c.RoomList })
                     .ToList();
 
+                var allRooms = new List<object>();
+                var allRentals = new List<object>();
+                var allContracts = new List<object>();
+
                 if (!contracts.Any())
                 {
-                    return Ok(new { rooms = new List<object>() });
+                    return Ok(new { rooms = allRooms, rentals = allRentals, contracts = allContracts });
                 }
-
-                // Danh sách phòng từ tất cả hợp đồng
-                var allRooms = new List<object>();
 
                 foreach (var contract in contracts)
                 {
@@ -76,7 +79,6 @@ namespace API.Controllers.Admin
                             .Where(id => id > 0)
                             .ToList();
 
-                        // Lấy các phòng có RoomId trong roomIds và UserId = CreatedById
                         var rooms = _context.Rooms
                             .Where(r => roomIds.Contains(r.RoomId) && r.UserId == contract.CreatedById)
                             .Select(r => new
@@ -89,20 +91,220 @@ namespace API.Controllers.Admin
                                 r.Price,
                                 r.status,
                                 r.IsPermission,
-                                r.UserId // LandlordId
+                                r.UserId,
                             })
                             .ToList();
 
                         allRooms.AddRange(rooms);
+
+                        var rentals = _context.RentalLists
+                            .Where(r => roomIds.Contains(r.RoomId) && r.RentalStatus == 1)
+                            .Join(_context.Users, // Join với bảng Users
+                                r => r.RenterID,
+                                u => u.UserId,
+                                (r, u) => new
+                                {
+                                    r.RentalId,
+                                    r.RoomId,
+                                    r.RenterID,
+                                    r.CreatedDate,
+                                    r.RentalStatus,
+                                    r.MonthForRent,
+                                    contractStatus = _context.Contracts
+                                        .Where(c => c.RentalLists.Any(rl => rl.RentalId == r.RentalId))
+                                        .Select(c => c.status)
+                                        .FirstOrDefault(),
+                                    renterName = u.Name ?? "Không có",
+                                    renterEmail = u.Gmail ?? "Không có",
+                                    renterPhone = u.Phone ?? "Không có"
+                                })
+                            .ToList();
+
+                        allRentals.AddRange(rentals);
+
+                        allContracts.Add(new
+                        {
+                            contract.Id,
+                            contract.CreatedById,
+                            RoomList = contract.RoomList
+                        });
                     }
                 }
 
-                if (!allRooms.Any())
+                return Ok(new { rooms = allRooms, rentals = allRentals, contracts = allContracts });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { rooms = new List<object>(), rentals = new List<object>(), contracts = new List<object>(), error = $"Lỗi server: {ex.Message}" });
+            }
+        }
+
+        [HttpPost("rentals/{rentalId}/confirm")]
+        public async Task<IActionResult> ConfirmReservation(int rentalId, [FromBody] ContractRequestDTO data)
+        {
+            try
+            {
+                // Validate rental existence
+                var rental = await _context.RentalLists
+                    .FirstOrDefaultAsync(r => r.RentalId == rentalId && r.RentalStatus == 1);
+
+                if (rental == null)
                 {
-                    return Ok(new { rooms = new List<object>() });
+                    return NotFound("Yêu cầu thuê không tồn tại hoặc đã được xử lý.");
                 }
 
-                return Ok(new { rooms = allRooms });
+                // Validate room existence and match
+                var room = await _context.Rooms
+                    .FirstOrDefaultAsync(r => r.RoomId == data.RoomId);
+
+                if (room == null)
+                {
+                    return NotFound("Phòng không tồn tại.");
+                }
+
+                if (rental.RoomId != data.RoomId)
+                {
+                    return BadRequest("RoomId không khớp với yêu cầu thuê.");
+                }
+
+                // Check if room is in authorized list
+                var authorizedContract = await _context.AuthorizationContracts
+                    .Where(c => c.status == 3 && c.RoomList.Contains(data.RoomId.ToString()))
+                    .FirstOrDefaultAsync();
+
+                if (authorizedContract == null)
+                {
+                    return BadRequest("Phòng này không nằm trong danh sách được ủy quyền.");
+                }
+
+                // Validate renter
+                if (rental.RenterID != data.RenterID)
+                {
+                    return BadRequest("RenterID không khớp với yêu cầu thuê.");
+                }
+
+                // Validate price (optional, if Price must match room.Price)
+                if (data.Price.HasValue && room.Price != data.Price.Value)
+                {
+                    return BadRequest("Giá không khớp với giá phòng.");
+                }
+
+                // Parse dates
+                DateTime startDate = DateTime.ParseExact(data.RentalDateTimeStart, "yyyy-MM-dd", null);
+                DateTime endDate = DateTime.ParseExact(data.RentalDateTimeEnd, "yyyy-MM-dd", null);
+
+                // Find or create contract
+                var contract = await _context.Contracts
+                    .FirstOrDefaultAsync(c => c.RentalLists.Any(rl => rl.RentalId == rentalId));
+
+                if (contract == null)
+                {
+                    contract = new Contract
+                    {
+                        RenterID = data.RenterID,
+                        RentalDateTimeStart = startDate,
+                        RentalDateTimeEnd = endDate,
+                        ContractFile = data.ContractFile,
+                        DownPayment = data.Deposit ?? 0, // Use 0 if Deposit is null
+                        status = 4 // Pending
+                    };
+                    _context.Contracts.Add(contract);
+                    await _context.SaveChangesAsync();
+
+                    // Update RentalList with ContractId
+                    rental.ContractId = contract.ContractId;
+                }
+                else
+                {
+                    contract.RentalDateTimeStart = startDate;
+                    contract.RentalDateTimeEnd = endDate;
+                    contract.ContractFile = data.ContractFile;
+                    contract.DownPayment = data.Deposit ?? 0;
+                    contract.status = 4; // Pending
+                }
+
+                // Update room status
+                room.status = 2; // Pending
+                await _context.SaveChangesAsync();
+
+                // Send notification
+                await NotificationDAO.CreateNotificationAsync(new Notification
+                {
+                    UserId = rental.RenterID,
+                    Type = "ConfirmReservation",
+                    Message = "Admin vừa xác nhận yêu cầu thuê của bạn",
+                    RedirectUrl = "/RentalList",
+                    CreatedDate = DateTime.Now,
+                    IsRead = false
+                });
+
+                return Ok("Hợp đồng đã được tạo và yêu cầu thuê đã được xác nhận.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi server: {ex.Message}");
+            }
+        }
+
+        [HttpPost("rentals/{rentalId}/cancel")]
+        public async Task<IActionResult> CancelReservation(int rentalId)
+        {
+            try
+            {
+                // Validate rental existence
+                var rental = await _context.RentalLists
+                    .FirstOrDefaultAsync(r => r.RentalId == rentalId && r.RentalStatus == 1);
+
+                if (rental == null)
+                {
+                    return NotFound("Yêu cầu thuê không tồn tại hoặc đã được xử lý.");
+                }
+
+                // Validate room existence
+                var room = await _context.Rooms
+                    .FirstOrDefaultAsync(r => r.RoomId == rental.RoomId);
+
+                if (room == null)
+                {
+                    return NotFound("Phòng không tồn tại.");
+                }
+
+                // Check if room is in authorized list
+                var authorizedContract = await _context.AuthorizationContracts
+                    .Where(c => c.status == 3 && c.RoomList.Contains(rental.RoomId.ToString()))
+                    .FirstOrDefaultAsync();
+
+                if (authorizedContract == null)
+                {
+                    return BadRequest("Phòng này không nằm trong danh sách được ủy quyền.");
+                }
+
+                // Update contract if exists
+                var contract = await _context.Contracts
+                    .FirstOrDefaultAsync(c => c.RentalLists.Any(rl => rl.RentalId == rentalId));
+
+                if (contract != null)
+                {
+                    contract.status = 2; // Canceled
+                }
+
+                // Update rental and room status
+                rental.RentalStatus = 2; // Canceled
+                room.status = 1; // Available
+                await _context.SaveChangesAsync();
+
+                // Send notification
+                await NotificationDAO.CreateNotificationAsync(new Notification
+                {
+                    UserId = rental.RenterID,
+                    Type = "CancelReservation",
+                    Message = "Admin vừa hủy yêu cầu thuê của bạn",
+                    RedirectUrl = "/RentalList",
+                    CreatedDate = DateTime.Now,
+                    IsRead = false
+                });
+
+                return Ok("Yêu cầu thuê phòng đã được hủy, phòng đã được mở lại để cho thuê.");
             }
             catch (Exception ex)
             {
