@@ -72,8 +72,8 @@ namespace API.Service
         }
 
 
-    public void SendMonthlyPaymentToUser(string userEmail, string userName, string roomName, string address, decimal price,
-                                            decimal deposit, decimal khac, DateTime ngayBatDau, DateTime ngayKetThuc)
+        public void SendMonthlyPaymentToUser(string userEmail, string userName, string roomName, string address, decimal price,
+                                                decimal deposit, decimal khac, DateTime ngayBatDau, DateTime ngayKetThuc)
         {
             var subject = "Thông báo đóng tiền thuê phòng hằng tháng";
             var body = $@"
@@ -93,6 +93,27 @@ namespace API.Service
             // Gửi email cho người dùng
             SendEmail(userEmail, subject, body);
         }
+
+        public void SendMailtoLanlord(string userEmail, DateTime thoiGian1, string hopDong)
+        {
+            var subject = "Thông báo phê duyệt yêu cầu ủy quyền";
+
+            var body = $@"
+                <p>Chúng tôi xin thông báo rằng yêu cầu ủy quyền của quý vị đã được <b>admin</b> phê duyệt.</p>
+                <p><b>Thông tin chi tiết:</b></p>
+                <ul>
+                    <li><b>Thời gian gửi yêu cầu:</b> {thoiGian1:dd/MM/yyyy HH:mm}</li>
+                    <li><b>Hợp đồng liên quan:</b> {hopDong}</li>
+                </ul>
+                <p>Quý vị vui lòng đến văn phòng của chúng tôi tại địa chỉ <b></b> trong vòng <b>5 ngày</b> kể từ hôm nay để tiến hành ký kết hợp đồng.</p>
+                <p>Nếu có bất kỳ thắc mắc nào, xin vui lòng liên hệ trực tiếp với <b>admin</b> để được hỗ trợ.</p>
+                <p>Trân trọng,</p>
+                <p>DUVAS Team</p>";
+
+            // Gửi email cho người dùng
+            SendEmail(userEmail, subject, body);
+        }
+
         public bool IsEmail(string input)
         {
             var emailPattern = @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";

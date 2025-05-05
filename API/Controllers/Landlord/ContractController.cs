@@ -213,34 +213,16 @@ namespace GITHUB_ACTIONS.Controllers
             }
         }
 
-        [HttpPost("send-mail-to-landlord")]
-        public async Task<IActionResult> SendMailToLandlord([FromBody] int userId, int contractId)
+        [HttpPost("send-email-to-landlord")]
+        public async Task<IActionResult> SendEmailToLandlord([FromBody] int userId, int contractId)
         {
             var user = await _userRepository.GetUserByIdAsync(userId);
             var contract = await _authorizationContractRepository.GetAuthorizationContractByIdAsync(contractId);
-            SendMailtoLanlord(user.Gmail, contract.CreatedAt, contract.PdfUrl);
+            _emailService.SendMailtoLanlord(user.Gmail, contract.CreatedAt, contract.PdfUrl);
             return Ok(new { Message = "Email thông báo thanh toán đã được gửi thành công" });
 
         }
 
-        public void SendMailtoLanlord(string userEmail, DateTime thoiGian1, string hopDong)
-        {
-            var subject = "Thông báo phê duyệt yêu cầu ủy quyền";
 
-            var body = $@"
-                <p>Chúng tôi xin thông báo rằng yêu cầu ủy quyền của quý vị đã được <b>admin</b> phê duyệt.</p>
-                <p><b>Thông tin chi tiết:</b></p>
-                <ul>
-                    <li><b>Thời gian gửi yêu cầu:</b> {thoiGian1:dd/MM/yyyy HH:mm}</li>
-                    <li><b>Hợp đồng liên quan:</b> {hopDong}</li>
-                </ul>
-                <p>Quý vị vui lòng đến văn phòng của chúng tôi tại địa chỉ <b></b> trong vòng <b>5 ngày</b> kể từ hôm nay để tiến hành ký kết hợp đồng.</p>
-                <p>Nếu có bất kỳ thắc mắc nào, xin vui lòng liên hệ trực tiếp với <b>admin</b> để được hỗ trợ.</p>
-                <p>Trân trọng,</p>
-                <p>DUVAS Team</p>";
-
-            // Gửi email cho người dùng
-            _emailService.SendEmail(userEmail, subject, body);
-        }
     }
 }
