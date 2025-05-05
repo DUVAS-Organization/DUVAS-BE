@@ -49,6 +49,22 @@ namespace API.Controllers
             }
         }
 
+        // Lấy PriorityPackageRoom theo ID
+        [HttpGet("user/{userId}")]
+        public async Task<ActionResult<PriorityPackageRoomDTO>> GetByUserId(int userId)
+        {
+            try
+            {
+                var room = await _repository.GetPriorityPackageRoomByUserIdAsync(userId);
+                return Ok(room);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Lỗi server nội bộ. Vui lòng thử lại sau." });
+                return NotFound(new { message = ex.Message });
+            }
+        }
+
         // Thêm mới PriorityPackageRoom
         [HttpPost]
         public async Task<ActionResult> Create([FromBody] PriorityPackageRoom package)

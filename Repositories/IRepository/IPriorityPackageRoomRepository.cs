@@ -9,6 +9,7 @@ namespace Repository
     {
         Task<List<PriorityPackageRoomDTO>> GetPriorityPackageRoomsAsync();
         Task<PriorityPackageRoomDTO> FindPriorityPackageRoomByIdAsync(int id);
+        Task<List<PriorityPackageRoomDTO>> GetPriorityPackageRoomByUserIdAsync(int userId);
         Task SavePriorityPackageRoomAsync(PriorityPackageRoom package);
         Task UpdatePriorityPackageRoomAsync(PriorityPackageRoom package);
         Task DeletePriorityPackageRoomAsync(int id);

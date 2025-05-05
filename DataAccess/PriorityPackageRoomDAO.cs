@@ -63,8 +63,8 @@ namespace DataAccess
                             UserId = p.UserId,
                             RoomId = p.RoomId,
                             CategoryPriorityPackageRoomId = p.CategoryPriorityPackageRoomId,
-                            StartDate = p.StartDate ,
-                            EndDate = p.EndDate ,
+                            StartDate = p.StartDate,
+                            EndDate = p.EndDate,
                             Price = p.Price
                         })
                         .FirstOrDefaultAsync();
@@ -75,6 +75,38 @@ namespace DataAccess
             catch (Exception ex)
             {
                 throw new Exception($"Lỗi khi tìm PriorityPackageRoom: {ex.Message}");
+            }
+        }
+        public static async Task<List<PriorityPackageRoomDTO>> GetPriorityPackageRoomByUserIdAsync(int userId)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    if (userId <= 0)
+                        throw new ArgumentException("UserId không hợp lệ.", nameof(userId));
+
+                    var packages = await context.PriorityPackageRooms
+                        .AsNoTracking()
+                        .Where(p => p.UserId == userId)
+                        .Select(p => new PriorityPackageRoomDTO
+                        {
+                            PriorityPackageRoomId = p.PriorityPackageRoomId,
+                            UserId = p.UserId,
+                            RoomId = p.RoomId,
+                            CategoryPriorityPackageRoomId = p.CategoryPriorityPackageRoomId,
+                            StartDate = p.StartDate,
+                            EndDate = p.EndDate,
+                            Price = p.Price
+                        })
+                        .ToListAsync();
+
+                    return packages;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi tìm PriorityPackageRoom theo UserId {userId}: {ex.Message}", ex);
             }
         }
 
