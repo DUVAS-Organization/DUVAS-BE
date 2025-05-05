@@ -275,5 +275,35 @@ namespace API.Controllers.Admin
             return Ok(result);
         }
 
+        [HttpGet("group-room-by-building/{userId}")]
+        public async Task<IActionResult> GetRoomIdsGroupedByBuilding(int userId)
+        {
+            var result = await _roomRepository.GetRoomIdsGroupedByBuildingAsync(userId);
+            if (result == null || result.Count == 0)
+                return NotFound("Không tìm thấy phòng nào.");
+
+            return Ok(result);
+        }
+
+        [HttpPost("search-rooms")]
+        public async Task<IActionResult> SearchRoomsByText([FromQuery] string searchTerm = null)
+        {
+            Console.WriteLine($"Received searchTerm: '{searchTerm}'");
+
+            if (string.IsNullOrWhiteSpace(searchTerm))
+            {
+                Console.WriteLine("searchTerm is null or empty, returning all rooms.");
+                var allRooms = await _roomRepository.GetRoomsAsync();
+                return Ok(allRooms);
+            }
+
+            var rooms = await _roomRepository.SearchRoomsByTermAsync(searchTerm);
+
+            if (rooms == null || !rooms.Any())
+            {
+                return Ok(new { message = "No rooms found matching your search." });
+            }
+            return Ok(new { message = "Rooms found.", rooms });
+        }
     }
 }

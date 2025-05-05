@@ -122,5 +122,14 @@ namespace Repositories
         {
             return await RoomDAO.GetRoomAuthorizationAsync(userId);
         }
+        public async Task<Dictionary<int, List<int>>> GetRoomIdsGroupedByBuildingAsync(int userId)
+        {
+            return await RoomDAO.GetRoomIdsGroupedByBuildingAsync(userId);
+        }
+        public async Task<List<RoomDTO>> SearchRoomsByTermAsync(string searchTerm)
+        {
+            return await RoomDAO.SearchRoomsByTermAsync(searchTerm); // Use the renamed method
+        }
+
     }
 }

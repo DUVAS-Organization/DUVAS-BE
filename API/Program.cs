@@ -21,7 +21,10 @@ using API.Services;
 using Utilities;
 using Microsoft.Extensions.DependencyInjection;
 using Hangfire;
-using Hangfire.SqlServer; 
+using Hangfire.SqlServer;
+using Microsoft.AspNetCore.Diagnostics; // Thêm cho UseExceptionHandler
+using Microsoft.Extensions.Logging; // Thêm cho ILogger
+using BusinessObject.Service;
 
 namespace API
 {
@@ -133,7 +136,8 @@ namespace API
             {
                 options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
             });
-
+            builder.Services.AddHttpClient();
+            builder.Services.AddScoped<SpeechToTextService>();
             // Add repositories
             builder.Services.AddScoped<IBuildingRepository, BuildingRepository>();
             builder.Services.AddScoped<ICategoryRoomRepository, CategoryRoomRepository>();
@@ -169,6 +173,7 @@ namespace API
             builder.Services.AddHostedService<CheckExpiredContractsService>();
             builder.Services.AddScoped<IAuthorizationContractRepository, AuthorizationContractRepository>();
             builder.Services.AddScoped<PdfService>();
+            builder.Services.AddScoped<EncryptionService>();
             builder.Services.Configure<AzureImageServiceOptions>(
             builder.Configuration.GetSection("AzureImageService"));
             builder.Services.AddSingleton<AzureImageService>(sp =>
@@ -213,9 +218,32 @@ namespace API
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
-
+            else
+            {
+                app.UseExceptionHandler("/Error");
+                app.UseHsts();
+            }
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+                c.RoutePrefix = "swagger";
+            });
             app.UseHttpsRedirection();
-
+            app.UseExceptionHandler(errorApp =>
+            {
+                errorApp.Run(async context =>
+                {
+                    var error = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>();
+                    if (error != null)
+                    {
+                        var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+                        logger.LogError(error.Error, "Unhandled exception occurred");
+                        context.Response.StatusCode = 500;
+                        await context.Response.WriteAsync("Internal Server Error");
+                    }
+                });
+            });
             // Sử dụng CORS trước các middleware khác
             app.UseCors("AllowReactApp");
             app.UseRouting();

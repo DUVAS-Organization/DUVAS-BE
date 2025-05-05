@@ -77,15 +77,15 @@ namespace DataAccess
         {
             try
             {
-               
+
                 using (var context = new ApplicationDbContext())
                 {
-   //                 var existing = await _context.ServiceLicenses
-   //.FirstOrDefaultAsync(l => l.UserId == serviceLicense.UserId);
-   //                 if (existing != null)
-   //                 {
-   //                     throw new Exception("Người dùng đã có yêu cầu đang chờ xử lý.");
-   //                 }
+                    //                 var existing = await _context.ServiceLicenses
+                    //.FirstOrDefaultAsync(l => l.UserId == serviceLicense.UserId);
+                    //                 if (existing != null)
+                    //                 {
+                    //                     throw new Exception("Người dùng đã có yêu cầu đang chờ xử lý.");
+                    //                 }
                     await context.ServiceLicenses.AddAsync(serviceLicense);
                     await context.SaveChangesAsync();
                 }

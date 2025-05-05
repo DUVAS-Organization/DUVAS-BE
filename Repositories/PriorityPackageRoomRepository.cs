@@ -17,6 +17,10 @@ namespace Repository
         {
             return await PriorityPackageRoomDAO.FindPriorityPackageRoomByIdAsync(id);
         }
+        public async Task<List<PriorityPackageRoomDTO>> GetPriorityPackageRoomByUserIdAsync(int userId)
+        {
+            return await PriorityPackageRoomDAO.GetPriorityPackageRoomByUserIdAsync(userId);
+        }
 
         public async Task SavePriorityPackageRoomAsync(PriorityPackageRoom package)
         {

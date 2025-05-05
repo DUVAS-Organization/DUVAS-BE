@@ -474,7 +474,7 @@ namespace API.Controllers.Landlord
             }
 
             // Schedule job to run after 3 days
-            BackgroundJob.Schedule(() => ExecuteScheduledAction(ActionDate, landlordId, money, insiderTradingId), TimeSpan.FromDays(3));
+            BackgroundJob.Schedule(() => ExecuteScheduledAction(ActionDate, landlordId, money, insiderTradingId), TimeSpan.FromHours(72));
 
             return Ok(new { Message = "Action scheduled successfully" });
         }
