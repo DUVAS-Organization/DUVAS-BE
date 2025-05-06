@@ -40,7 +40,8 @@ namespace DataAccess
                             Address = p.Address,
                             Sex = p.Sex,
                             ProfilePicture = p.ProfilePicture,
-                            Money = p.Money,
+                            EncryptedMoney = p.EncryptedMoney,
+                            MoneyIV = p.MoneyIV,
                             RoleAdmin = p.RoleAdmin,
                             RoleLandlord = p.RoleLandlord,
                             RoleService = p.RoleService,
@@ -152,7 +153,8 @@ namespace DataAccess
                             Address = p.Address,
                             Sex = p.Sex,
                             ProfilePicture = p.ProfilePicture,
-                            Money = p.Money,
+                            EncryptedMoney = p.EncryptedMoney,
+                            MoneyIV = p.MoneyIV,
                             RoleAdmin = p.RoleAdmin,
                             RoleLandlord = p.RoleLandlord,
                             RoleService = p.RoleService,
@@ -243,30 +245,39 @@ namespace DataAccess
             {
                 using (var context = new ApplicationDbContext())
                 {
-                    var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
-                    if (user == null)
+                    using (var transaction = await context.Database.BeginTransactionAsync())
                     {
-                        throw new KeyNotFoundException($"User với ID {userId} không tồn tại.");
+                        try
+                        {
+                            var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+                            if (user == null)
+                            {
+                                throw new KeyNotFoundException($"User với ID {userId} không tồn tại.");
+                            }
+
+                            // Giải mã số dư hiện tại
+                            decimal currentMoney = user.EncryptedMoney != null && user.MoneyIV != null
+                                ? EncryptionHelper.Decrypt(user.EncryptedMoney, user.MoneyIV)
+                                : 0;
+
+                            // Cập nhật số dư
+                            decimal newMoney = currentMoney + amount;
+
+                            // Mã hóa số dư mới
+                            var (encryptedMoney, iv) = EncryptionHelper.Encrypt(newMoney);
+                            user.EncryptedMoney = encryptedMoney;
+                            user.MoneyIV = iv;
+
+                            context.Users.Update(user);
+                            await context.SaveChangesAsync();
+                            await transaction.CommitAsync();
+                        }
+                        catch
+                        {
+                            await transaction.RollbackAsync();
+                            throw;
+                        }
                     }
-
-                    // Cập nhật số dư của User
-                    user.Money += amount;
-                    context.Users.Update(user);
-
-                    // Tạo lịch sử giao dịch trong bảng InsiderTrading
-                    //var transaction = new InsiderTrading
-                    //{
-                    //    UserId = userId,
-                    //    Money = amount,
-                    //    Note = amount >= 0
-                    //        ? $"User ID {userId} vừa + {amount} vào tài khoản."
-                    //        : $"User ID {userId} vừa - {Math.Abs(amount)} khỏi tài khoản.",
-                    //    Status = 0, // 0: trạng thái mặc định
-                    //    CreatedDate = DateTime.Now
-                    //};
-
-                    //await context.InsiderTradings.AddAsync(transaction);
-                    await context.SaveChangesAsync();
                 }
             }
             catch (Exception ex)
@@ -282,9 +293,13 @@ namespace DataAccess
             {
                 var user = await context.Users
                     .Where(u => u.UserId == userId)
-                    .Select(u => u.Money)
                     .FirstOrDefaultAsync();
-                return user >= amount;
+                if (user == null) return false;
+
+                decimal money = user.EncryptedMoney != null && user.MoneyIV != null
+                    ? EncryptionHelper.Decrypt(user.EncryptedMoney, user.MoneyIV)
+                    : 0;
+                return money >= amount;
             }
         }
 
@@ -418,12 +433,17 @@ namespace DataAccess
             {
                 using (var context = new ApplicationDbContext())
                 {
-                    var money = await context.Users
+                    var user = await context.Users
                         .Where(x => x.UserId == userId)
-                        .Select(x => x.Money) // Select only the Money field
-                        .SingleOrDefaultAsync();
+                        .FirstOrDefaultAsync();
+                    if (user == null)
+                    {
+                        throw new KeyNotFoundException($"User với ID {userId} không tồn tại.");
+                    }
 
-                    return money;
+                    return user.EncryptedMoney != null && user.MoneyIV != null
+                        ? EncryptionHelper.Decrypt(user.EncryptedMoney, user.MoneyIV)
+                        : 0;
                 }
             }
             catch (Exception ex)
@@ -450,7 +470,8 @@ namespace DataAccess
                             Address = p.Address,
                             Sex = p.Sex,
                             ProfilePicture = p.ProfilePicture,
-                            Money = p.Money,
+                            EncryptedMoney = p.EncryptedMoney,
+                            MoneyIV = p.MoneyIV,
                             RoleAdmin = p.RoleAdmin,
                             RoleLandlord = p.RoleLandlord,
                             RoleService = p.RoleService,
@@ -485,7 +506,8 @@ namespace DataAccess
                             Address = p.Address,
                             Sex = p.Sex,
                             ProfilePicture = p.ProfilePicture,
-                            Money = p.Money,
+                            EncryptedMoney = p.EncryptedMoney,
+                            MoneyIV = p.MoneyIV,
                             RoleAdmin = p.RoleAdmin,
                             RoleLandlord = p.RoleLandlord,
                             RoleService = p.RoleService,
@@ -507,7 +529,7 @@ namespace DataAccess
             {
                 using (var context = new ApplicationDbContext())
                 {
-                    var Landlord = await context.Users
+                    var landlords = await context.Users
                         .AsNoTracking()
                         .Where(u => u.RoleLandlord == 2)
                         .Select(p => new UserDTO
@@ -520,7 +542,8 @@ namespace DataAccess
                             Address = p.Address,
                             Sex = p.Sex,
                             ProfilePicture = p.ProfilePicture,
-                            Money = p.Money,
+                            EncryptedMoney = p.EncryptedMoney,
+                            MoneyIV = p.MoneyIV,
                             RoleAdmin = p.RoleAdmin,
                             RoleLandlord = p.RoleLandlord,
                             RoleService = p.RoleService,
@@ -528,7 +551,7 @@ namespace DataAccess
                         })
                         .ToListAsync();
 
-                    return Landlord;
+                    return landlords;
                 }
             }
             catch (Exception ex)
@@ -542,7 +565,7 @@ namespace DataAccess
             {
                 using (var context = new ApplicationDbContext())
                 {
-                    var Service = await context.Users
+                    var services = await context.Users
                         .AsNoTracking()
                         .Where(u => u.RoleService == 2)
                         .Select(p => new UserDTO
@@ -555,7 +578,8 @@ namespace DataAccess
                             Address = p.Address,
                             Sex = p.Sex,
                             ProfilePicture = p.ProfilePicture,
-                            Money = p.Money,
+                            EncryptedMoney = p.EncryptedMoney,
+                            MoneyIV = p.MoneyIV,
                             RoleAdmin = p.RoleAdmin,
                             RoleLandlord = p.RoleLandlord,
                             RoleService = p.RoleService,
@@ -563,7 +587,7 @@ namespace DataAccess
                         })
                         .ToListAsync();
 
-                    return Service;
+                    return services;
                 }
             }
             catch (Exception ex)

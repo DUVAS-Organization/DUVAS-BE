@@ -16,7 +16,8 @@ namespace DUVAS
         public string? Address { get; set; }
         public string? Sex { get; set; }
         public string ProfilePicture { get; set; }
-        public decimal Money { get; set; }
+        public byte[]? EncryptedMoney { get; set; } // Thay Money
+        public byte[]? MoneyIV { get; set; } // Lưu IV
 
         public int? RoleAdmin { get; set; }
         public int? RoleUser { get; set; }
@@ -38,8 +39,8 @@ namespace DUVAS
         public virtual ICollection<BankAccounts> BankAccounts { get; set; }
         public virtual ICollection<Notification> Notifications { get; set; }
 
-        public User(string gmail, string userName, string name, string password, string address, string sex, string profilePicture, decimal money, int? roleUser)
-        {
+        public User(string gmail, string userName, string name, string password, string address, string sex, string profilePicture, int? roleUser)
+        { 
             Gmail = gmail;
             UserName = userName;    
             Name = name;
@@ -47,14 +48,16 @@ namespace DUVAS
             Address = address;
             Sex = sex;
             ProfilePicture = profilePicture;
-            Money = money;
+            (byte[] encryptedMoney, byte[] iv) = EncryptionHelper.Encrypt(0); // Đã sửa kiểu dữ liệu
+            EncryptedMoney = encryptedMoney;
+            MoneyIV = iv;
             RoleUser = roleUser;
             RoleAdmin = 0;
             RoleLandlord = 0;
             RoleService = 0;
         }
 
-        public User(string name, string? gmail, string profilePicture, decimal money)
+        public User(string name, string? gmail, string profilePicture)
         {
             Name = name;
             Gmail = gmail;
@@ -63,7 +66,9 @@ namespace DUVAS
             RoleAdmin = 0;
             RoleLandlord = 0;
             RoleService = 0;
-            Money = money;
+            (byte[] encryptedMoney, byte[] iv) = EncryptionHelper.Encrypt(0); // Đã sửa kiểu dữ liệu
+            EncryptedMoney = encryptedMoney;
+            MoneyIV = iv;
         }
 
         public string getRoleString()

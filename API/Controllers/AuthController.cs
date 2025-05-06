@@ -88,8 +88,17 @@ namespace API.Controllers
             {
                 return BadRequest(new { Message = "Password must have at least 8 character and 1 upper case letter." });
             }
-            var user = new User(emailOrPhone, registerDto.UserName, registerDto.Name, BCrypt.Net.BCrypt.HashPassword(registerDto.Password), registerDto.Address, registerDto.Sex, "", 0, 1);
-
+            //var user = new User(emailOrPhone, registerDto.UserName, registerDto.Name, BCrypt.Net.BCrypt.HashPassword(registerDto.Password), registerDto.Address, registerDto.Sex, "", 0, 1);
+            var user = new User(
+               emailOrPhone,
+               registerDto.UserName,
+               registerDto.Name,
+               BCrypt.Net.BCrypt.HashPassword(registerDto.Password),
+               registerDto.Address,
+               registerDto.Sex,
+               "",
+               1 // roleUser set to 1 for new users
+           );
             try
             {
                 await _iuserRepository.SaveUserAsync(user);
@@ -168,7 +177,8 @@ namespace API.Controllers
 
                 if (user == null)
                 {
-                    user = new User(name, email, avatar, 0); // Role mặc định là 0
+                    //user = new User(name, email, avatar, 0); // Role mặc định là 0
+                    user = new User(name, email, avatar); // Role mặc định là 0
                     await _iuserRepository.SaveUserAsync(user);
                 }
 

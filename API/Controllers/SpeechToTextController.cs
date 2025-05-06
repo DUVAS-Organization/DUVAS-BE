@@ -46,8 +46,8 @@ namespace API.Controllers
                 content.Add(fileContent, "File", file.FileName);
 
                 // Get API key and URL from appsettings.json
-                string apiKey = _configuration["FPTAI:ApiKey"];
-                string apiUrl = _configuration["FPTAI:ApiUrl"];
+                string apiKey = _configuration["FPTAI2:ApiKey"];
+                string apiUrl = _configuration["FPTAI2:ApiUrl"];
 
                 using (var stream = file.OpenReadStream())
                 {

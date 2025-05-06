@@ -1,5 +1,6 @@
 ﻿using API.Service;
 using DTO;
+using DUVAS;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Repositories.IRepository;
@@ -335,6 +336,125 @@ namespace API.Controllers.UserAPI
             }
         }
 
+        // API 4: Lấy danh sách InsiderTrading có người gửi là chính người dùng hiện tại
+        [HttpGet("my-insider-tradings")]
+        [Authorize]
+        public async Task<IActionResult> GetMyInsiderTradings()
+        {
+            try
+            {
+                // Lấy UserId từ token của người dùng hiện tại
+                int userId = int.Parse(User.FindFirst("UserId")?.Value ?? throw new Exception("Không tìm thấy UserId trong token"));
 
+                // Lấy tất cả InsiderTrading và lọc theo Remitter
+                var insiderTradings = await _insiderTradingRepository.GetInsiderTradingsAsync();
+                var userTradings = insiderTradings.Where(it => it.Remitter == userId).ToList();
+
+                // Chuyển đổi danh sách InsiderTrading thành kết quả trả về
+                var result = userTradings.Select(it => new
+                {
+                    InsiderTradingId = it.InsiderTradingId,
+                    RoomId = it.RoomId,
+                    Money = it.Money,
+                    Note = it.Note,
+                    Type = it.Type,
+                    Status = it.Status, // 0: Chưa thanh toán, 1: Đã thanh toán
+                    CreatedDate = it.CreatedDate.ToString("dd/MM/yyyy HH:mm:ss"),
+                    ReceiverId = it.Receiver
+                }).ToList();
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi: {ex.Message}");
+            }
+        }
+
+        // API 5: Cập nhật trạng thái của một InsiderTrading
+        [HttpPut("update-insider-trading-status/{insiderTradingId}")]
+        [Authorize]
+        public async Task<IActionResult> UpdateInsiderTradingStatus(int insiderTradingId, [FromBody] UpdateInsiderTradingStatusDTO requestDTO)
+        {
+            try
+            {
+                // Lấy UserId từ token của người dùng hiện tại
+                int userId = int.Parse(User.FindFirst("UserId")?.Value ?? throw new Exception("Không tìm thấy UserId trong token"));
+
+                // Tìm InsiderTrading theo Id
+                var insiderTrading = await _insiderTradingRepository.GetInsiderTradingByIdAsync(insiderTradingId);
+                if (insiderTrading == null) return NotFound("Không tìm thấy giao dịch");
+
+                // Kiểm tra quyền: Chỉ người gửi (Remitter) có thể cập nhật trạng thái
+                if (insiderTrading.Remitter != userId)
+                    return Unauthorized("Bạn không có quyền cập nhật trạng thái giao dịch này");
+
+                // Kiểm tra trạng thái hợp lệ (0: Chưa thanh toán, 1: Đã thanh toán)
+                if (requestDTO.Status != 0 && requestDTO.Status != 1)
+                    return BadRequest("Trạng thái không hợp lệ. Chỉ chấp nhận 0 (Chưa thanh toán) hoặc 1 (Đã thanh toán)");
+
+                // Cập nhật trạng thái
+                insiderTrading.Status = requestDTO.Status;
+                await _insiderTradingRepository.UpdateInsiderTradingAsync(insiderTrading);
+
+                return Ok(new { Message = "Trạng thái giao dịch đã được cập nhật" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi: {ex.Message}");
+            }
+        }
+
+        // API 6: Lấy danh sách InsiderTrading theo RoomId
+        [HttpGet("room-insider-tradings/{roomId}")]
+        [Authorize]
+        public async Task<IActionResult> GetInsiderTradingsByRoomId(int roomId)
+        {
+            try
+            {
+                // Lấy UserId từ token của người dùng hiện tại
+                int userId = int.Parse(User.FindFirst("UserId")?.Value ?? throw new Exception("Không tìm thấy UserId trong token"));
+
+                // Kiểm tra phòng có tồn tại không
+                var room = await _roomRepository.GetRoomByIdAsync(roomId);
+                if (room == null) return NotFound("Phòng không tồn tại");
+
+                // Kiểm tra quyền: Chỉ landlord hoặc renter của phòng được truy cập
+                var rentalList = await _rentalListRepository.GetRentalListByRoomIdAsync(roomId);
+                if (room.UserId != userId && rentalList?.RenterID != userId)
+                    return Unauthorized("Bạn không có quyền xem giao dịch của phòng này");
+
+                // Lấy tất cả InsiderTrading và lọc theo RoomId
+                var insiderTradings = await _insiderTradingRepository.GetInsiderTradingsAsync();
+                var roomTradings = insiderTradings.Where(it => it.RoomId == roomId).ToList();
+
+                // Chuyển đổi danh sách InsiderTrading thành kết quả trả về
+                var result = roomTradings.Select(it => new
+                {
+                    InsiderTradingId = it.InsiderTradingId,
+                    RoomId = it.RoomId,
+                    Money = it.Money,
+                    Note = it.Note,
+                    Type = it.Type,
+                    Status = it.Status, // 0: Chưa thanh toán, 1: Đã thanh toán
+                    CreatedDate = it.CreatedDate.ToString("dd/MM/yyyy HH:mm:ss"),
+                    RemitterId = it.Remitter,
+                    ReceiverId = it.Receiver
+                }).ToList();
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi: {ex.Message}");
+            }
+        }
     }
+
+    // DTO cho yêu cầu cập nhật trạng thái InsiderTrading
+    public class UpdateInsiderTradingStatusDTO
+    {
+        public int Status { get; set; } // 0: Chưa thanh toán, 1: Đã thanh toán
+    }
+
 }

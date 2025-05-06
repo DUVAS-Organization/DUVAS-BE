@@ -348,8 +348,8 @@ namespace API.Controllers.Landlord
                 return NotFound("Người dùng không tồn tại.");
             }
 
-            // 🔹 Kiểm tra số dư
-            if (user.Money >= request.Amount)
+            bool hasEnoughBalance = await UserDAO.CheckUserBalanceAsync(request.UserId, request.Amount);
+            if (hasEnoughBalance)
             {
                 return Ok("Bạn đủ tiền.");
             }

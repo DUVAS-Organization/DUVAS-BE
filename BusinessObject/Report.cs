@@ -16,5 +16,6 @@ namespace DUVAS
         public string Image { get; set; }
         public int? Status { get; set; }
         public string? Feedback {  get; set; }
+        public DateTime CreatedTime { get; set; } // Thêm trường này
     }
 }
