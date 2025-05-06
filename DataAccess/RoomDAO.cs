@@ -707,16 +707,37 @@ namespace DataAccess
                 throw new Exception($"Lỗi khi khóa Room: {ex.Message}");
             }
         }
-        public static async Task UnLockRoomAsync(int roomId)
+
+        public static async Task UnLockRoomAsync(int roomId, int userId)
         {
             try
             {
                 using (var context = new ApplicationDbContext())
                 {
-                    var room = await context.Rooms.FirstOrDefaultAsync(u => u.RoomId == roomId);
+                    // Tìm phòng
+                    var room = await context.Rooms.FirstOrDefaultAsync(r => r.RoomId == roomId);
                     if (room == null)
                     {
-                        throw new KeyNotFoundException($"Room với ID {roomId} không tồn tại.");
+                        throw new KeyNotFoundException($"Phòng với ID {roomId} không tồn tại.");
+                    }
+
+                    // Tìm người dùng để kiểm tra RoleAdmin
+                    var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+                    if (user == null)
+                    {
+                        throw new InvalidOperationException("Người dùng không tồn tại.");
+                    }
+                    bool isAdmin = user.RoleAdmin == 1;
+
+                    // Kiểm tra trạng thái IsPermission
+                    if (room.IsPermission == 2 && !isAdmin)
+                    {
+                        throw new InvalidOperationException("Phòng bị khóa bởi Admin, bạn không thể mở khóa.");
+                    }
+
+                    if (room.IsPermission != 0 && room.IsPermission != 2)
+                    {
+                        throw new InvalidOperationException("Phòng không ở trạng thái khóa, không thể mở khóa.");
                     }
 
                     room.IsPermission = 1;
@@ -726,7 +747,7 @@ namespace DataAccess
             }
             catch (Exception ex)
             {
-                throw new Exception($"Lỗi khi mở khóa Room: {ex.Message}");
+                throw new Exception($"Lỗi khi mở khóa phòng: {ex.Message}");
             }
         }
         public static async Task AcceptReputationAsync(int roomId)

@@ -266,6 +266,141 @@ namespace DataAccess
                 throw new Exception(ex.Message);
             }
         }
+        public static async Task LockRoomAsync(int reportId)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    // Tìm báo cáo
+                    var report = await context.Reports
+                        .FirstOrDefaultAsync(r => r.ReportId == reportId);
+                    if (report == null)
+                    {
+                        throw new Exception("Báo cáo không tồn tại.");
+                    }
 
+                    // Kiểm tra trạng thái báo cáo
+                    if (report.Status != 0)
+                    {
+                        throw new Exception("Báo cáo đã được xử lý, không thể khóa phòng.");
+                    }
+
+                    report.Status = 2;
+                    context.Entry(report).State = EntityState.Modified;
+
+                    int? roomId = report.RoomId;
+                    if (!roomId.HasValue)
+                    {
+                        throw new Exception("Báo cáo không có RoomId liên kết.");
+                    }
+
+                    var room = await context.Rooms
+                        .FirstOrDefaultAsync(r => r.RoomId == roomId.Value);
+                    if (room == null)
+                    {
+                        throw new Exception("Phòng không tồn tại.");
+                    }
+                    room.IsPermission = 2;
+                    context.Entry(room).State = EntityState.Modified;
+
+                    // Gửi thông báo cho người báo cáo
+                    var userNotification = new Notification
+                    {
+                        UserId = report.UserId,
+                        Type = "RoomLocked",
+                        Message = "Phòng bạn báo cáo đã được khóa",
+                        RedirectUrl = "/Room",
+                        CreatedDate = DateTime.Now,
+                        IsRead = false
+                    };
+
+                    // Gửi thông báo cho chủ phòng
+                    var landlordNotification = new Notification
+                    {
+                        UserId = room.UserId,
+                        Type = "RoomLockedByAdmin",
+                        Message = $"Phòng ở {room.LocationDetail} của bạn đã bị Admin khóa",
+                        RedirectUrl = "/Room",
+                        CreatedDate = DateTime.Now,
+                        IsRead = false
+                    };
+
+                    await context.Notifications.AddRangeAsync(new List<Notification> { userNotification, landlordNotification });
+
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi khóa phòng: {ex.Message}");
+            }
+        }
+        public static async Task LockAccountAsync(int reportId)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var report = await context.Reports
+                        .FirstOrDefaultAsync(r => r.ReportId == reportId);
+                    if (report == null)
+                    {
+                        throw new Exception("Báo cáo không tồn tại.");
+                    }
+
+                    if (report.Status != 0)
+                    {
+                        throw new Exception("Báo cáo đã được xử lý, không thể khóa tài khoản.");
+                    }
+
+                    report.Status = 1;
+                    context.Entry(report).State = EntityState.Modified;
+
+                    int? roomId = report.RoomId;
+                    if (!roomId.HasValue)
+                    {
+                        throw new Exception("Báo cáo không có RoomId liên kết.");
+                    }
+
+                    var room = await context.Rooms
+                        .FirstOrDefaultAsync(r => r.RoomId == roomId.Value);
+                    if (room == null)
+                    {
+                        throw new Exception("Phòng không tồn tại.");
+                    }
+
+                    var landlord = await context.Users
+                        .FirstOrDefaultAsync(u => u.UserId == room.UserId);
+                    if (landlord == null)
+                    {
+                        throw new Exception("Chủ phòng không tồn tại.");
+                    }
+                    landlord.RoleUser = 0;
+                    context.Entry(landlord).State = EntityState.Modified;
+
+                    // Gửi thông báo cho người báo cáo
+                    var userNotification = new Notification
+                    {
+                        UserId = report.UserId,
+                        Type = "AccountLocked",
+                        Message = "Chủ của phòng bạn báo cáo đã bị khóa",
+                        RedirectUrl = "/",
+                        CreatedDate = DateTime.Now,
+                        IsRead = false
+                    };
+
+                    await context.Notifications.AddAsync(userNotification);
+
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi khóa tài khoản: {ex.Message}");
+            }
+        }
     }
 }
+
+

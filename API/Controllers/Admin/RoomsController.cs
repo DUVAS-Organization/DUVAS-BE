@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.OData.Routing.Controllers;
 using Microsoft.AspNetCore.OData.Query;
 using Repositories.IRepository;
 using DTO;
+using Microsoft.AspNetCore.Authorization;
 
 namespace API.Controllers.Admin
 {
@@ -183,24 +184,34 @@ namespace API.Controllers.Admin
             return NoContent();
         }
         [HttpPut("unlock/{id}")]
+        [Authorize]
         public async Task<IActionResult> UnLockRoom(int id)
         {
-            var room = await _roomRepository.GetRoomByIdAsync(id);
-            if (room == null)
-            {
-                return NotFound("Room không tồn tại.");
-            }
-
             try
             {
-                await _roomRepository.UnLockRoomAsync(id);
+                // Lấy userId từ claims
+                var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId");
+                if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+                {
+                    return BadRequest("Không tìm thấy hoặc UserId không hợp lệ.");
+                }
+
+                // Gọi phương thức mở khóa
+                await _roomRepository.UnLockRoomAsync(id, userId);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Lỗi khi khóa room: {ex.Message}");
+                return StatusCode(500, $"Lỗi khi mở khóa phòng: {ex.Message}");
             }
-
-            return NoContent();
         }
         [HttpPut("acceptReputation/{id}")]
         public async Task<IActionResult> AcceptReputationAsync(int id)

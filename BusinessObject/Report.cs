@@ -15,6 +15,10 @@ namespace DUVAS
         public string ReportContent { get; set; }
         public string Image { get; set; }
         public int? Status { get; set; }
+        // 0: Chưa xử lí
+        // 1: Khóa acc
+        // 2: khóa room
+        // 3: từ chối
         public string? Feedback {  get; set; }
         public DateTime CreatedTime { get; set; } // Thêm trường này
     }

@@ -83,7 +83,7 @@ namespace Repositories
             return await RoomDAO.GetListRoomActiveAsync();
         }
         public async Task LockRoomAsync(int roomId) => await RoomDAO.LockRoomAsync(roomId);
-        public async Task UnLockRoomAsync(int roomId) => await RoomDAO.UnLockRoomAsync(roomId);
+        public async Task UnLockRoomAsync(int roomId, int userId) => await RoomDAO.UnLockRoomAsync(roomId, userId);
         public async Task AcceptReputationAsync(int roomId) => await RoomDAO.AcceptReputationAsync(roomId);
         public async Task CancelReputationAsync(int roomId) => await RoomDAO.CancelReputationAsync(roomId);
         public async Task<RoomDTO> GetRoomContractByIdAsync(int roomId)
