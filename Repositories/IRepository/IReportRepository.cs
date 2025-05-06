@@ -21,5 +21,7 @@ namespace Repositories.IRepository
         Task<bool> HasPendingReport(int userId, int roomId);
         Task<List<ReportDTO>> GetReportsByLandlordIdAsync(int landlordId);
         Task<int> GetRoomOwnerIdAsync(int roomId);
+        Task LockRoomAsync(int reportId);
+        Task LockAccountAsync(int reportId);
     }
 }

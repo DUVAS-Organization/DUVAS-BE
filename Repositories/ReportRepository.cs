@@ -40,5 +40,7 @@ namespace Repositories
                 throw new Exception(ex.Message);
             }
         }
+        public async Task LockRoomAsync(int reportId) => await ReportDAO.LockRoomAsync(reportId);
+        public async Task LockAccountAsync(int reportId) => await ReportDAO.LockAccountAsync(reportId);
     }
 }
