@@ -77,8 +77,8 @@ namespace API.Controllers.UserAPI
             var landlordLicense = new LandlordLicense
             {
                 UserId = dto.UserId,
-                AnhCCCDMatTruoc = EncryptionHelper.Encrypt(dto.AnhCCCDMatTruoc), // Mã hóa
-                AnhCCCDMatSau = EncryptionHelper.Encrypt(dto.AnhCCCDMatSau),     // Mã hóa
+                AnhCCCDMatTruoc = EncryptionHelper2.Encrypt(dto.AnhCCCDMatTruoc), // Mã hóa
+                AnhCCCDMatSau = EncryptionHelper2.Encrypt(dto.AnhCCCDMatSau),      // Mã hóa
                 CCCD = dto.CCCD,
                 Name = dto.Name,
                 dateOfBirth = dto.dateOfBirth,
@@ -135,8 +135,8 @@ namespace API.Controllers.UserAPI
             {
                 Console.WriteLine($"Lỗi khi tạo thông báo cho admin: {ex.Message}");
             }
-            landlordLicense.AnhCCCDMatTruoc = EncryptionHelper.Decrypt(landlordLicense.AnhCCCDMatTruoc);
-            landlordLicense.AnhCCCDMatSau = EncryptionHelper.Decrypt(landlordLicense.AnhCCCDMatSau);
+            landlordLicense.AnhCCCDMatTruoc = EncryptionHelper2.Decrypt(landlordLicense.AnhCCCDMatTruoc);
+            landlordLicense.AnhCCCDMatSau = EncryptionHelper2.Decrypt(landlordLicense.AnhCCCDMatSau);
 
             return CreatedAtAction(nameof(SaveLandlordLicense), new { id = landlordLicense.LandlordLicenseId }, landlordLicense);
         }
@@ -184,8 +184,8 @@ namespace API.Controllers.UserAPI
             var serviceLicense = new ServiceLicense
             {
                 UserId = dto.UserId,
-                AnhCCCDMatTruoc = EncryptionHelper.Encrypt(dto.AnhCCCDMatTruoc), // Mã hóa
-                AnhCCCDMatSau = EncryptionHelper.Encrypt(dto.AnhCCCDMatSau),     // Mã hóa
+                AnhCCCDMatTruoc = EncryptionHelper2.Encrypt(dto.AnhCCCDMatTruoc), // Mã hóa
+                AnhCCCDMatSau = EncryptionHelper2.Encrypt(dto.AnhCCCDMatSau),     // Mã hóa
                 CCCD = dto.CCCD,
                 Name = dto.Name,
                 dateOfBirth = dto.dateOfBirth,
@@ -243,8 +243,8 @@ namespace API.Controllers.UserAPI
             {
                 Console.WriteLine($"Lỗi khi tạo thông báo cho admin: {ex.Message}");
             }
-            serviceLicense.AnhCCCDMatTruoc = EncryptionHelper.Decrypt(serviceLicense.AnhCCCDMatTruoc);
-            serviceLicense.AnhCCCDMatSau = EncryptionHelper.Decrypt(serviceLicense.AnhCCCDMatSau);
+            serviceLicense.AnhCCCDMatTruoc = EncryptionHelper2.Decrypt(serviceLicense.AnhCCCDMatTruoc);
+            serviceLicense.AnhCCCDMatSau = EncryptionHelper2.Decrypt(serviceLicense.AnhCCCDMatSau);
             return CreatedAtAction(nameof(SaveServiceLicense), new { id = serviceLicense.ServiceLicenseId }, serviceLicense);
         }
         [HttpPut("{id}/UpdateRoleLandlord")]
@@ -295,8 +295,8 @@ namespace API.Controllers.UserAPI
             var result = await _landlordLicenseRepository.GetLandlordLicensesAsync();
             foreach (var license in result)
             {
-                license.AnhCCCDMatTruoc = EncryptionHelper.Decrypt(license.AnhCCCDMatTruoc);
-                license.AnhCCCDMatSau = EncryptionHelper.Decrypt(license.AnhCCCDMatSau);
+                license.AnhCCCDMatTruoc = EncryptionHelper2.Decrypt(license.AnhCCCDMatTruoc);
+                license.AnhCCCDMatSau = EncryptionHelper2.Decrypt(license.AnhCCCDMatSau);
             }
             return Ok(result);
         }
@@ -308,8 +308,8 @@ namespace API.Controllers.UserAPI
             if (result == null)
                 return NotFound("License not found.");
 
-            result.AnhCCCDMatTruoc = EncryptionHelper.Decrypt(result.AnhCCCDMatTruoc);
-            result.AnhCCCDMatSau = EncryptionHelper.Decrypt(result.AnhCCCDMatSau);
+            result.AnhCCCDMatTruoc = EncryptionHelper2.Decrypt(result.AnhCCCDMatTruoc);
+            result.AnhCCCDMatSau = EncryptionHelper2.Decrypt(result.AnhCCCDMatSau);
             return Ok(result);
         }
 
@@ -319,13 +319,13 @@ namespace API.Controllers.UserAPI
             if (license == null)
                 return BadRequest("Invalid data.");
 
-            license.AnhCCCDMatTruoc = EncryptionHelper.Encrypt(license.AnhCCCDMatTruoc);
-            license.AnhCCCDMatSau = EncryptionHelper.Encrypt(license.AnhCCCDMatSau);
+            license.AnhCCCDMatTruoc = EncryptionHelper2.Encrypt(license.AnhCCCDMatTruoc);
+            license.AnhCCCDMatSau = EncryptionHelper2.Encrypt(license.AnhCCCDMatSau);
 
             await _landlordLicenseRepository.SaveLandlordLicenseAsync(license);
 
-            license.AnhCCCDMatTruoc = EncryptionHelper.Decrypt(license.AnhCCCDMatTruoc);
-            license.AnhCCCDMatSau = EncryptionHelper.Decrypt(license.AnhCCCDMatSau);
+            license.AnhCCCDMatTruoc = EncryptionHelper2.Decrypt(license.AnhCCCDMatTruoc);
+            license.AnhCCCDMatSau = EncryptionHelper2.Decrypt(license.AnhCCCDMatSau);
 
             return StatusCode(201, "License created successfully.");
         }
@@ -335,8 +335,8 @@ namespace API.Controllers.UserAPI
         {
             if (id != license.LandlordLicenseId)
                 return BadRequest("ID mismatch.");
-            license.AnhCCCDMatTruoc = EncryptionHelper.Encrypt(license.AnhCCCDMatTruoc);
-            license.AnhCCCDMatSau = EncryptionHelper.Encrypt(license.AnhCCCDMatSau);
+            license.AnhCCCDMatTruoc = EncryptionHelper2.Encrypt(license.AnhCCCDMatTruoc);
+            license.AnhCCCDMatSau = EncryptionHelper2.Encrypt(license.AnhCCCDMatSau);
             await _landlordLicenseRepository.UpdateLandlordLicenseAsync(license);
             return NoContent();
         }
@@ -359,8 +359,8 @@ namespace API.Controllers.UserAPI
             var result = await _serviceLicenseRepository.GetServiceLicensesAsync();
             foreach (var license in result)
             {
-                license.AnhCCCDMatTruoc = EncryptionHelper.Decrypt(license.AnhCCCDMatTruoc);
-                license.AnhCCCDMatSau = EncryptionHelper.Decrypt(license.AnhCCCDMatSau);
+                license.AnhCCCDMatTruoc = EncryptionHelper2.Decrypt(license.AnhCCCDMatTruoc);
+                license.AnhCCCDMatSau = EncryptionHelper2.Decrypt(license.AnhCCCDMatSau);
             }
             return Ok(result);
         }
@@ -371,8 +371,8 @@ namespace API.Controllers.UserAPI
             var result = await _serviceLicenseRepository.GetServiceLicenseByIdAsync(id);
             if (result == null)
                 return NotFound("Service License not found.");
-            result.AnhCCCDMatTruoc = EncryptionHelper.Decrypt(result.AnhCCCDMatTruoc);
-            result.AnhCCCDMatSau = EncryptionHelper.Decrypt(result.AnhCCCDMatSau);
+            result.AnhCCCDMatTruoc = EncryptionHelper2.Decrypt(result.AnhCCCDMatTruoc);
+            result.AnhCCCDMatSau = EncryptionHelper2.Decrypt(result.AnhCCCDMatSau);
             return Ok(result);
         }
 
@@ -381,11 +381,11 @@ namespace API.Controllers.UserAPI
         {
             if (license == null)
                 return BadRequest("Invalid data.");
-            license.AnhCCCDMatTruoc = EncryptionHelper.Encrypt(license.AnhCCCDMatTruoc);
-            license.AnhCCCDMatSau = EncryptionHelper.Encrypt(license.AnhCCCDMatSau);
+            license.AnhCCCDMatTruoc = EncryptionHelper2.Encrypt(license.AnhCCCDMatTruoc);
+            license.AnhCCCDMatSau = EncryptionHelper2.Encrypt(license.AnhCCCDMatSau);
             await _serviceLicenseRepository.SaveServiceLicenseAsync(license);
-            license.AnhCCCDMatTruoc = EncryptionHelper.Decrypt(license.AnhCCCDMatTruoc);
-            license.AnhCCCDMatSau = EncryptionHelper.Decrypt(license.AnhCCCDMatSau);
+            license.AnhCCCDMatTruoc = EncryptionHelper2.Decrypt(license.AnhCCCDMatTruoc);
+            license.AnhCCCDMatSau = EncryptionHelper2.Decrypt(license.AnhCCCDMatSau);
             return StatusCode(201, "Service License created successfully.");
         }
 
@@ -394,8 +394,8 @@ namespace API.Controllers.UserAPI
         {
             if (id != license.ServiceLicenseId)
                 return BadRequest("ID mismatch.");
-            license.AnhCCCDMatTruoc = EncryptionHelper.Encrypt(license.AnhCCCDMatTruoc);
-            license.AnhCCCDMatSau = EncryptionHelper.Encrypt(license.AnhCCCDMatSau);
+            license.AnhCCCDMatTruoc = EncryptionHelper2.Encrypt(license.AnhCCCDMatTruoc);
+            license.AnhCCCDMatSau = EncryptionHelper2.Encrypt(license.AnhCCCDMatSau);
             await _serviceLicenseRepository.UpdateServiceLicenseAsync(license);
             return NoContent();
         }

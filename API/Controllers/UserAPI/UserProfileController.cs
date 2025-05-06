@@ -61,11 +61,32 @@ namespace API.Controllers.UserAPI
                 {
                     return NotFound(new { Message = "User không tồn tại." });
                 }
-                return Ok(user);
+
+                // Map to DTO with encrypted money fields
+                var userDto = new UserDTO
+                {
+                    UserId = user.UserId,
+                    UserName = user.UserName,
+                    Name = user.Name,
+                    Gmail = user.Gmail,
+                    Phone = user.Phone,
+                    Address = user.Address,
+                    Sex = user.Sex,
+                    ProfilePicture = user.ProfilePicture,
+                    EncryptedMoney = user.EncryptedMoney,
+                    MoneyIV = user.MoneyIV,
+                    RoleAdmin = user.RoleAdmin,
+                    RoleLandlord = user.RoleLandlord,
+                    RoleService = user.RoleService,
+                    RoleUser = user.RoleUser
+                };
+
+                return Ok(userDto);
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "Lỗi khi lấy thông tin người dùng.", Details = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    new { Message = "Lỗi khi lấy thông tin người dùng.", Details = ex.Message });
             }
         }
 

@@ -1,4 +1,5 @@
-﻿using DTO;
+﻿using DataAccess;
+using DTO;
 using DUVAS;
 using System;
 using System.Collections.Generic;
@@ -15,5 +16,10 @@ namespace Repositories.IRepository
         Task DeleteReportAsync(Report b);
         Task UpdateReportAsync(Report b);
         Task<List<ReportDTO>> GetReportsAsync();
+        Task<List<ReportDTO>> GetReportsByUserIdAsync(int userId);
+        public async Task<List<ReportDTO>> GetPendingReportsByUserAndRoomAsync(int userId, int? roomId) => await ReportDAO.GetPendingReportsByUserAndRoomAsync(userId, roomId);
+        Task<bool> HasPendingReport(int userId, int roomId);
+        Task<List<ReportDTO>> GetReportsByLandlordIdAsync(int landlordId);
+        Task<int> GetRoomOwnerIdAsync(int roomId);
     }
 }

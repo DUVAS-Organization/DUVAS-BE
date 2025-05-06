@@ -162,7 +162,7 @@ namespace BusinessObject.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("RoomId")
+                    b.Property<int?>("RoomId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("StartDate")
@@ -591,6 +591,9 @@ namespace BusinessObject.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ReportId"));
 
+                    b.Property<DateTime>("CreatedTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Feedback")
                         .HasColumnType("nvarchar(max)");
 
@@ -987,11 +990,14 @@ namespace BusinessObject.Migrations
                     b.Property<string>("Address")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<byte[]>("EncryptedMoney")
+                        .HasColumnType("varbinary(max)");
+
                     b.Property<string>("Gmail")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal>("Money")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<byte[]>("MoneyIV")
+                        .HasColumnType("varbinary(max)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -1159,8 +1165,7 @@ namespace BusinessObject.Migrations
                     b.HasOne("DUVAS.Room", "Room")
                         .WithMany("PriorityPackageRooms")
                         .HasForeignKey("RoomId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("DUVAS.User", "User")
                         .WithMany("PriorityPackageRooms")

@@ -19,7 +19,22 @@ namespace DTO
         public string? Address { get; set; }
         public string? Sex { get; set; }
         public string? ProfilePicture { get; set; }
-        public decimal? Money { get; set; }
+        //Encrypted money fields
+        public byte[]? EncryptedMoney { get; set; }
+        public byte[]? MoneyIV { get; set; }
+
+        // Money property that handles decryption
+        public decimal Money
+        {
+            get
+            {
+                if (EncryptedMoney != null && MoneyIV != null)
+                {
+                    return DUVAS.EncryptionHelper.Decrypt(EncryptedMoney, MoneyIV);
+                }
+                return 0;
+            }
+        }
 
         public int? RoleAdmin { get; set; }
         public int? RoleUser { get; set; }

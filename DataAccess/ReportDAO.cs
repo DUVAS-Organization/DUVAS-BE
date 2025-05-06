@@ -20,12 +20,11 @@ namespace DataAccess
         }
         public static async Task<List<ReportDTO>> GetReportsAsync()
         {
-
             try
             {
                 using (var context = new ApplicationDbContext())
                 {
-                    var buildings = await context.Reports
+                    var reports = await context.Reports
                         .AsNoTracking()
                         .Select(p => new ReportDTO
                         {
@@ -34,23 +33,19 @@ namespace DataAccess
                             RoomId = p.RoomId,
                             ReportContent = p.ReportContent,
                             Image = p.Image,
-
-                            //CategoryName = p.Category.CategoryName,
-                            //CategoryId = p.CategoryId,                            
-
+                            Status = p.Status,
+                            Feedback = p.Feedback,
+                            CreatedTime = p.CreatedTime // Thêm dòng này
                         })
                         .ToListAsync();
 
-
-                    return buildings;
+                    return reports;
                 }
-
             }
             catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
-
         }
 
         public static async Task<Report> FindReportByIdAsync(int reportId)
@@ -127,6 +122,143 @@ namespace DataAccess
                         context.Reports.Remove(existingReport);
                         await context.SaveChangesAsync();
                     }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public static async Task<List<ReportDTO>> GetReportsByUserIdAsync(int userId)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var reports = await context.Reports
+                        .AsNoTracking()
+                        .Where(r => r.UserId == userId)
+                        .Select(p => new ReportDTO
+                        {
+                            ReportId = p.ReportId,
+                            UserId = p.UserId,
+                            RoomId = p.RoomId,
+                            ReportContent = p.ReportContent,
+                            Image = p.Image,
+                            Status = p.Status,
+                            Feedback = p.Feedback,
+                            CreatedTime = p.CreatedTime
+                        })
+                        .ToListAsync();
+
+                    return reports;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public static async Task<List<ReportDTO>> GetPendingReportsByUserAndRoomAsync(int userId, int? roomId)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var reports = await context.Reports
+                        .AsNoTracking()
+                        .Where(r => r.UserId == userId &&
+                                   r.RoomId == roomId &&
+                                   r.Status == 0) // Chỉ lấy các report chưa xử lý
+                        .Select(p => new ReportDTO
+                        {
+                            ReportId = p.ReportId,
+                            UserId = p.UserId,
+                            RoomId = p.RoomId,
+                            ReportContent = p.ReportContent,
+                            Image = p.Image,
+                            Status = p.Status,
+                            Feedback = p.Feedback,
+                            CreatedTime = p.CreatedTime
+                        })
+                        .ToListAsync();
+
+                    return reports;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public static async Task<bool> HasPendingReport(int userId, int roomId)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    return await context.Reports
+                        .AnyAsync(r => r.UserId == userId &&
+                                     r.RoomId == roomId &&
+                                     r.Status == 0);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public static async Task<List<ReportDTO>> GetReportsByLandlordIdAsync(int landlordId)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var reports = await context.Reports
+                        .AsNoTracking()
+                        .Join(context.Rooms,
+                            report => report.RoomId,
+                            room => room.RoomId,
+                            (report, room) => new { Report = report, Room = room })
+                        .Where(joined => joined.Room.UserId == landlordId)
+                        .Select(joined => new ReportDTO
+                        {
+                            ReportId = joined.Report.ReportId,
+                            UserId = joined.Report.UserId,
+                            RoomId = joined.Report.RoomId,
+                            RoomTitle = joined.Room.Title, // Thêm trường RoomTitle
+                            ReportContent = joined.Report.ReportContent,
+                            Image = joined.Report.Image,
+                            Status = joined.Report.Status,
+                            Feedback = joined.Report.Feedback,
+                            CreatedTime = joined.Report.CreatedTime // Thêm CreatedTime nếu chưa có
+                        })
+                        .ToListAsync();
+
+                    return reports;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public static async Task<int> GetRoomOwnerIdAsync(int roomId)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var room = await context.Rooms
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(r => r.RoomId == roomId);
+
+                    return room?.UserId ?? 0;
                 }
             }
             catch (Exception ex)

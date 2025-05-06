@@ -10,6 +10,7 @@ using API.Service;
 using Repositories.IRepository;
 using DUVAS;
 using DataAccess;
+using Repositories;
 
 namespace GITHUB_ACTIONS.Controllers
 {
@@ -22,17 +23,23 @@ namespace GITHUB_ACTIONS.Controllers
         private readonly PdfService _pdfService;
         private readonly CloudinaryService _cloudinaryService;
         private readonly IRoomRepository _roomRepository;
+        private readonly EmailService _emailService;
+        private readonly IUserRepository _userRepository;
 
         public ContractController(
             IAuthorizationContractRepository authorizationContractRepository,
             PdfService pdfService,
             CloudinaryService cloudinaryService,
-            IRoomRepository roomRepository)
+            IRoomRepository roomRepository,
+            EmailService emailService,
+            IUserRepository userRepository)
         {
             _authorizationContractRepository = authorizationContractRepository;
             _pdfService = pdfService;
             _cloudinaryService = cloudinaryService;
             _roomRepository = roomRepository;
+            _emailService = emailService;
+            _userRepository = userRepository;
         }
 
         [HttpPost("generate-authorization")]
@@ -206,5 +213,16 @@ namespace GITHUB_ACTIONS.Controllers
                 return StatusCode(500, new { Message = $"Lỗi khi cập nhật status: {ex.Message}" });
             }
         }
+        
+        [HttpPost("send-email-to-landlord")]
+        public async Task<IActionResult> SendEmailToLandlord([FromBody] int userId, int contractId)
+        {
+            var user = await _userRepository.GetUserByIdAsync(userId);
+            var contract = await _authorizationContractRepository.GetAuthorizationContractByIdAsync(contractId);
+            _emailService.SendMailtoLanlord(user.Gmail, contract.CreatedAt, contract.PdfUrl);
+            return Ok(new { Message = "Email thông báo thanh toán đã được gửi thành công" });
+
+        }
     }
+
 }

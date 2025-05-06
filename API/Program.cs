@@ -23,8 +23,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Hangfire;
 using Hangfire.SqlServer;
 using Microsoft.AspNetCore.Diagnostics; // Thêm cho UseExceptionHandler
-using Microsoft.Extensions.Logging; // Thêm cho ILogger
-using BusinessObject.Service;
+using Microsoft.Extensions.Logging;
+using API.Utils;
+using BusinessObject.Service; // Thêm cho ILogger
 
 namespace API
 {
@@ -33,7 +34,7 @@ namespace API
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
+            EncryptionHelper.Initialize(builder.Configuration);
             // Add STMP settings
             builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
             builder.Services.AddTransient<EmailService>();
