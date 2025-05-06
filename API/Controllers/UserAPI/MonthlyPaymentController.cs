@@ -204,6 +204,13 @@ namespace API.Controllers.UserAPI
                 var khac = (room.Dien ?? 0) + (room.Nuoc ?? 0) + (room.Internet ?? 0) +
                           (room.Rac ?? 0) + (room.GuiXe ?? 0) + (room.QuanLy ?? 0) + (room.ChiPhiKhac ?? 0);
 
+                var insiderTradingsList = await _insiderTradingRepository.GetInsiderTradingsAsync();
+                var roomTradings = insiderTradingsList.Where(it => it.RoomId == roomId).ToList();
+                var latestRoomTrading = insiderTradings
+                    .Where(it => it.Status == 0)
+                    .OrderByDescending(it => it.CreatedDate)
+                    .FirstOrDefault();
+
                 // Trả về thông tin chi tiết của phòng
                 return Ok(new
                 {
@@ -212,7 +219,7 @@ namespace API.Controllers.UserAPI
                     LocationDetail = room.LocationDetail,
                     Price = room.Price,
                     Deposit = room.Deposit ?? 0,
-                    AdditionalCosts = khac,
+                    AdditionalCosts = latestRoomTrading.Money - room.Price,
                     IsPaidThisMonth = isPaid,
                     PaymentDueDate = paymentDueDate.ToString("dd/MM/yyyy"),//ngày đến hạn thanh toán
                     ContractStart = contract?.RentalDateTimeStart.ToString("dd/MM/yyyy"),
@@ -226,7 +233,6 @@ namespace API.Controllers.UserAPI
                 return StatusCode(500, $"Lỗi: {ex.Message}"); // Trả về lỗi nếu có exception
             }
         }
-
         // API 3: Tạo yêu cầu thanh toán tiền phòng hàng tháng
         [HttpPost("request-payment/{roomId}")]
         public async Task<IActionResult> RequestMonthlyPayment(int roomId, [FromBody] MonthlyPaymontRequestDTO requestDTO)
@@ -257,7 +263,7 @@ namespace API.Controllers.UserAPI
                 if (renter == null) return BadRequest("Không tìm thấy người thuê");
 
                 var currentDate = DateTime.Now; // Lấy ngày hiện tại
-                // Tính ngày đến hạn thanh toán của tháng hiện tại
+                                                // Tính ngày đến hạn thanh toán của tháng hiện tại
                 var paymentDueDate = new DateTime(currentDate.Year, currentDate.Month, contract.RentalDateTimeStart.Day);
                 if (currentDate < paymentDueDate) paymentDueDate = paymentDueDate.AddMonths(-1);
 
@@ -274,13 +280,21 @@ namespace API.Controllers.UserAPI
                 }
 
                 // Tính chi phí khác dựa trên dữ liệu sử dụng từ requestDTO
-                var khac = ((room.Dien ?? 0) * (requestDTO.Dien ?? 0)) +
-                           ((room.Nuoc ?? 0) * (requestDTO.Nuoc ?? 0)) +
-                           ((room.Internet ?? 0) * (requestDTO.Internet ?? 0)) +
-                           ((room.Rac ?? 0) * (requestDTO.Rac ?? 0)) +
-                           ((room.GuiXe ?? 0) * (requestDTO.GuiXe ?? 0)) +
-                           ((room.QuanLy ?? 0) * (requestDTO.QuanLy ?? 0)) +
-                           ((room.ChiPhiKhac ?? 0) * (requestDTO.ChiPhiKhac ?? 0));
+                decimal CalcChiPhi(decimal? unitPrice, decimal? quantity)
+                {
+                    return (unitPrice == 0) ? (quantity ?? 0) : ((unitPrice ?? 0) * (quantity ?? 0));
+                }
+
+                decimal dien = CalcChiPhi(room.Dien, requestDTO.Dien);
+                decimal nuoc = CalcChiPhi(room.Nuoc, requestDTO.Nuoc);
+                decimal internet = CalcChiPhi(room.Internet, requestDTO.Internet);
+                decimal rac = CalcChiPhi(room.Rac, requestDTO.Rac);
+                decimal guixe = CalcChiPhi(room.GuiXe, requestDTO.GuiXe);
+                decimal quanly = CalcChiPhi(room.QuanLy, requestDTO.QuanLy);
+                decimal khac = CalcChiPhi(room.ChiPhiKhac, requestDTO.ChiPhiKhac);
+
+                decimal TongChiPhiKhac = dien + nuoc + internet + rac + guixe + quanly + khac;
+
                 decimal deposit = 0; // Không sử dụng deposit trong thanh toán tháng
 
                 // Tạo DTO để gửi email thông báo
@@ -294,7 +308,7 @@ namespace API.Controllers.UserAPI
                     deposit = deposit,
                     ngayBatDau = contract.RentalDateTimeStart,
                     ngayKetThuc = contract.RentalDateTimeEnd,
-                    khac = khac
+                    khac = TongChiPhiKhac
                 };
 
                 // Tạo yêu cầu thanh toán trong InsiderTrading
@@ -302,8 +316,10 @@ namespace API.Controllers.UserAPI
                 {
                     Remitter = rentalList.RenterID, // Người gửi (renter)
                     Receiver = room.UserId, // Người nhận (landlord)
-                    Money = room.Price + khac, // Tổng tiền cần thanh toán
-                    Note = $"Yêu cầu thanh toán tiền phòng tháng {paymentDueDate:MM/yyyy}",
+                    Money = room.Price + TongChiPhiKhac, // Tổng tiền cần thanh toán
+                    Note = $"Yêu cầu thanh toán tiền phòng tháng {paymentDueDate:MM/yyyy} " +
+$"bao gồm: Tiền phòng: {room.Price}; Tiền điện: {dien};Tiền nước: {nuoc};Tiền internet: {internet};Tiền rác: {rac}; " +
+$"Tiền gửi xe: {guixe};Phí quản lý: {quanly};Chi phí khác: {khac}",
                     RoomId = roomId,
                     Status = 0, // Chưa thanh toán
                     Type = "MonthlyPayment",
@@ -412,22 +428,21 @@ namespace API.Controllers.UserAPI
         {
             try
             {
-                // Lấy UserId từ token của người dùng hiện tại
-                int userId = int.Parse(User.FindFirst("UserId")?.Value ?? throw new Exception("Không tìm thấy UserId trong token"));
+                //// Lấy UserId từ token của người dùng hiện tại
+                //int userId = int.Parse(User.FindFirst("UserId")?.Value ?? throw new Exception("Không tìm thấy UserId trong token"));
 
-                // Kiểm tra phòng có tồn tại không
-                var room = await _roomRepository.GetRoomByIdAsync(roomId);
-                if (room == null) return NotFound("Phòng không tồn tại");
+                //// Kiểm tra phòng có tồn tại không
+                //var room = await _roomRepository.GetRoomByIdAsync(roomId);
+                //if (room == null) return NotFound("Phòng không tồn tại");
 
-                // Kiểm tra quyền: Chỉ landlord hoặc renter của phòng được truy cập
-                var rentalList = await _rentalListRepository.GetRentalListByRoomIdAsync(roomId);
-                if (room.UserId != userId && rentalList?.RenterID != userId)
-                    return Unauthorized("Bạn không có quyền xem giao dịch của phòng này");
+                //// Kiểm tra quyền: Chỉ landlord hoặc renter của phòng được truy cập
+                //var rentalList = await _rentalListRepository.GetRentalListByRoomIdAsync(roomId);
+                //if (room.UserId != userId && rentalList?.RenterID != userId)
+                //    return Unauthorized("Bạn không có quyền xem giao dịch của phòng này");
 
                 // Lấy tất cả InsiderTrading và lọc theo RoomId
                 var insiderTradings = await _insiderTradingRepository.GetInsiderTradingsAsync();
-                var roomTradings = insiderTradings.Where(it => it.RoomId == roomId).ToList();
-
+                var roomTradings = insiderTradings.Where(it => it.RoomId == roomId & it.Type == "MonthlyPayment").ToList();
                 // Chuyển đổi danh sách InsiderTrading thành kết quả trả về
                 var result = roomTradings.Select(it => new
                 {
