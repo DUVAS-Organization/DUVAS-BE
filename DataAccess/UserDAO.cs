@@ -4,6 +4,9 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Numerics;
+using System.Text;
 using System.Threading.Tasks;
 using BusinessObject.Enums;
 using BusinessObject;
@@ -18,9 +21,9 @@ namespace DataAccess
         {
             _context = context;
         }
-
         public static async Task<List<UserDTO>> GetUsersAsync()
         {
+
             try
             {
                 using (var context = new ApplicationDbContext())
@@ -42,18 +45,24 @@ namespace DataAccess
                             RoleAdmin = p.RoleAdmin,
                             RoleLandlord = p.RoleLandlord,
                             RoleService = p.RoleService,
-                            RoleUser = p.RoleUser
+                            RoleUser = p.RoleUser,
+                            //CategoryName = p.Category.CategoryName,
+                            //CategoryId = p.CategoryId,                            
+
                         })
                         .ToListAsync();
+
+
                     return users;
                 }
+
             }
             catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
-        }
 
+        }
         public static async Task<User> FindUserByIdAsync(int userId)
         {
             using (var context = new ApplicationDbContext())
@@ -115,7 +124,6 @@ namespace DataAccess
                 throw new Exception(ex.Message);
             }
         }
-
         public static async Task<List<UserDTO>> SearchUsersAsync(string searchTerm)
         {
             if (string.IsNullOrWhiteSpace(searchTerm))
@@ -127,12 +135,14 @@ namespace DataAccess
             {
                 using (var context = new ApplicationDbContext())
                 {
+
                     bool isNumeric = int.TryParse(searchTerm, out int numericValue);
 
-                    var users = await context.Users
+                    var user = await context.Users
                         .AsNoTracking()
                         .Where(p => p.UserName.ToLower().Contains(searchTerm.ToLower().Trim())
-                                || p.Gmail.ToLower().Contains(searchTerm.ToLower().Trim()))
+                                || p.Gmail.ToLower().Contains(searchTerm.ToLower().Trim())
+                                )
                         .Select(p => new UserDTO
                         {
                             UserId = p.UserId,
@@ -148,10 +158,14 @@ namespace DataAccess
                             RoleAdmin = p.RoleAdmin,
                             RoleLandlord = p.RoleLandlord,
                             RoleService = p.RoleService,
-                            RoleUser = p.RoleUser
+                            RoleUser = p.RoleUser,
+                            //CategoryName = p.Category.CategoryName,
+                            //CategoryId = p.CategoryId,
+                            //Price = p.Price,
                         })
                         .ToListAsync();
-                    return users;
+
+                    return user;
                 }
             }
             catch (Exception ex)
@@ -196,6 +210,7 @@ namespace DataAccess
                         .SingleOrDefaultAsync(u =>
                             (u.Gmail != null && u.Gmail.ToLower() == emailOrPhone.ToLower()) ||
                             (u.Phone != null && u.Phone == emailOrPhone));
+
                     return user;
                 }
             }
@@ -205,7 +220,6 @@ namespace DataAccess
                 return null;
             }
         }
-
         public static async Task<User?> FindUserByUsername(string username)
         {
             try
@@ -215,6 +229,7 @@ namespace DataAccess
                     var user = await context.Users
                         .AsNoTracking()
                         .SingleOrDefaultAsync(u => u.UserName.ToLower() == username.ToLower());
+
                     return user;
                 }
             }
@@ -224,7 +239,6 @@ namespace DataAccess
                 return null;
             }
         }
-
         public static async Task UpdateUserMoneyAsync(int userId, decimal amount)
         {
             try
@@ -272,6 +286,7 @@ namespace DataAccess
             }
         }
 
+        // kiểm tra tiền xem đủ không
         public static async Task<bool> CheckUserBalanceAsync(int userId, decimal amount)
         {
             using (var context = new ApplicationDbContext())
@@ -309,6 +324,7 @@ namespace DataAccess
             return bankAccounts;
         }
 
+
         public async Task<BankAccounts> GetUserBankAccountByIdAndUserIdAsync(int userId, int bankAccountId)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
@@ -329,6 +345,8 @@ namespace DataAccess
             return bankAccount;
         }
 
+
+
         public async Task<BankAccounts> CreateNewUserBankAccount(int userId, BankAccountsDTO bankAccountDto)
         {
             var newBankAccount = new BankAccounts
@@ -342,7 +360,7 @@ namespace DataAccess
 
             _context.BankAccounts.Add(newBankAccount);
             await _context.SaveChangesAsync();
-
+            // ✅ Tạo thông báo khi thêm tài khoản ngân hàng
             var notification = new Notification
             {
                 UserId = userId,
@@ -354,13 +372,14 @@ namespace DataAccess
             };
             await NotificationDAO.CreateNotificationAsync(notification);
 
+
             return newBankAccount;
         }
-
         public async Task<bool> CheckBankAccountExistsAsync(string accountNumber, string bankCode)
         {
             try
             {
+                // Kiểm tra xem có bất kỳ bản ghi nào có cùng AccountNumber và BankCode hay không
                 return await _context.BankAccounts
                     .AnyAsync(b => b.AccountNumber == accountNumber && b.BankCode == bankCode);
             }
@@ -370,7 +389,6 @@ namespace DataAccess
                 throw;
             }
         }
-
         public async Task<bool> UpdateBankAccountStatus(int userId, int bankAccountId, bool active)
         {
             try
@@ -388,6 +406,7 @@ namespace DataAccess
                 _context.BankAccounts.Update(bankAccount);
                 await _context.SaveChangesAsync();
 
+                // ✅ Tạo thông báo
                 var statusText = active ? "kích hoạt" : "vô hiệu hóa";
                 var notification = new Notification
                 {
@@ -432,7 +451,6 @@ namespace DataAccess
                 throw new Exception("Error fetching user money: " + ex.Message);
             }
         }
-
         public static async Task<List<UserDTO>> GetListUserLockAsync()
         {
             try
@@ -457,9 +475,10 @@ namespace DataAccess
                             RoleAdmin = p.RoleAdmin,
                             RoleLandlord = p.RoleLandlord,
                             RoleService = p.RoleService,
-                            RoleUser = p.RoleUser
+                            RoleUser = p.RoleUser,
                         })
                         .ToListAsync();
+
                     return lockedUsers;
                 }
             }
@@ -468,7 +487,6 @@ namespace DataAccess
                 throw new Exception($"Lỗi khi lấy danh sách User bị khóa: {ex.Message}");
             }
         }
-
         public static async Task<List<UserDTO>> GetListUserActiveAsync()
         {
             try
@@ -493,18 +511,18 @@ namespace DataAccess
                             RoleAdmin = p.RoleAdmin,
                             RoleLandlord = p.RoleLandlord,
                             RoleService = p.RoleService,
-                            RoleUser = p.RoleUser
+                            RoleUser = p.RoleUser,
                         })
                         .ToListAsync();
+
                     return activeUsers;
                 }
             }
             catch (Exception ex)
             {
-                throw new Exception($"Lỗi khi lấy danh sách User active: {ex.Message}");
+                throw new Exception($"Lỗi khi lấy danh sách User activeUsers: {ex.Message}");
             }
         }
-
         public static async Task<List<UserDTO>> GetListUpRoleLandLord()
         {
             try
@@ -529,9 +547,10 @@ namespace DataAccess
                             RoleAdmin = p.RoleAdmin,
                             RoleLandlord = p.RoleLandlord,
                             RoleService = p.RoleService,
-                            RoleUser = p.RoleUser
+                            RoleUser = p.RoleUser,
                         })
                         .ToListAsync();
+
                     return landlords;
                 }
             }
@@ -540,7 +559,6 @@ namespace DataAccess
                 throw new Exception($"Lỗi khi lấy danh sách UpRole LandLord: {ex.Message}");
             }
         }
-
         public static async Task<List<UserDTO>> GetListUpRoleService()
         {
             try
@@ -565,9 +583,10 @@ namespace DataAccess
                             RoleAdmin = p.RoleAdmin,
                             RoleLandlord = p.RoleLandlord,
                             RoleService = p.RoleService,
-                            RoleUser = p.RoleUser
+                            RoleUser = p.RoleUser,
                         })
                         .ToListAsync();
+
                     return services;
                 }
             }
@@ -576,7 +595,6 @@ namespace DataAccess
                 throw new Exception($"Lỗi khi lấy danh sách UpRole Service: {ex.Message}");
             }
         }
-
         public static async Task LockUserAsync(int userId)
         {
             try
@@ -599,7 +617,6 @@ namespace DataAccess
                 throw new Exception($"Lỗi khi khóa User: {ex.Message}");
             }
         }
-
         public static async Task UnLockUserAsync(int userId)
         {
             try
@@ -619,10 +636,9 @@ namespace DataAccess
             }
             catch (Exception ex)
             {
-                throw new Exception($"Lỗi khi mở khóa User: {ex.Message}");
+                throw new Exception($"Lỗi khi mở khóa User: {ex.Message}");
             }
         }
-
         public static async Task AcceptUpRoleLandLordAsync(int userId)
         {
             try
@@ -643,6 +659,7 @@ namespace DataAccess
                     context.Users.Update(user);
                     await context.SaveChangesAsync();
 
+                    // Add Notification
                     var notification = new Notification
                     {
                         UserId = userId,
@@ -660,7 +677,6 @@ namespace DataAccess
                 throw new Exception($"Lỗi khi Accept UpRole LandLord: {ex.Message}");
             }
         }
-
         public static async Task AcceptUpRoleServiceAsync(int userId)
         {
             try
@@ -681,6 +697,7 @@ namespace DataAccess
                     context.Users.Update(user);
                     await context.SaveChangesAsync();
 
+                    // Add Notification
                     var notification = new Notification
                     {
                         UserId = userId,
@@ -698,7 +715,6 @@ namespace DataAccess
                 throw new Exception($"Lỗi khi Accept UpRole Service: {ex.Message}");
             }
         }
-
         public static async Task CancelUpRoleLandLordAsync(int userId)
         {
             try
@@ -726,7 +742,6 @@ namespace DataAccess
                 throw new Exception($"Lỗi khi Cancel UpRole LandLord: {ex.Message}");
             }
         }
-
         public static async Task CancelUpRoleServiceAsync(int userId)
         {
             try
@@ -754,7 +769,6 @@ namespace DataAccess
                 throw new Exception($"Lỗi khi Cancel UpRole Service: {ex.Message}");
             }
         }
-
         public static async Task<LandlordLicenseDTO> GetOneLicensesByUserIdAsync(int userId)
         {
             using var context = new ApplicationDbContext();
@@ -776,7 +790,6 @@ namespace DataAccess
                     dateOfBirth = license.dateOfBirth
                 }).FirstOrDefaultAsync();
         }
-
         public static async Task<List<LandlordLicenseDTO>> GetLandlordLicensesByUserIdAsync(int userId)
         {
             using var context = new ApplicationDbContext();

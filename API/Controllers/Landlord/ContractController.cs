@@ -10,6 +10,7 @@ using API.Service;
 using Repositories.IRepository;
 using DUVAS;
 using DataAccess;
+using Repositories;
 
 namespace GITHUB_ACTIONS.Controllers
 {
@@ -86,7 +87,7 @@ namespace GITHUB_ACTIONS.Controllers
             return Ok(new { ContractId = contract.Id, PdfUrl = pdfUrl });
         }
 
-
+       
 
         [HttpGet("authorization")]
         public async Task<IActionResult> GetAllAuthorizationContract()
@@ -159,12 +160,12 @@ namespace GITHUB_ACTIONS.Controllers
                 // Kiểm tra danh sách roomIds hợp lệ
                 if (request.RoomIds == null || !request.RoomIds.Any())
                     return BadRequest("Danh sách RoomIds không được để trống.");
-
+                
                 // Cập nhật Authorization cho từng phòng
                 foreach (var roomId in request.RoomIds)
                 {
                     // Kiểm tra quyền của người dùng đối với phòng (nếu cần)
-
+                   
 
                     await _roomRepository.UpdateAuthorizationAsync(roomId, request.Authorization);
                 }
@@ -212,7 +213,7 @@ namespace GITHUB_ACTIONS.Controllers
                 return StatusCode(500, new { Message = $"Lỗi khi cập nhật status: {ex.Message}" });
             }
         }
-
+        
         [HttpPost("send-email-to-landlord")]
         public async Task<IActionResult> SendEmailToLandlord([FromBody] int userId, int contractId)
         {
@@ -222,7 +223,6 @@ namespace GITHUB_ACTIONS.Controllers
             return Ok(new { Message = "Email thông báo thanh toán đã được gửi thành công" });
 
         }
-
-
     }
+
 }

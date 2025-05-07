@@ -93,7 +93,6 @@ namespace API.Service
             // Gửi email cho người dùng
             SendEmail(userEmail, subject, body);
         }
-
         public void SendMailtoLanlord(string userEmail, DateTime thoiGian1, string hopDong)
         {
             var subject = "Thông báo phê duyệt yêu cầu ủy quyền";
@@ -120,6 +119,8 @@ namespace API.Service
             return Regex.IsMatch(input, emailPattern);
         }
     }
+
+
     public class SmtpSettings
     {
         public required string Host { get; set; }

@@ -341,14 +341,13 @@ namespace API.Controllers.Landlord
         [Authorize]
         public async Task<IActionResult> CheckUserBalance([FromBody] CheckBalanceDTO request)
         {
-            // 🔹 Check if user exists
+            // 🔹 Lấy thông tin User từ Database
             var user = await _userRepository.GetUserByIdAsync(request.UserId);
             if (user == null)
             {
                 return NotFound("Người dùng không tồn tại.");
             }
 
-            // 🔹 Check balance using UserDAO
             bool hasEnoughBalance = await UserDAO.CheckUserBalanceAsync(request.UserId, request.Amount);
             if (hasEnoughBalance)
             {
@@ -356,7 +355,7 @@ namespace API.Controllers.Landlord
             }
             else
             {
-                return BadRequest("Bạn không đủ tiền.");
+                return BadRequest("Bạn không đủ tiền để thực hiện giao dịch này.");
             }
         }
 

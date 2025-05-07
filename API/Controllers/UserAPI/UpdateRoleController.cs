@@ -78,7 +78,7 @@ namespace API.Controllers.UserAPI
             {
                 UserId = dto.UserId,
                 AnhCCCDMatTruoc = EncryptionHelper2.Encrypt(dto.AnhCCCDMatTruoc), // Mã hóa
-                AnhCCCDMatSau = EncryptionHelper2.Encrypt(dto.AnhCCCDMatSau),     // Mã hóa
+                AnhCCCDMatSau = EncryptionHelper2.Encrypt(dto.AnhCCCDMatSau),      // Mã hóa
                 CCCD = dto.CCCD,
                 Name = dto.Name,
                 dateOfBirth = dto.dateOfBirth,

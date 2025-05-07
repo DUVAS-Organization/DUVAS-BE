@@ -1,4 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace DTO
 {
@@ -14,8 +19,7 @@ namespace DTO
         public string? Address { get; set; }
         public string? Sex { get; set; }
         public string? ProfilePicture { get; set; }
-
-        // Encrypted money fields
+        //Encrypted money fields
         public byte[]? EncryptedMoney { get; set; }
         public byte[]? MoneyIV { get; set; }
 
@@ -37,7 +41,6 @@ namespace DTO
         public int? RoleLandlord { get; set; }
         public int? RoleService { get; set; }
     }
-
     public class EditProfileRequest
     {
         public string? UserName { get; set; }

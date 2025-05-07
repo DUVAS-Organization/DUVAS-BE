@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace BusinessObject.Migrations
 {
     /// <inheritdoc />
-    public partial class Tên : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -79,8 +79,7 @@ namespace BusinessObject.Migrations
                     RentalDateTimeEnd = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DownPayment = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     ContractFile = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    status = table.Column<int>(type: "int", nullable: false),
-                    RenterID = table.Column<int>(type: "int", nullable: false)
+                    status = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -101,8 +100,7 @@ namespace BusinessObject.Migrations
                     Address = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Sex = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ProfilePicture = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    EncryptedMoney = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
-                    MoneyIV = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
+                    Money = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     RoleAdmin = table.Column<int>(type: "int", nullable: true),
                     RoleUser = table.Column<int>(type: "int", nullable: true),
                     RoleLandlord = table.Column<int>(type: "int", nullable: true),
@@ -549,7 +547,7 @@ namespace BusinessObject.Migrations
                     PriorityPackageRoomId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<int>(type: "int", nullable: false),
-                    RoomId = table.Column<int>(type: "int", nullable: true),
+                    RoomId = table.Column<int>(type: "int", nullable: false),
                     CategoryPriorityPackageRoomId = table.Column<int>(type: "int", nullable: false),
                     StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     EndDate = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -625,7 +623,6 @@ namespace BusinessObject.Migrations
                     RoomId = table.Column<int>(type: "int", nullable: true),
                     ReportContent = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Image = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreatedTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: true),
                     Feedback = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },

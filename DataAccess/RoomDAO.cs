@@ -91,7 +91,7 @@ namespace DataAccess
             using (var context = new ApplicationDbContext())
             {
                 return await context.Rooms
-                    .Where(p => p.IsPermission == 0)
+                    .Where(p => p.IsPermission == 0 || p.IsPermission == 2)
                     .AsNoTracking()
                     .Select(p => new RoomDTO
                     {
@@ -952,9 +952,9 @@ namespace DataAccess
                     var rooms = await context.Rooms
                         .AsNoTracking()
                         .Where(r =>
-                            r.Title.ToLower().Contains(searchTerm) ||
-                            r.Description.ToLower().Contains(searchTerm) ||
-                            r.LocationDetail.ToLower().Contains(searchTerm))
+                            EF.Functions.Collate(r.Title, "Vietnamese_CI_AI").Contains(searchTerm) ||
+                            EF.Functions.Collate(r.Description, "Vietnamese_CI_AI").Contains(searchTerm) ||
+                            EF.Functions.Collate(r.LocationDetail, "Vietnamese_CI_AI").Contains(searchTerm))
                         .Select(r => new RoomDTO
                         {
                             RoomId = r.RoomId,
@@ -978,7 +978,7 @@ namespace DataAccess
                         })
                         .ToListAsync();
 
-                    // Nếu tìm không ra → fallback bằng cách tách từ ra và tìm theo từng từ
+                    // Fallback tìm kiếm theo từng từ
                     if (!rooms.Any())
                     {
                         var keywords = searchTerm.Split(' ', StringSplitOptions.RemoveEmptyEntries);
@@ -988,9 +988,9 @@ namespace DataAccess
                             var partialRooms = await context.Rooms
                                 .AsNoTracking()
                                 .Where(r =>
-                                    r.Title.ToLower().Contains(keyword) ||
-                                    r.Description.ToLower().Contains(keyword) ||
-                                    r.LocationDetail.ToLower().Contains(keyword))
+                                    EF.Functions.Collate(r.Title, "Vietnamese_CI_AI").Contains(keyword) ||
+                                    EF.Functions.Collate(r.Description, "Vietnamese_CI_AI").Contains(keyword) ||
+                                    EF.Functions.Collate(r.LocationDetail, "Vietnamese_CI_AI").Contains(keyword))
                                 .Select(r => new RoomDTO
                                 {
                                     RoomId = r.RoomId,
@@ -1014,7 +1014,6 @@ namespace DataAccess
                                 })
                                 .ToListAsync();
 
-                            // Ghép kết quả không trùng nhau
                             rooms.AddRange(partialRooms.Where(x => !rooms.Any(r => r.RoomId == x.RoomId)));
                         }
                     }

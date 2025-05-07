@@ -1,7 +1,5 @@
 ﻿using BusinessObject;
 using System.ComponentModel.DataAnnotations;
-
-
 namespace DUVAS
 {
     public class User
@@ -10,6 +8,7 @@ namespace DUVAS
         public int UserId { get; set; }
 
         public string? UserName { get; set; }
+
         public string Name { get; set; }
         public string? Gmail { get; set; }
         public string? Password { get; set; }
@@ -24,7 +23,7 @@ namespace DUVAS
         public int? RoleUser { get; set; }
         public int? RoleLandlord { get; set; }
         public int? RoleService { get; set; }
-
+            
         public virtual ICollection<Transaction>? Transactions { get; set; }
         public virtual ICollection<UserFeedback>? UserFeedbacks { get; set; }
         public virtual ICollection<ServiceLicense>? ServiceLicenses { get; set; }
@@ -41,9 +40,9 @@ namespace DUVAS
         public virtual ICollection<Notification> Notifications { get; set; }
 
         public User(string gmail, string userName, string name, string password, string address, string sex, string profilePicture, int? roleUser)
-        {
+        { 
             Gmail = gmail;
-            UserName = userName;
+            UserName = userName;    
             Name = name;
             Password = password;
             Address = address;
@@ -78,10 +77,12 @@ namespace DUVAS
             {
                 return "Admin";
             }
+
             if (RoleLandlord == 1)
             {
                 return "Landlord";
             }
+
             if (RoleService == 1)
             {
                 return "Service";
