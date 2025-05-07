@@ -91,7 +91,7 @@ namespace DataAccess
             using (var context = new ApplicationDbContext())
             {
                 return await context.Rooms
-                    .Where(p => p.IsPermission == 0)
+                    .Where(p => p.IsPermission == 0 || p.IsPermission == 2)
                     .AsNoTracking()
                     .Select(p => new RoomDTO
                     {

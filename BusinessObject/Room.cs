@@ -49,6 +49,7 @@ namespace DUVAS
 
         //0: Lock
         //1: Bình thường
+        //2: Bị Admin khóa
         public int? reputation { get; set; }
         //0: Không có tích xanh
         //1: Có tích xanh
